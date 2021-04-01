@@ -5,15 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-	<meta property="og:image" content="physarum.png">
-
-  <title>GPGPU Particles.</title>
+	<meta property="og:image" content="./ph4.gif">
+  <style>
+    body, html {
+      margin: 0;
+      height: 100%;
+    }
+  </style>
 </head>
-<body style="margin:0; font-family: monospace;">
+<body>
 
-<canvas id="canvasgl" style="height: 100vh; width: 100vw; display: block;"></canvas>
-<div id="b" style="position: absolute; top: 10px; width: 100%; text-align: center; z-index: 2;"><a href="http://twgljs.org">twgl.js</a> - GPGPU Particles.</div>
-
+<canvas id="canvasgl" style="height: 100%; width: 100%; display: block;"></canvas>
 <script src="twgl.min.js"></script>
 <script>
   'use strict';
@@ -64,8 +66,6 @@ void main() {
         return;
     }
 
-    // float mouseSpot = max(0., .1 - length(uv - u_mouse));
-    // gl_FragColor = clamp(gl_FragColor + mouseSpot * .1, 0., 1.);
 
     vec4 cell = texture2D(prevStateCells, uv);
 
@@ -85,7 +85,11 @@ void main() {
     }
 
     gl_FragColor *= smoothstep(.5, .4, length(uv-.5));
-} 
+
+    float mouseSpot = max(0., .1 - length(uv - u_mouse));
+    gl_FragColor += clamp(gl_FragColor + mouseSpot * .1, 0., 1.);
+
+  } 
 `;
 
   // particle physics in a cycle
@@ -247,12 +251,16 @@ void main(){
   const programFeromone = twgl.createProgramInfo(gl, [vCell, fFeromone]);
   const programDraw = twgl.createProgramInfo(gl, [vCell, fDraw]);
 
-  const n = 128;
-  const m = 128;
-  let cell1 = twgl.createFramebufferInfo(gl, undefined, n, m);
-  let cell2 = twgl.createFramebufferInfo(gl, undefined, n, m);
-  let feromone1 = twgl.createFramebufferInfo(gl, undefined, n, m);
-  let feromone2 = twgl.createFramebufferInfo(gl, undefined, n, m);
+  const n = 512;
+  const m = 512;
+  const attachments = [
+    { format: twgl.RGBA4, type: twgl.FLOAT32},
+    { format: twgl.STENCIL_INDEX8 },
+  ]
+  let cell1 = twgl.createFramebufferInfo(gl, attachments, n, m);
+  let cell2 = twgl.createFramebufferInfo(gl, attachments, n, m);
+  let feromone1 = twgl.createFramebufferInfo(gl, attachments, n, m);
+  let feromone2 = twgl.createFramebufferInfo(gl, attachments, n, m);
   const positionObject = { position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComponents: 2 } };
   const positionBuffer = twgl.createBufferInfoFromArrays(gl, positionObject);
 
@@ -265,20 +273,6 @@ void main(){
   }
   const pointsObject = { v_texcoord: { data: pointData, numComponents: 2 } };
   const pointsBuffer = twgl.createBufferInfoFromArrays(gl, pointsObject);
-
-  // particle initialization
-  gl.useProgram(programInit.program);
-  twgl.setBuffersAndAttributes(gl, programInit, positionBuffer);
-  twgl.setUniforms(programInit, {
-      u_resolution: [n, m],
-  });
-  twgl.bindFramebufferInfo(gl, cell1);
-  twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
-
-  gl.useProgram(programInit.program);
-  twgl.setBuffersAndAttributes(gl, programInit, positionBuffer);
-  twgl.bindFramebufferInfo(gl, cell2);
-  twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
 
   let dt;
   let prevTime;
@@ -324,7 +318,7 @@ void main(){
     gl.useProgram(programDraw.program);
     twgl.setBuffersAndAttributes(gl, programDraw, positionBuffer);
     twgl.setUniforms(programDraw, {
-      u_texture: cell2.attachments[0],
+      u_texture: cell1.attachments[0],
     });
     twgl.bindFramebufferInfo(gl, null);
     twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
