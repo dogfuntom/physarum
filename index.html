@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-	<meta property="og:image" content="physarum.png">
+	<meta property="og:image" content="ph4.gif">
 
   <title>GPGPU Particles.</title>
 </head>
@@ -21,7 +21,7 @@
     precision mediump float;
     attribute vec2 position;
     varying vec2 v_position;
-    
+
     void main() {
       v_position = position;
       gl_Position = vec4(position, 0.0, 1.0);
@@ -69,7 +69,7 @@ void main() {
         gl_FragColor += .1 * vec4(cell.ba, 0., 1.);
         // return;
     }
-    
+
     // gl_FragColor = (texture2D(prevStateFeromones, uv, .1)) * .99;
     // gl_FragColor = texelFetch(prevStateFeromones, ivec2(gl_FragCoord.xy), 0);
     #define diffCols 3.
@@ -85,7 +85,7 @@ void main() {
     float mouseSpot = max(0., .1 - length(uv - u_mouse));
     gl_FragColor += clamp(gl_FragColor + mouseSpot * .1, 0., 1.);
 
-  } 
+  }
 `;
 
   // particle physics in a cycle
@@ -94,7 +94,7 @@ void main() {
 
     attribute vec2 position;
     varying vec2 uv;
-    
+
     void main() {
       uv = position * .5 + .5;
       gl_Position = vec4(position, 0.0, 1.0);
@@ -103,7 +103,7 @@ void main() {
     precision mediump float;
 
     uniform sampler2D u_texture;
-    
+
     precision mediump float;
 uniform sampler2D prevStateCells;
 uniform sampler2D prevStateFeromones;
@@ -187,9 +187,9 @@ void main(){
         if(p_g + v_g == fract(p_g + v_g)){
         p_g = fract(p_g + v_g);
         v_g = turn(uv_g, v_g);
-        
+
         //v_g+=vec2(.0,.2)*rot(atan(uv.y-.5,uv.x-.5));
-        
+
         vec2 g_ij = ij;
         // for(float di=-R*sig;abs(di)<=R;di+=sig){
             // for(float dj=-R*sig;abs(dj)<=R;dj+=sig){
@@ -206,7 +206,7 @@ void main(){
                 }
             }
         }
-        
+
         v_g = C * normalize(v_g);
         gl_FragColor=vec4(p_g,v_g);
         break;
@@ -349,7 +349,7 @@ void main(){
     mousepos[0] = 0.5;
     mousepos[1] = 0.5;
   });
-  
+
   canvas.addEventListener('mousedown', e => {
     if (e.button === 0) {
       offGravity = 1;
