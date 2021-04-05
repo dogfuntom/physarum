@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-	<meta property="og:image" content="ph4.gif">
+	<meta property="og:image" content="th.gif">
 
-  <title>GPGPU Particles.</title>
 </head>
 <body style="margin:0; font-family: monospace;">
 
@@ -40,7 +39,7 @@
 
 
   const fFeromone = `
-  precision mediump float;
+precision mediump float;
 uniform sampler2D prevStateCells;
 uniform sampler2D prevStateFeromones;
 uniform float tick;
@@ -49,43 +48,46 @@ uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 varying vec2 uv;
 
-#define R 1. // interaction radius
-#define C 2. // max speed
-#define LOOKUP_DIST (.1*1280./u_resolution.x)
-#define LOOKUP_ANGLE (.1)
+#define DECAY .001
 #define rnd(x) fract(54321.987*sin(987.12345*x))
-#define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
 
 void main() {
-    if(tick <= 1.) {
-        gl_FragColor = vec4(0);
-        return;
-    }
+  // init
+  // if(tick <= 1.) {
+  //   gl_FragColor = vec4(1. - step(.05, length(uv - .5)));
+  //   return;
+  // }
 
-
-    vec4 cell = texture2D(prevStateCells, uv);
-
-    if(length(cell) > 0.) {
-        gl_FragColor += .1 * vec4(cell.ba, 0., 1.);
-        // return;
-    }
-
-    // gl_FragColor = (texture2D(prevStateFeromones, uv, .1)) * .99;
-    // gl_FragColor = texelFetch(prevStateFeromones, ivec2(gl_FragCoord.xy), 0);
-    #define diffCols 3.
-    #define diffR 3.
-    for (int i = 0; i < int(diffCols * diffCols); i++) {
-        vec2 ij = vec2(i/int(diffCols), mod(float(i), diffCols)) - (diffCols - 1.) / 2.;
-        ij *= diffR;
-        gl_FragColor += .994 * texture2D(prevStateFeromones, fract(uv+ij * 1./u_resolution)) / diffCols / diffCols;
-    }
-
-    gl_FragColor *= smoothstep(.5, .4, length(uv-.5));
-
-    float mouseSpot = max(0., .1 - length(uv - u_mouse));
-    gl_FragColor += clamp(gl_FragColor + mouseSpot * .1, 0., 1.);
-
+  // deposition
+  vec4 cell = texture2D(prevStateCells, uv);
+  if(length(cell) > 0.) {
+    gl_FragColor.rg += clamp(cell.ba * .5 + .5, 0., 1.);
+    gl_FragColor.a += 1.;
+    return;
   }
+
+  // gl_FragColor = (texture2D(prevStateFeromones, uv, .1)) * .99;
+  // gl_FragColor = texelFetch(prevStateFeromones, ivec2(gl_FragCoord.xy), 0);
+
+  //diffusion
+  #define diffCols 3.
+  #define diffR 1.
+  for (int i = 0; i < int(diffCols * diffCols); i++) {
+    vec2 ij = vec2(i/int(diffCols), mod(float(i), diffCols)) - (diffCols - 1.) / 2.;
+    ij *= diffR;
+    gl_FragColor += texture2D(prevStateFeromones, fract(uv + ij * 1. / u_resolution)) / diffCols / diffCols;
+  }
+
+  // decay
+  gl_FragColor *= (1. - DECAY);
+
+  // // spot limit
+  // gl_FragColor *= smoothstep(.5, .4, length(uv-.5));
+
+  // // mouse interaction
+  // float mouseSpot = max(0., .1 - length(uv - u_mouse));
+  // gl_FragColor += clamp(gl_FragColor + mouseSpot * .1, 0., 1.);
+}
 `;
 
   // particle physics in a cycle
@@ -100,11 +102,10 @@ void main() {
       gl_Position = vec4(position, 0.0, 1.0);
     }`;
   const fCell = `
-    precision mediump float;
+precision mediump float;
+uniform sampler2D u_texture;
+precision mediump float;
 
-    uniform sampler2D u_texture;
-
-    precision mediump float;
 uniform sampler2D prevStateCells;
 uniform sampler2D prevStateFeromones;
 uniform float tick;
@@ -113,57 +114,54 @@ uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 varying vec2 uv;
 
-
 // #define prevStateFeromones prevStateCells
-#define R 1. // interaction radius
+#define R 4. // interaction radius
 #define C 1. // max speed
-#define LOOKUP_DIST (.2 * u_mouse.x)
-#define LOOKUP_ANGLE (3.14159265 / 4.)
-#define rnd(x) fract(54321.987*sin(987.12345*x))
+#define LOOKUP_DIST (.01 * smoothstep(.0, .5, length(uv - u_mouse)))
+#define LOOKUP_ANGLE 3.14159265 / 6.
+#define rnd(x) fract(54321.987*sin(mod(987.12345 * x, 1.12345)))
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
-#define REPLICATION .03
-#define REPULSION .1
+#define REPLICATION .01
+#define REPULSION 1.
 #define DIRECTED_FEROMONES 0
 
-
 vec2 turn(vec2 uv, vec2 v){
-    vec2 sensorL = uv+(rot(-LOOKUP_ANGLE)*v)*LOOKUP_DIST; // location of sensor A
-    vec2 sensorC = uv+v*LOOKUP_DIST;
-    vec2 sensorR = uv+(rot(LOOKUP_ANGLE)*v)*LOOKUP_DIST;
+  vec2 sensorL = uv+(rot(-LOOKUP_ANGLE)*v)*LOOKUP_DIST; // location of sensor A
+  vec2 sensorC = uv+v*LOOKUP_DIST;
+  vec2 sensorR = uv+(rot(LOOKUP_ANGLE)*v)*LOOKUP_DIST;
 
-    float senseL, senseC, senseR;
-    if(DIRECTED_FEROMONES == 1) {
-        senseL = dot(v, texture2D(prevStateFeromones, sensorL).rg);
-        senseC = dot(v, texture2D(prevStateFeromones, sensorC).rg);
-        senseR = dot(v, texture2D(prevStateFeromones, sensorR).rg);
-    }
-    else {
-        senseL = texture2D(prevStateFeromones, sensorL).a;
-        senseC = texture2D(prevStateFeromones, sensorC).a;
-        senseR = texture2D(prevStateFeromones, sensorR).a;
-        // senseL = sensorL.x;
-        // senseC = sensorC.x;
-        // senseR = sensorR.x;
-    }
+  float senseL, senseC, senseR;
+  if(DIRECTED_FEROMONES == 1) {
+      senseL = dot(v, texture2D(prevStateFeromones, sensorL).rg);
+      senseC = dot(v, texture2D(prevStateFeromones, sensorC).rg);
+      senseR = dot(v, texture2D(prevStateFeromones, sensorR).rg);
+  }
+  else {
+      senseL = texture2D(prevStateFeromones, sensorL).a;
+      senseC = texture2D(prevStateFeromones, sensorC).a;
+      senseR = texture2D(prevStateFeromones, sensorR).a;
+      // senseL = sensorL.x;
+      // senseC = sensorC.x;
+      // senseR = sensorR.x;
+  }
 
-    if (senseC < senseL && senseC < senseR){
-    if(rnd(v.x)<.5)
-        v*=rot(LOOKUP_ANGLE);
-    else
-        v*=rot(-LOOKUP_ANGLE);
-    }
-    else if(senseL < senseR){
-        v *= rot(-LOOKUP_ANGLE);
-    }
-    else if(senseL > senseR){
-        v *= rot(LOOKUP_ANGLE);
-    }
-    return v;
+  if (senseC < senseL && senseC < senseR){
+  if(rnd(v.x)<.5)
+      v*=rot(LOOKUP_ANGLE);
+  else
+      v*=rot(-LOOKUP_ANGLE);
+  }
+  else if(senseL < senseR){
+      v *= rot(-LOOKUP_ANGLE);
+  }
+  else if(senseL > senseR){
+      v *= rot(LOOKUP_ANGLE);
+  }
+  return v;
 }
 
 
 void main(){
-
   // gl_FragColor = vec4(vec3(length(uv)), 1);
     vec2 p_g, v_g;
     vec4 n,g;
@@ -219,7 +217,7 @@ void main(){
         vec4 n=texture2D(prevStateCells,fract(uv+ij/u_resolution.xy));
         if(length(n)==0.)
             return;
-        if(rnd(length(uv)+u_time)<REPLICATION)
+        if(rnd(length(uv)+fract(u_time))<REPLICATION)
             gl_FragColor=n;
     }
 
@@ -230,29 +228,35 @@ void main(){
     precision mediump float;
     varying vec2 uv;
     uniform vec2 u_resolution;
-    uniform sampler2D u_texture;
+    uniform sampler2D prevStateCells;
+    uniform sampler2D prevStateFeromones;
     #define rnd(x) fract(54321.987 * sin(987.12345 * x))
     void main() {
-      gl_FragColor = vec4(texture2D(u_texture, uv).rgb, 1);
+      gl_FragColor += step(1e-8, length(texture2D(prevStateCells, uv)));
+      gl_FragColor.a = 1.;
+      gl_FragColor.r += texture2D(prevStateFeromones, uv).a;
+      gl_FragColor.gb += texture2D(prevStateFeromones, uv).rg;
+      gl_FragColor = clamp(gl_FragColor, 0., 1.);
+      // gl_FragColor = pow(gl_FragColor, vec4(4));
     }`;
 
 
   const mousepos = [0.5, 0.5];
   let tick = 0
   const canvas = document.getElementById('canvasgl');
-  const gl = twgl.getContext(canvas, { depth: false, antialiasing: false });
+  const gl = twgl.getWebGLContext(canvas, { antialias: false, depth: false });
+  twgl.addExtensionsToContext(gl);
+  console.log(gl.getExtension("OES_texture_float"));
+  console.log(gl.getExtension("WEBGL_color_buffer_float"));
 
   const programInit = twgl.createProgramInfo(gl, [vInit, fInit]);
   const programCell = twgl.createProgramInfo(gl, [vCell, fCell]);
   const programFeromone = twgl.createProgramInfo(gl, [vCell, fFeromone]);
   const programDraw = twgl.createProgramInfo(gl, [vCell, fDraw]);
 
-  const n = 512;
-  const m = 512;
-  const attachments = [
-    { format: twgl.RGBA4, type: twgl.FLOAT32},
-    { format: twgl.STENCIL_INDEX8 },
-  ]
+  const n = 800;
+  const m = n;
+  const attachments = [{ format:gl.RGBA, type:gl.FLOAT, minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }];
   let cell1 = twgl.createFramebufferInfo(gl, attachments, n, m);
   let cell2 = twgl.createFramebufferInfo(gl, attachments, n, m);
   let feromone1 = twgl.createFramebufferInfo(gl, attachments, n, m);
@@ -314,7 +318,8 @@ void main(){
     gl.useProgram(programDraw.program);
     twgl.setBuffersAndAttributes(gl, programDraw, positionBuffer);
     twgl.setUniforms(programDraw, {
-      u_texture: cell1.attachments[0],
+      prevStateCells: cell1.attachments[0],
+      prevStateFeromones: feromone1.attachments[0],
     });
     twgl.bindFramebufferInfo(gl, null);
     twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
@@ -335,7 +340,8 @@ void main(){
 
   (function animate(now) {
     draw(now / 1000);
-    setTimeout(requestAnimationFrame, 50, animate);
+    // setTimeout(requestAnimationFrame, 50, animate);
+    requestAnimationFrame(animate);
   })(0);
 
   function setMousePos(e) {
@@ -346,8 +352,8 @@ void main(){
   canvas.addEventListener('mousemove', setMousePos);
 
   canvas.addEventListener('mouseleave', () => {
-    mousepos[0] = 0.5;
-    mousepos[1] = 0.5;
+    mousepos[0] = 999.;
+    mousepos[1] = 999.;
   });
 
   canvas.addEventListener('mousedown', e => {
