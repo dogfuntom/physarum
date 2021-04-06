@@ -1,7 +1,6 @@
 'use strict';
 let twgl = require('twgl.js')
 
-const fFeromone = require('./feromone.frag');
 const vCell = `
   precision mediump float;
 
@@ -16,7 +15,7 @@ const fCell = require('./cell.frag');
 const fDraw = require('./draw.frag');
 
 
-const mousepos = [0.5, 0.5];
+const mousepos = [999., 999.];
 let tick = 0
 const canvas = document.getElementById('canvasgl');
 const gl = twgl.getWebGLContext(canvas, { antialias: false, depth: false });
@@ -25,10 +24,9 @@ console.log(gl.getExtension("OES_texture_float"));
 console.log(gl.getExtension("WEBGL_color_buffer_float"));
 
 const programCell = twgl.createProgramInfo(gl, [vCell, fCell]);
-const programFeromone = twgl.createProgramInfo(gl, [vCell, fFeromone]);
 const programDraw = twgl.createProgramInfo(gl, [vCell, fDraw]);
 
-const n = 800;
+const n = 256;
 const m = n;
 const attachments = [{ format:gl.RGBA, type:gl.FLOAT, minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }];
 let cell1 = twgl.createFramebufferInfo(gl, attachments, n, m);
@@ -51,8 +49,6 @@ const pointsBuffer = twgl.createBufferInfoFromArrays(gl, pointsObject);
 let dt;
 let prevTime;
 let temp;
-let offGravity = 0;
-let restoreColors = 0;
 
 function draw(time) {
   twgl.resizeCanvasToDisplaySize(gl.canvas);
@@ -60,22 +56,6 @@ function draw(time) {
   dt = (prevTime) ? time - prevTime : 0;
   prevTime = time;
 
-  // feromones
-  gl.useProgram(programFeromone.program);
-  twgl.setBuffersAndAttributes(gl, programFeromone, positionBuffer);
-  twgl.setUniforms(programFeromone, {
-    prevStateCells: cell1.attachments[0],
-    prevStateFeromones: feromone1.attachments[0],
-    tick: tick,
-    u_time: new Date() / 1000,
-    u_resolution: [n, m],
-    u_mouse: mousepos,
-  });
-  twgl.bindFramebufferInfo(gl, feromone2);
-  twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
-
-
-  // cells
   gl.useProgram(programCell.program);
   twgl.setBuffersAndAttributes(gl, programCell, positionBuffer);
   twgl.setUniforms(programCell, {
@@ -100,14 +80,9 @@ function draw(time) {
 
 
 
-  // ping-pong buffers
   temp = cell1;
   cell1 = cell2;
   cell2 = temp;
-
-  temp = feromone1;
-  feromone1 = feromone2;
-  feromone2 = temp;
 
   tick++
 }
