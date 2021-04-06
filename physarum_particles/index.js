@@ -9,6 +9,10 @@ const fInit = require('./init.frag');
 const vPhysics = require('./physics.vert');
 const fPhysics = require('./physics.frag');
 
+// feromones
+const vFeromone = require('./feromone.vert');
+const fFeromone = require('./feromone.frag');
+
 // rendering particles to a buffer
 const vRender = require('./render.vert');
 const fRender = require('./render.frag');
@@ -19,7 +23,6 @@ const fDraw = require('./draw.frag');
 
 const mousepos = [0.5, 0.5];
 const canvas = document.getElementById('canvasgl');
-// const gl = twgl.getContext(canvas, { depth: false, antialiasing: false });
 const gl = twgl.getWebGLContext(canvas, { antialias: false, depth: false });
 twgl.addExtensionsToContext(gl);
 console.log(gl.getExtension("OES_texture_float"));
@@ -29,16 +32,18 @@ const programInit = twgl.createProgramInfo(gl, [vInit, fInit]);
 const programPhysics = twgl.createProgramInfo(gl, [vPhysics, fPhysics]);
 const programRender = twgl.createProgramInfo(gl, [vRender, fRender]);
 const programDraw = twgl.createProgramInfo(gl, [vDraw, fDraw]);
+const programFeromone = twgl.createProgramInfo(gl, [vFeromone, fFeromone]);
 
+const attachments = [{ format:gl.RGBA, type:gl.FLOAT, minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }];
 const n = 256;
 const m = 256;
 let fb1 = twgl.createFramebufferInfo(gl, undefined, n, m);
 let fb2 = twgl.createFramebufferInfo(gl, undefined, n, m);
+let feromone1 = twgl.createFramebufferInfo(gl, attachments, n, m);
+let feromone2 = twgl.createFramebufferInfo(gl, attachments, n, m);
 const positionObject = { position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComponents: 2 } };
 const positionBuffer = twgl.createBufferInfoFromArrays(gl, positionObject);
 
-const attachments = [{ format:gl.RGBA, type:gl.FLOAT, minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }];
-let particlesRenderedBuffer = twgl.createFramebufferInfo(gl, attachments, n, m);
 
 const pointData = [];
 for (let i = 0; i < n; i++) {
@@ -61,8 +66,12 @@ let prevTime;
 let temp;
 let offGravity = 0;
 let restoreColors = 0;
+let tick = 0
 
 function draw(time) {
+  // FIXME clear in a more fast way
+  let particlesRenderedBuffer = twgl.createFramebufferInfo(gl, attachments, 800, 800);
+
   twgl.resizeCanvasToDisplaySize(gl.canvas);
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   dt = (prevTime) ? time - prevTime : 0;
@@ -88,19 +97,41 @@ function draw(time) {
   twgl.bindFramebufferInfo(gl, particlesRenderedBuffer);
   twgl.drawBufferInfo(gl, pointsBuffer, gl.POINTS);
 
+  // feromones
+  gl.useProgram(programFeromone.program);
+  twgl.setBuffersAndAttributes(gl, programFeromone, positionBuffer);
+  twgl.setUniforms(programFeromone, {
+    prevStateCells: particlesRenderedBuffer.attachments[0],
+    prevStateFeromones: feromone1.attachments[0],
+    tick: tick,
+    u_time: new Date() / 1000,
+    u_resolution: [n, m],
+    u_mouse: mousepos,
+  });
+  twgl.bindFramebufferInfo(gl, feromone2);
+  twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
+
+  // drawing
   gl.useProgram(programDraw.program);
-  twgl.setBuffersAndAttributes(gl, programDraw, particlesRenderedBuffer);
+  twgl.setBuffersAndAttributes(gl, programDraw, positionBuffer);
   twgl.setUniforms(programDraw, {
-    // prevStateCells: cell1.attachments[0],
-    // prevStateFeromones: feromone1.attachments[0],
+    u_texture: feromone1.attachments[0],
   });
   twgl.bindFramebufferInfo(gl, null);
   twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
+
+
 
   // ping-pong buffers
   temp = fb1;
   fb1 = fb2;
   fb2 = temp;
+
+  temp = feromone1;
+  feromone1 = feromone2;
+  feromone2 = temp;  
+
+  tick++
 }
 
 (function animate(now) {
@@ -108,36 +139,36 @@ function draw(time) {
   requestAnimationFrame(animate);
 })(0);
 
-// function setMousePos(e) {
-//   mousepos[0] = e.clientX / gl.canvas.clientWidth;
-//   mousepos[1] = 1 - e.clientY / gl.canvas.clientHeight;
-// }
+function setMousePos(e) {
+  mousepos[0] = e.clientX / gl.canvas.clientWidth;
+  mousepos[1] = 1 - e.clientY / gl.canvas.clientHeight;
+}
 
-// canvas.addEventListener('mousemove', setMousePos);
+canvas.addEventListener('mousemove', setMousePos);
 
-// canvas.addEventListener('mouseleave', () => {
-//   mousepos[0] = 0.5;
-//   mousepos[1] = 0.5;
-// });
+canvas.addEventListener('mouseleave', () => {
+  mousepos[0] = 0.5;
+  mousepos[1] = 0.5;
+});
 
-// canvas.addEventListener('mousedown', e => {
-//   if (e.button === 0) {
-//     offGravity = 1;
-//   } else {
-//     restoreColors = 1;
-//   }
-// });
+canvas.addEventListener('mousedown', e => {
+  if (e.button === 0) {
+    offGravity = 1;
+  } else {
+    restoreColors = 1;
+  }
+});
 
-// window.addEventListener('mouseup', () => {
-//   offGravity = 0;
-//   restoreColors = 0;
-// });
+window.addEventListener('mouseup', () => {
+  offGravity = 0;
+  restoreColors = 0;
+});
 
-// function handleTouch(e) {
-//   e.preventDefault();
-//   setMousePos(e.touches[0]);
-// }
+function handleTouch(e) {
+  e.preventDefault();
+  setMousePos(e.touches[0]);
+}
 
-// canvas.addEventListener('contextmenu', e => e.preventDefault());
-// canvas.addEventListener('touchstart', handleTouch, {passive: false});
-// canvas.addEventListener('touchmove', handleTouch, {passive: false});
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+canvas.addEventListener('touchstart', handleTouch, {passive: false});
+canvas.addEventListener('touchmove', handleTouch, {passive: false});

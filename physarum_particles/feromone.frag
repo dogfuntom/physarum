@@ -7,7 +7,7 @@ uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 varying vec2 uv;
 
-#define DECAY .001
+#define DECAY .01
 #define rnd(x) fract(54321.987*sin(987.12345*x))
 
 void main() {
