@@ -7,15 +7,15 @@ uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 varying vec2 uv;
 
-#define DECAY .01
+#define DECAY .001
 #define rnd(x) fract(54321.987*sin(987.12345*x))
 
 void main() {
 // init
-if(tick <= 1.) {
-  gl_FragColor = vec4(.1 - step(.5, length(uv - .5)));
-  return;
-}
+// if(tick <= 1.) {
+//   gl_FragColor = vec4(1. - step(.05, length(uv - .5)));
+//   return;
+// }
 
 // deposition
 vec4 cell = texture2D(prevStateCells, uv);

@@ -34,11 +34,11 @@ const programRender = twgl.createProgramInfo(gl, [vRender, fRender]);
 const programDraw = twgl.createProgramInfo(gl, [vDraw, fDraw]);
 const programFeromone = twgl.createProgramInfo(gl, [vFeromone, fFeromone]);
 
-const attachments = [{ format:gl.RGBA, type:gl.FLOAT, minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }];
-const n = 256;
-const m = 256;
-let fb1 = twgl.createFramebufferInfo(gl, undefined, n, m);
-let fb2 = twgl.createFramebufferInfo(gl, undefined, n, m);
+const attachments = [{ format:gl.RGBA, type:gl.FLOAT, minMag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE }];
+const n = 128;
+const m = 128;
+let fb1 = twgl.createFramebufferInfo(gl, attachments, n, m);
+let fb2 = twgl.createFramebufferInfo(gl, attachments, n, m);
 let feromone1 = twgl.createFramebufferInfo(gl, attachments, n, m);
 let feromone2 = twgl.createFramebufferInfo(gl, attachments, n, m);
 const positionObject = { position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComponents: 2 } };
@@ -48,8 +48,10 @@ const positionBuffer = twgl.createBufferInfoFromArrays(gl, positionObject);
 const pointData = [];
 for (let i = 0; i < n; i++) {
   for (let j = 0; j < m; j++) {
-    pointData.push(i / (n - 1));
-    pointData.push(j / (m - 1));
+    // pointData.push(i / (n - 1));
+    // pointData.push(j / (m - 1));
+    pointData.push(Math.random());
+    pointData.push(Math.random());
   }
 }
 const pointsObject = { v_texcoord: { data: pointData, numComponents: 2 } };
@@ -70,7 +72,7 @@ let tick = 0
 
 function draw(time) {
   // FIXME clear in a more fast way
-  let particlesRenderedBuffer = twgl.createFramebufferInfo(gl, attachments, 800, 800);
+  let particlesRenderedBuffer = twgl.createFramebufferInfo(gl, attachments, 1024, 1024);
 
   twgl.resizeCanvasToDisplaySize(gl.canvas);
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -105,7 +107,7 @@ function draw(time) {
     prevStateFeromones: feromone1.attachments[0],
     tick: tick,
     u_time: new Date() / 1000,
-    u_resolution: [n, m],
+    u_resolution: [1024, 1024],
     u_mouse: mousepos,
   });
   twgl.bindFramebufferInfo(gl, feromone2);
