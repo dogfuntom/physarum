@@ -1,7 +1,7 @@
 'use strict';
 let twgl = require('twgl.js')
 
-const vCell = `#version 300 es
+const vert = `#version 300 es
   precision mediump float;
 
   in vec2 position;
@@ -21,11 +21,8 @@ const canvas = document.getElementById('canvasgl');
 // const gl = twgl.getWebGLContext(canvas, { antialias: false, depth: false });
 const gl = canvas.getContext("webgl2")
 twgl.addExtensionsToContext(gl);
-// console.log(gl.getExtension("OES_texture_float"));
-// console.log(gl.getExtension("WEBGL_color_buffer_float"));
-
-const programCell = twgl.createProgramInfo(gl, [vCell, fCell]);
-const programDraw = twgl.createProgramInfo(gl, [vCell, fDraw]);
+const programCell = twgl.createProgramInfo(gl, [vert, fCell]);
+const programDraw = twgl.createProgramInfo(gl, [vert, fDraw]);
 
 const n = 256;
 const m = n;
