@@ -105,12 +105,12 @@ canvas.addEventListener('mousemove', setMousePos);
 //   restoreColors = 0;
 // });
 
-// function handleTouch(e) {
-//   e.preventDefault();
-//   setMousePos(e.touches[0]);
-// }
+function handleTouch(e) {
+  e.preventDefault();
+  setMousePos(e.touches[0]);
+}
 
 // canvas.addEventListener('contextmenu', e => e.preventDefault());
-// canvas.addEventListener('touchstart', handleTouch, {passive: false});
-// canvas.addEventListener('touchmove', handleTouch, {passive: false});
+canvas.addEventListener('touchstart', handleTouch, {passive: false});
+canvas.addEventListener('touchmove', handleTouch, {passive: false});
 

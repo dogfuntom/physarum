@@ -1,4 +1,5 @@
-vec2 spiralTransform(vec2 uv, float step_, float chankLength, float offset) {
+vec2 spiralTransform(vec2 uv, float chankLength, float offset) {
+    float step_ = 1.;
     float pi = 3.14159265;
     float lenInTurn = (length(uv) / step_ - atan(uv.y, uv.x)) / (2. * pi);
     float turns = floor(lenInTurn);

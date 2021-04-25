@@ -18,10 +18,10 @@ uniform vec2 u_mouse;
 
 #define PHI (sqrt(5.)*0.5 + 0.5)
 
-#pragma glslify: crystall = require('../modules/sdf/crystall')
+// #pragma glslify: crystall = require('../modules/sdf/crystall')
 #pragma glslify: rot = require('../modules/math/rotate2D') 
-#pragma glslify: cellular = require('../modules/math/cellularNoise3d') 
-#pragma glslify: box = require('glsl-sdf-box') 
+// #pragma glslify: cellular = require('../modules/math/cellularNoise3d') 
+// #pragma glslify: box = require('glsl-sdf-box') 
 #pragma glslify: rnd = require(glsl-random) 
 // #pragma glslify: hsv = require(glsl-hsv2rgb) 
 // #pragma glslify: noise= require(glsl-noise/simplex/4d) 
@@ -41,6 +41,99 @@ float torus(vec3 p, float rBig, float rSmall) {
 
 
 
+float hash( int n )
+{
+	n = (n << 13) ^ n;
+    n = (n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff;
+    return float(n)/2147483647.0;
+}
+
+
+// value noise
+float noise3f( in vec3 p, in int sem )
+{
+    ivec3 i = ivec3( floor(p) );
+    vec3  f = p - vec3(i);
+
+    // quintic smoothstep
+    vec3 w = f*f*f*(f*(f*6.0-15.0)+10.0);
+
+    int n = i.x + i.y * 57 + 113*i.z + sem;
+
+	return 1.0 - 2.0*mix(mix(mix(hash(n+(0+57*0+113*0)),
+                                 hash(n+(1+57*0+113*0)),w.x),
+                             mix(hash(n+(0+57*1+113*0)),
+                                 hash(n+(1+57*1+113*0)),w.x),w.y),
+                         mix(mix(hash(n+(0+57*0+113*1)),
+                                 hash(n+(1+57*0+113*1)),w.x),
+                             mix(hash(n+(0+57*1+113*1)),
+                                 hash(n+(1+57*1+113*1)),w.x),w.y),w.z);
+}
+
+float fbm( in vec3 p )
+{
+    return 0.5000*noise3f( p*1.0, 0 ) + 
+           0.2500*noise3f( p*2.0, 0 ) + 
+           0.1250*noise3f( p*4.0, 0 ) +
+           0.0625*noise3f( p*8.0, 0 );
+}
+
+vec2 celular( in vec3 p )
+{
+    ivec3 q = ivec3( floor(p) );
+    vec3  f = p - vec3(q);
+
+	vec2 dmin = vec2( 2.0 );
+
+	for( int k=-1; k<=1; k++ )
+	for( int j=-1; j<=1; j++ )
+	for( int i=-1; i<=1; i++ )
+	{
+		int nn = (q.x+i) + 57*(q.y+j) + 113*(q.z+k);
+        vec3 di = vec3( float(i) + hash(nn     ),
+		                float(j) + hash(nn+1217),
+		                float(k) + hash(nn+2513) ) - f;
+		float d2 = dot(di,di);
+
+        if( d2<dmin.x )
+        {
+            dmin.y = dmin.x;
+            dmin.x = d2;
+        }
+        else if( d2<dmin.y )
+        {
+            dmin.y = d2;
+        }
+	}
+    
+    return 0.25*sqrt(dmin);
+}
+
+
+// float map( in vec3 pos)
+// {
+// 	float dis = length(dd) - .9;
+// 	// float disp = length(pos)-.9;
+// 	// dis += 0.8*disp;
+//     // if( dis<0.25 )
+//     // {
+// 	vec2 cel = celular( 5.0 * pos );
+// 	float disp2 = clamp(cel.y - cel.x, 0.0, 1.0);
+// 	dis -= 3.0*disp2;
+//     // }
+//     return dis*.2;
+// }
+
+float map( in vec3 pos)
+{
+    
+	float disp = length(pos)-u_mouse.x - .1;
+	vec2 cel = celular( 5.0 * pos );
+	float disp2 = clamp(cel.y - cel.x, 0.0, 1.0);
+	disp -= 3.0*disp2;
+
+    return disp*.2;
+}
 
 
 
@@ -48,9 +141,10 @@ float torus(vec3 p, float rBig, float rSmall) {
 vec2 getDist(vec3 p) {
     p.xz *= rot(-u_mouse.x * 4.);
     p.xy *= rot(u_mouse.y * 4.);
-    vec2 cellNoise = cellular(p + u_time);
+    // vec2 cellNoise = cellular(p + u_time);
     float sphere = length(p) - 1.;
-    return vec2(max(-((cellNoise.y-cellNoise.x)-u_mouse.x), sphere), BLUE);
+    // return vec2(max(-((cellNoise.y-cellNoise.x)-u_mouse.x), sphere), BLUE);
+    return vec2(max(sphere, map(p)), BLUE);
 }
 // ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
 
@@ -151,7 +245,8 @@ void main() {
 
         // reflection
         vec3 ref = reflect(rd, n);
-        color = getColor(ref * .5 + .5);// + pow(dot(n, vec3(1,1,-1)) * .5 + .5, 40.);
+        // color = getColor(ref * .5 + .5);// + pow(dot(n, vec3(1,1,-1)) * .5 + .5, 40.);
+        color = vec3(dot(n, vec3(1,1,-1)) * .5 + .5);
 
         // color += ;//texture(iChannel0, ref).xyz; FIXME
     }
