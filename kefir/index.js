@@ -15,7 +15,8 @@ const fCell = require('./cell.frag');
 const fDraw = require('./draw.frag');
 
 
-const mousepos = [999., 999.];
+const mousepos = [999., 999.]
+let mouseDown = 0
 let tick = 0
 const canvas = document.getElementById('canvasgl');
 // const gl = twgl.getWebGLContext(canvas, { antialias: false, depth: false });
@@ -42,7 +43,6 @@ for (let i = 0; i < n; i++) {
   }
 }
 const pointsObject = { v_texcoord: { data: pointData, numComponents: 2 } };
-const pointsBuffer = twgl.createBufferInfoFromArrays(gl, pointsObject);
 
 let startTime = new Date();
 let temp;
@@ -60,6 +60,7 @@ function draw(time) {
     u_time: (new Date() - startTime) / 1000,
     u_resolution: [n, m],
     u_mouse: mousepos,
+    u_mouse_down: mouseDown,
   });
   twgl.bindFramebufferInfo(gl, cell2);
   twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
@@ -96,21 +97,16 @@ function setMousePos(e) {
 canvas.addEventListener('mousemove', setMousePos);
 
 canvas.addEventListener('mouseleave', () => {
-  mousepos[0] = 999.;
-  mousepos[1] = 999.;
+  mousepos[0] = .6;
+  mousepos[1] = .6;
 });
 
 canvas.addEventListener('mousedown', e => {
-  if (e.button === 0) {
-    offGravity = 1;
-  } else {
-    restoreColors = 1;
-  }
+  mouseDown = 1
 });
 
 window.addEventListener('mouseup', () => {
-  offGravity = 0;
-  restoreColors = 0;
+  mouseDown = 0
 });
 
 function handleTouch(e) {
