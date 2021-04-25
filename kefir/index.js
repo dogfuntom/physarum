@@ -22,15 +22,12 @@ const canvas = document.getElementById('canvasgl');
 const gl = canvas.getContext("webgl2");
 
 twgl.addExtensionsToContext(gl);
-console.log(gl.getExtension("OES_texture_float"));
-console.log(gl.getExtension("WEBGL_color_buffer_float"));
-
 const programCell = twgl.createProgramInfo(gl, [vert, fCell]);
 const programDraw = twgl.createProgramInfo(gl, [vert, fDraw]);
 
 const n = 256;
 const m = n;
-const attachments = [{ format:gl.RGBA, type:gl.FLOAT, minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }];
+const attachments = [{minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }];
 let cell1 = twgl.createFramebufferInfo(gl, attachments, n, m);
 let cell2 = twgl.createFramebufferInfo(gl, attachments, n, m);
 const positionObject = { position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComponents: 2 } };
