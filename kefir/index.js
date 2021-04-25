@@ -44,15 +44,12 @@ for (let i = 0; i < n; i++) {
 const pointsObject = { v_texcoord: { data: pointData, numComponents: 2 } };
 const pointsBuffer = twgl.createBufferInfoFromArrays(gl, pointsObject);
 
-let dt;
-let prevTime;
+let startTime = new Date();
 let temp;
 
 function draw(time) {
   twgl.resizeCanvasToDisplaySize(gl.canvas);
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-  dt = (prevTime) ? time - prevTime : 0;
-  prevTime = time;
 
   gl.useProgram(programCell.program);
   twgl.setBuffersAndAttributes(gl, programCell, positionBuffer);
@@ -60,7 +57,7 @@ function draw(time) {
     prevStateCells: cell1.attachments[0],
     prevStateFeromones: feromone1.attachments[0],
     tick: tick,
-    u_time: new Date() / 1000,
+    u_time: (new Date() - startTime) / 1000,
     u_resolution: [n, m],
     u_mouse: mousepos,
   });
