@@ -1,7 +1,7 @@
 'use strict';
 let twgl = require('twgl.js')
 
-const vert = `#version 300 es
+const vCell = `#version 300 es
   precision mediump float;
 
   in vec2 position;
@@ -19,23 +19,33 @@ const mousepos = [999., 999.];
 let tick = 0
 const canvas = document.getElementById('canvasgl');
 // const gl = twgl.getWebGLContext(canvas, { antialias: false, depth: false });
-const gl = canvas.getContext("webgl2");
-
+const gl = canvas.getContext("webgl2")
 twgl.addExtensionsToContext(gl);
-console.log(gl.getExtension("OES_texture_float"));
-console.log(gl.getExtension("WEBGL_color_buffer_float"));
+// console.log(gl.getExtension("OES_texture_float"));
+// console.log(gl.getExtension("WEBGL_color_buffer_float"));
 
-const programCell = twgl.createProgramInfo(gl, [vert, fCell]);
-const programDraw = twgl.createProgramInfo(gl, [vert, fDraw]);
+const programCell = twgl.createProgramInfo(gl, [vCell, fCell]);
+const programDraw = twgl.createProgramInfo(gl, [vCell, fDraw]);
 
 const n = 256;
 const m = n;
-const attachments = [{ format:gl.RGBA, type:gl.FLOAT, minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }];
+const attachments = [{minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }];
 let cell1 = twgl.createFramebufferInfo(gl, attachments, n, m);
 let cell2 = twgl.createFramebufferInfo(gl, attachments, n, m);
+let feromone1 = twgl.createFramebufferInfo(gl, attachments, n, m);
+let feromone2 = twgl.createFramebufferInfo(gl, attachments, n, m);
 const positionObject = { position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComponents: 2 } };
 const positionBuffer = twgl.createBufferInfoFromArrays(gl, positionObject);
 
+const pointData = [];
+for (let i = 0; i < n; i++) {
+  for (let j = 0; j < m; j++) {
+    pointData.push(i / (n - 1));
+    pointData.push(j / (m - 1));
+  }
+}
+const pointsObject = { v_texcoord: { data: pointData, numComponents: 2 } };
+const pointsBuffer = twgl.createBufferInfoFromArrays(gl, pointsObject);
 
 let dt;
 let prevTime;
@@ -51,6 +61,7 @@ function draw(time) {
   twgl.setBuffersAndAttributes(gl, programCell, positionBuffer);
   twgl.setUniforms(programCell, {
     prevStateCells: cell1.attachments[0],
+    prevStateFeromones: feromone1.attachments[0],
     tick: tick,
     u_time: new Date() / 1000,
     u_resolution: [n, m],
@@ -63,7 +74,7 @@ function draw(time) {
   twgl.setBuffersAndAttributes(gl, programDraw, positionBuffer);
   twgl.setUniforms(programDraw, {
     prevStateCells: cell1.attachments[0],
-    u_resolution: [n, m],
+    prevStateFeromones: feromone1.attachments[0],
   });
   twgl.bindFramebufferInfo(gl, null);
   twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
@@ -95,18 +106,18 @@ canvas.addEventListener('mouseleave', () => {
   mousepos[1] = 999.;
 });
 
-// canvas.addEventListener('mousedown', e => {
-//   if (e.button === 0) {
-//     offGravity = 1;
-//   } else {
-//     restoreColors = 1;
-//   }
-// });
+canvas.addEventListener('mousedown', e => {
+  if (e.button === 0) {
+    offGravity = 1;
+  } else {
+    restoreColors = 1;
+  }
+});
 
-// window.addEventListener('mouseup', () => {
-//   offGravity = 0;
-//   restoreColors = 0;
-// });
+window.addEventListener('mouseup', () => {
+  offGravity = 0;
+  restoreColors = 0;
+});
 
 function handleTouch(e) {
   e.preventDefault();
