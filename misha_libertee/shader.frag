@@ -22,8 +22,11 @@ uniform vec2 u_mouse;
 #pragma glslify: rnd = require(glsl-random) 
 #pragma glslify: hsv = require(glsl-hsv2rgb) 
 #pragma glslify: noise= require(glsl-noise/classic/3d) 
-// #pragma glslify: torus = require(primitive-torus) 
 
+float stuff(vec3 p){
+    float width = .8 + .3 * noise(vec3(p * 2. * noise(vec3(p * .2 + vec3(u_time))) + vec3(u_time)));
+    return length(vec2(length(p.xy)-3., length(p.zy)-3.))-width;
+}
 
 float rnd (float x) {return rnd(vec2(x));}
 
@@ -51,7 +54,8 @@ vec2 getDist(vec3 p) {
     // // return vec2((length(p) - .005) / s, BLUE);
 
     // return vec2(box(p, vec3(.65, 1.2, 2.5).yzx * 2.) / s, BLUE);
-    return vec2(box(p, vec3(.65, 1.2, 2.5).yzx + .3 * noise(vec3(p * 2. * noise(vec3(p * .2 + vec3(u_time))) + vec3(u_time))))-.02, BLUE);
+    // return vec2(box(p, vec3(.65, 1.2, 2.5).yzx + .3 * noise(vec3(p * 2. * noise(vec3(p * .2 + vec3(u_time))) + vec3(u_time))))-.02, BLUE);
+    return vec2(stuff(p)*.8, BLUE);
 }
 // ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
 
