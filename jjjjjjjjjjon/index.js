@@ -31,12 +31,12 @@ let shader = twgl.createFramebufferInfo(gl, attachments, n, m);
 const positionObject = { position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComponents: 2 } };
 const positionBuffer = twgl.createBufferInfoFromArrays(gl, positionObject);
 
-let matcap = twgl.createTexture(gl, {
-  src: '../m.png',
-  // format: gl.RGB,
-  // min: gl.LINEAR,
-  // wrap: gl.CLAMP_TO_EDGE,
-}, (mc)=>{console.log(mc)})
+// let matcap = twgl.createTexture(gl, {
+//   src: '../m.png',
+//   // format: gl.RGB,
+//   // min: gl.LINEAR,
+//   // wrap: gl.CLAMP_TO_EDGE,
+// }, (mc)=>{console.log(mc)})
 
 
 
@@ -52,7 +52,7 @@ function draw(time) {
   gl.useProgram(program.program);
   twgl.setBuffersAndAttributes(gl, program, positionBuffer);
   twgl.setUniforms(program, {
-    matcap: matcap,
+    // matcap: matcap,
     tick: tick,
     time: (new Date() - timeLounch) / 1000,
     resolution: [gl.canvas.clientWidth, gl.canvas.clientHeight],

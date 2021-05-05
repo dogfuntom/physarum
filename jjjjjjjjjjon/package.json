@@ -12,7 +12,7 @@
   },
   "scripts": {
     "start": "parcel serve ./index.html",
-    "build": "rm -rf ./dist; parcel build --no-source-maps --no-content-hash --public-url ./ ./index.html; zip ./dist/archive.zip ./dist/*"
+    "build": "rm -rf ./dist; parcel build --no-source-maps --no-content-hash --public-url ./ ./index.html; zip -r ./dist/archive.zip ./dist/*"
   },
   "glslify": {
     "transform": [
