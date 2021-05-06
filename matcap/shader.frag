@@ -9,6 +9,7 @@ uniform float time;
 uniform sampler2D matcap;
 
 #pragma glslify: box = require('glsl-sdf-box') 
+#pragma glslify: box = require('glsl-sdf-box') 
 
 mat2 rot(float a) {
   float s = sin(a), c = cos(a);

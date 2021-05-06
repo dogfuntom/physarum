@@ -1,0 +1,9 @@
+body {
+      margin: 0;
+      font-family: monospace;
+      /* background: url(./bg.png); */
+      /* background-size: contain; */
+    }
+    /* canvas {
+      background-color: #000000bb;
+    } */
