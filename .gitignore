@@ -3,3 +3,5 @@ dist
 .zip
 node_modules
 .DS_Store
+.parcel-cache
+.DS_Store
