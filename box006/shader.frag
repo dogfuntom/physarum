@@ -28,7 +28,6 @@ void main() {
   for(vec3 p, q; i++ < 99. && e > .001;) {
     p = normalize(vec3(uv, 2.)) * d;
     float S = 1.;
-    float pz = p.z;
     p.z -= 8.5;
     float R = 1.;
     p.zx *= rotate2D(t * .1);
@@ -39,10 +38,7 @@ void main() {
     for(int j = 0; j++ < 5;) {
       p -= clamp(p, -1., 1.) * 2., S = 9. * clamp(mx / min(dot(p, p), 1.), 0., 1.), p = p * S + q * my, R = R * abs(S) + my;
     }
-  // d+=e=max(sp, (length(p)-.5)/cs);
-  d += e = max(length(q)-4., length(cross(p, normalize(vec3(1)))) / R - .003);
-  // d+=e=.8*length(p)/R-.001;
-
+    d += e = max(length(q)-4., length(cross(p, normalize(vec3(1)))) / R - .003);
   }
   vec2 uvBg = abs(uv);
   if(uvBg.x < uvBg.y)
