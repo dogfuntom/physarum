@@ -1,9 +1,9 @@
 'use strict';
 let twgl = require('twgl.js')
 
-const vShader = `#version 300 es
+const vShader = `
   precision mediump float;
-  in vec2 position;
+  attribute vec2 position;
   void main() {
     gl_Position = vec4(position, 0.0, 1.0);
   }`;
@@ -16,11 +16,11 @@ let timeLounch = +new Date()
 const canvas = document.getElementById('canvasgl');
 
 // const gl = twgl.getWebGLContext(canvas, { antialias: false, depth: false });
-const gl = canvas.getContext("webgl2");
+const gl = canvas.getContext("webgl");
 
 twgl.addExtensionsToContext(gl);
-console.log(gl.getExtension("OES_texture_float"));
-console.log(gl.getExtension("WEBGL_color_buffer_float"));
+// console.log(gl.getExtension("OES_texture_float"));
+// console.log(gl.getExtension("WEBGL_color_buffer_float"));
 
 const program = twgl.createProgramInfo(gl, [vShader, fShader]);
 

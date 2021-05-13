@@ -1,13 +1,11 @@
-#version 300 es
 precision mediump float;
-out vec4 outColor;
 
 precision highp float;
 uniform vec2 resolution;
 uniform vec2 mouse;
 uniform float time;
 
-#define o outColor
+#define o gl_FragColor
 #define FC gl_FragCoord
 #define t time
 #define res resolution
@@ -25,7 +23,8 @@ mat2 rot(float a) {
 void main() {
   vec2 uv = (FC.xy * 2. - res) / res.y;
   float i, d, e = 1.;
-  for(vec3 p, q; i++ < 99. && e > .001;) {
+  vec3 p, q;
+  for(float ii = 0.; ii < 99.; ii++) {
     p = normalize(vec3(uv, 2.)) * d;
     float S = 1.;
     p.z -= 8.5;
@@ -35,10 +34,12 @@ void main() {
     q = p;
     float mx = mouse.x * .25 + .25;
     float my = mouse.y + .5;
-    for(int j = 0; j++ < 5;) {
+    for(int j = 0; j < 5; j++) {
       p -= clamp(p, -1., 1.) * 2., S = 9. * clamp(mx / min(dot(p, p), 1.), 0., 1.), p = p * S + q * my, R = R * abs(S) + my;
     }
     d += e = max(length(q)-4., length(cross(p, normalize(vec3(1)))) / R - .003);
+    if(e < .001 ) break;
+    i = ii;
   }
   vec2 uvBg = abs(uv);
   if(uvBg.x < uvBg.y)
