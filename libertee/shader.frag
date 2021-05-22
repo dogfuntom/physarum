@@ -62,6 +62,6 @@ for(;++i<64.&&e>.00001;){
 }
 vec4 bazar=texture(tex_bazar, pb/BRICK_SIZE*vec3(-1));
 vec4 xiao= texture(tex_xiao , pb/BRICK_SIZE*vec3(-1));
-o+=9./i*mix(bazar, xiao, brickId);
+o+=8./pow(i,.8)*mix(bazar, xiao, brickId);
 o.a=1.;
 }
