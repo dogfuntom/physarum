@@ -5,3 +5,4 @@ node_modules
 .DS_Store
 .parcel-cache
 .DS_Store
+parcel_physarum/package-lock.json
