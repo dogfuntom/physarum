@@ -88,21 +88,8 @@ function draw(time) {
   twgl.setBuffersAndAttributes(gl, programRender, pointsBuffer);
   twgl.setUniforms(programRender, { u_texture: fb2.attachments[0] });
   twgl.bindFramebufferInfo(gl, particlesRenderedBuffer);
+  // twgl.bindFramebufferInfo(gl, null);
   twgl.drawBufferInfo(gl, pointsBuffer, gl.POINTS);
-
-  // // feromones
-  // gl.useProgram(programFeromone.program);
-  // twgl.setBuffersAndAttributes(gl, programFeromone, positionBuffer);
-  // twgl.setUniforms(programFeromone, {
-  //   prevStateCells: particlesRenderedBuffer.attachments[0],
-  //   prevStateFeromones: feromone1.attachments[0],
-  //   tick: tick,
-  //   u_time: new Date() / 1000,
-  //   u_resolution: [1024, 1024],
-  //   u_mouse: mousepos,
-  // });
-  // twgl.bindFramebufferInfo(gl, feromone2);
-  // twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
 
   // drawing
   gl.useProgram(programDraw.program);
