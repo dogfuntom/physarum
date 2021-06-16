@@ -20,9 +20,9 @@ const programDraw = twgl.createProgramInfo(gl, [vFlat, fDraw])
 const programShow = twgl.createProgramInfo(gl, [vFlat, fShow])
 
 const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE }]
-const n = 16
-const m = 16
-const drawSize = 512
+const n = 64
+const m = n
+const drawSize = 1024
 let fb1 = twgl.createFramebufferInfo(gl, attachments, n, m);
 let fb2 = twgl.createFramebufferInfo(gl, attachments, n, m);
 let draw1 = twgl.createFramebufferInfo(gl, attachments, drawSize, drawSize)
@@ -31,14 +31,22 @@ const positionObject = { position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComp
 const positionBuffer = twgl.createBufferInfoFromArrays(gl, positionObject)
 
 // can it be removed?
-const pointData = [];
+const pointId = [];
+const pointPositions = [];
+const pointMass = [];
 for (let i = 0; i < n; i++) {
   for (let j = 0; j < m; j++) {
-    pointData.push(Math.random())
-    pointData.push(Math.random())
+    pointId.push(Math.random())
+    pointPositions.push(Math.random())
+    pointPositions.push(Math.random())
+    pointMass.push(1.)
   }
 }
-const pointsObject = { v_texcoord: { data: pointData, numComponents: 2 } }
+const pointsObject = {
+  v_id: { data: pointId, numComponents: 1 },
+  v_position: { data: pointPositions, numComponents: 2 },
+  v_mass: { data: pointMass, numComponents: 1 }, // почему-то массу нулями передаёт
+}
 const pointsBuffer = twgl.createBufferInfoFromArrays(gl, pointsObject)
 
 let tick = 0
