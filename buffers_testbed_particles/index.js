@@ -20,34 +20,45 @@ const programDraw = twgl.createProgramInfo(gl, [vFlat, fDraw])
 const programShow = twgl.createProgramInfo(gl, [vFlat, fShow])
 
 const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE }]
-const n = 64
+const n = 16
 const m = n
 const drawSize = 1024
-let fb1 = twgl.createFramebufferInfo(gl, attachments, n, m);
-let fb2 = twgl.createFramebufferInfo(gl, attachments, n, m);
+let fb1 = twgl.createFramebufferInfo(gl, attachments, n, m)
+let fb2 = twgl.createFramebufferInfo(gl, attachments, n, m)
+// let masses = twgl.createFramebufferInfo(gl, attachments, n, m) // только один канал будем юзать, надо упростить потом
 let draw1 = twgl.createFramebufferInfo(gl, attachments, drawSize, drawSize)
 let draw2 = twgl.createFramebufferInfo(gl, attachments, drawSize, drawSize)
-const positionObject = { position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComponents: 2 } }
-const positionBuffer = twgl.createBufferInfoFromArrays(gl, positionObject)
 
 // can it be removed?
-const pointId = [];
-const pointPositions = [];
-const pointMass = [];
+const pointId = []
+const pointPositions = []
+const pointMass = []
 for (let i = 0; i < n; i++) {
   for (let j = 0; j < m; j++) {
-    pointId.push(Math.random())
-    pointPositions.push(Math.random())
-    pointPositions.push(Math.random())
-    pointMass.push(1.)
+    pointId.push(i * n + j)
+    pointPositions.push(i / n + .5 / n) // мы вручную забиваем координаты, 
+    // которые будут использоваться при сопоставлении вершин и пикселей ФБО
+    pointPositions.push(j / m + .5 / m)
+    pointMass.push(Math.random() * 5)
   }
 }
 const pointsObject = {
   v_id: { data: pointId, numComponents: 1 },
   v_position: { data: pointPositions, numComponents: 2 },
-  v_mass: { data: pointMass, numComponents: 1 }, // почему-то массу нулями передаёт
+  v_mass: { data: pointMass, numComponents: 1 }, // не используем пока что. Вычисляем из координат ФБО
 }
 const pointsBuffer = twgl.createBufferInfoFromArrays(gl, pointsObject)
+
+const positionObject = {
+  position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComponents: 2 },
+  // v_mass: { data: pointMass, numComponents: 1 }, // тут тоже надо массу передать, иначе она в физику не попадёт
+  // но что-то у меня вопрос с размерностью данных. по идее не должно заработать, потому что тут у нас вершин всего 4
+  // а массу непойми как передавать. Наверное, только через текстуру.
+  // Вижу такие варианты:
+  // 1. передавать массу через юниформ текстуру.
+  // 2. Вычислять её в шейдере, в зависимости от координат ФБО, так проще
+}
+const positionBuffer = twgl.createBufferInfoFromArrays(gl, positionObject)
 
 let tick = 0
 let timeStart = new Date() / 1000

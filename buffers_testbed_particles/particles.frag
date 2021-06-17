@@ -2,7 +2,7 @@ precision mediump float;
 
 varying vec2 v_position;
 varying float v_id;
-varying float v_mass;
+// varying float v_mass;
 uniform sampler2D u_tex_fbo;
 uniform float u_time;
 uniform float u_tick;
@@ -10,7 +10,7 @@ uniform float u_tick;
 #define rnd(x) fract(54321.987 * sin(987.12345 * x))
 // #pragma glslify: snoise3 = require(glsl-noise/simplex/3d)
 // #pragma glslify: noise = require(glsl-noise/simplex/3d)
-  vec3 mod289(vec3 x) {
+vec3 mod289(vec3 x) {
   return x - floor(x * (1.0 / 289.0)) * 289.0;
 }
 vec4 mod289(vec4 x) {
@@ -96,27 +96,27 @@ float snoise(vec3 v)
   m = m * m;
   return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),
                                 dot(p2,x2), dot(p3,x3) ) );
-  }
-
-
+}
 
 void main() {
     vec4 particle = texture2D(u_tex_fbo, v_position);
     vec2 pos = particle.xy;
     vec2 vel = particle.zw * 2. - 1.;
+    // хак! Массу высчитываем прямо тут
+    float mass = rnd(length(v_position));
 
   // init
   if(u_tick < 1. || abs(rnd(length(pos.x + pos.y*99.) + u_time + 99.) - .5) < .0000001) {
     gl_FragColor.r += rnd(length(v_position) + u_time + 0.);
     gl_FragColor.g += rnd(length(v_position) + u_time + 1.);
-    gl_FragColor.b += rnd(length(v_position) + u_time + 2.);
-    gl_FragColor.a += rnd(length(v_position) + u_time + 3.);
+    gl_FragColor.b += vel.x * .5 + .5;//rnd(length(v_position) + u_time + 2.);
+    gl_FragColor.a += vel.y * .5 + .5;//rnd(length(v_position) + u_time + 3.);
   }
 
   // physics
   else {
     // force
-    vel *= 0.;
+    vel *= .9;
     vel.x += .001 * snoise(vec3(pos * 1.1, u_time));
     // vel.y += .01 * pow(snoise(vec3(pos, u_time) + 10.), 8.);
     vel.y -= .001;
@@ -126,7 +126,7 @@ void main() {
     // vec2 repulsion = pow(1./vecToCenter, vec2(.5));
     // vel -= repulsion * .0001;
   
-    pos += vel;// * v_mass;
+    pos += vel / mass * .01;
     gl_FragColor = vec4(pos, vel * .5 + .5);
   }
 }
