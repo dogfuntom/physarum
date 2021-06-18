@@ -9,11 +9,10 @@ uniform float u_tick;
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 
-#define rnd(x) fract(54321.987 * sin(987.12345 * x))
 mat2 rot(float a){float s=sin(a),c=cos(a);return mat2(c,-s,s,c);}
 
 #pragma glslify: random = require(glsl-random)
-float random(float x) {return random(vec2(x));}
+float rnd(float x) {return random(vec2(x));}
 
 // #pragma glslify: snoise3 = require(glsl-noise/simplex/3d)
 // #pragma glslify: noise = require(glsl-noise/simplex/3d)
@@ -102,7 +101,7 @@ float snoise(vec3 v) {
 void main() {
     // поскольку v_id получить не можем (тут нет айдишников вершин, вершин всего 4)
     // вычислим айдишник пикселя из его координат, зная разрешение
-  float id = floor(gl_FragCoord.x) + floor(gl_FragCoord.y) * u_resolution.y;
+  float id = (floor(gl_FragCoord.x) + floor(gl_FragCoord.y) * u_resolution.y) * .0001;
 
     // vec2 pos;
     // pos.x = floor(rnd(id) * 2.) / 2.;
@@ -117,11 +116,11 @@ void main() {
   //   float mass = rnd(length(v_position));
 
   // init
-  if(u_tick == 0. || random(id + u_time) < .001) {
+  if(u_tick == 0. || rnd(id + u_time) < .01) {
   // if(u_tick == 0.) {
-    gl_FragColor.r = random(id + 1. + u_time + u_mouse.x) * 2. - 1.;
-    gl_FragColor.g = random(id + 2. + u_time + u_mouse.y) * 2. - 1.;
-    gl_FragColor.ba = vec2(.001,0) * rot(random(id * .01) * 2. * 3.1415);
+    gl_FragColor.r = rnd(floor(id) * .1 + u_mouse.x) * 2. - 1.;
+    gl_FragColor.g = rnd(floor(id) + .2 + u_mouse.y) * 2. - 1.;
+    gl_FragColor.ba = vec2(.001,0) * rot(rnd(id * .01) * 2. * 3.1415);
   }
 
   // physics
