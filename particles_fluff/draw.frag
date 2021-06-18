@@ -7,11 +7,13 @@ uniform float u_time;
 mat2 rot(float a){float s=sin(a),c=cos(a);return mat2(c,-s,s,c);}
 
 void main() {
-    // if(mod(u_tick, 100.)==0.) discard; //gl_FragColor.rgb += 1.;
-    // else
-    if (u_tick < 2.) gl_FragColor = vec4(0);
-    else {
-        gl_FragColor = texture2D(u_tex_draw, v_position);
-        // gl_FragColor.a = .5;
-    }
+    // if (u_tick < 2.) gl_FragColor = vec4(0);
+    // else {
+    //     gl_FragColor = texture2D(u_tex_draw, v_position);
+    // }
+
+    // раньше этот буфер использовался для наложения кадров.
+    // теперь попробуем заюзать для единоразового заполнения буфера нужным цветом
+    gl_FragColor = vec4(1,1,1,0); // белый и прозрачный. Так мы сможем накладывать 
+    // на него цвета через мультиплай, если будем умножать РГБ и складывать альфу
 }
