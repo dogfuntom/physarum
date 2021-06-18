@@ -29,7 +29,7 @@ const programDraw = twgl.createProgramInfo(gl, [vFlat, fDraw])
 const programShow = twgl.createProgramInfo(gl, [vFlat, fShow])
 
 const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE }]
-const n = 16
+const n = 160
 const m = n
 const drawSize = 1024
 let fb1 = twgl.createFramebufferInfo(gl, attachments, n, m)
@@ -75,11 +75,9 @@ const positionBuffer = twgl.createBufferInfoFromArrays(gl, positionObject)
   gl.useProgram(programDraw.program);
   twgl.setBuffersAndAttributes(gl, programDraw, positionBuffer);
   twgl.setUniforms(programDraw, {
-    u_tex_draw: draw1.attachments[0],
-    // u_tick: tick,
-    // u_time: time,
+    // u_tex_draw: draw1.attachments[0],
   });
-  twgl.bindFramebufferInfo(gl, draw2);
+  twgl.bindFramebufferInfo(gl, draw1);
   twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
 }
 
@@ -114,16 +112,18 @@ function draw(time) {
   draw1 = draw2;
   draw2 = temp;
 
+
+
   {  // render particles from FBO
     gl.useProgram(programRender.program);
     twgl.setBuffersAndAttributes(gl, programRender, pointsBuffer);
     twgl.setUniforms(programRender, {
       u_tex_fbo: fb2.attachments[0],
-      u_tex_draw: draw1.attachments[0],
+      u_tex_draw: draw2.attachments[0],
       u_time: time,
       u_resolution: [drawSize, drawSize],
     });
-    twgl.bindFramebufferInfo(gl, draw2);
+    twgl.bindFramebufferInfo(gl, draw1);
     twgl.drawBufferInfo(gl, pointsBuffer, gl.POINTS);
   }
  
@@ -132,7 +132,7 @@ function draw(time) {
     twgl.setBuffersAndAttributes(gl, programShow, positionBuffer);
     twgl.setUniforms(programShow, {
       // u_tex_fbo: fb1.attachments[0],
-      u_tex_draw: draw2.attachments[0],
+      u_tex_draw: draw1.attachments[0],
     });
     twgl.bindFramebufferInfo(gl, null);
     twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);

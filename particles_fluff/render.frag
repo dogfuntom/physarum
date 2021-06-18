@@ -9,6 +9,6 @@ void main() {
   vec2 uv = gl_FragCoord.xy / u_resolution; // координаты текущего пикселя буфера Дроу
   vec4 colorPrev = texture2D(u_tex_draw, uv);
   // gl_FragColor = colorPrev * color;
-  gl_FragColor = min(colorPrev, color);
-  gl_FragColor.a = max(colorPrev.a, color.a);
+  // gl_FragColor = min(colorPrev, color);
+  gl_FragColor = vec4(0,0,0, min(colorPrev.a + color.a, 1.));//min(colorPrev, color);
 }

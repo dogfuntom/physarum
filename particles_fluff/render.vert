@@ -24,14 +24,16 @@ void main() {
     // а тут вместо в_масс, который приходит из буфера, заюзаем хак, массу вычисленную из координат ФБО
     // потому что лень как-то передавать её через JS, через текстуру
   float mass = rnd(length(v_position));
-  gl_PointSize = mass * 5.;
+  gl_PointSize = mass * 2.;
 
     // color = mix(#FFFF00FF, #FF00FFFF, length(vel.y*500.));
-  color.r = rnd(v_id + 0.);
-  color.g = rnd(v_id + 1.);
-  color.b = rnd(v_id + 2.);
+  // color.r = rnd(v_id + 0.);
+  // color.g = rnd(v_id + 1.);
+  // color.b = rnd(v_id + 2.);
   // color.a = clamp(1. / u_time, 0., 1.);
-  color.a = (.5 + .5 * sin(u_time * 1.));// * u_time / exp(u_time);// / u_time;
+  // color.a = (.5 + .5 * sin(u_time * 1.));// * u_time / exp(u_time);// / u_time;
+  color.rgb = vec3(0.);
+  color.a = .01 + .01 * sin(u_time * 1.);
 
   // ещё хорошо бы сделать черновик сайта себе
 

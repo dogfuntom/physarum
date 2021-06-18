@@ -9,6 +9,8 @@ uniform float u_tick;
 uniform vec2 u_resolution;
 
 #define rnd(x) fract(54321.987 * sin(987.12345 * x))
+mat2 rot(float a){float s=sin(a),c=cos(a);return mat2(c,-s,s,c);}
+
 // #pragma glslify: snoise3 = require(glsl-noise/simplex/3d)
 // #pragma glslify: noise = require(glsl-noise/simplex/3d)
 vec3 mod289(vec3 x) {
@@ -124,8 +126,13 @@ void main() {
     // // force
     // vel *= .9;
     // vel.x += .001 * snoise(vec3(pos * 1.1, u_time * .0));
-    // // vel.y += .01 * pow(snoise(vec3(pos, u_time) + 10.), 8.);
-    vel.y -= .000001;
+    // vel.y += .001 * pow(snoise(vec3(pos, u_time) + 10.), 8.);
+    // vel.y -= .00001;
+
+    float angle = atan(pos.y, pos.x);
+    // vel.x += -.00001 * sin(angle);
+    // vel.y += -.00001 * cos(angle);
+    vel *= rot(.001);
 
     // // avoid center
     // // vec2 vecToCenter = pos-.5;
