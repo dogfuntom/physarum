@@ -115,24 +115,25 @@ void main() {
   // init
   // if(u_tick < 1. || abs(rnd(length(pos.x + pos.y*99.) + u_time + 99.) - .5) < .0000001) {
   if(u_tick == 0.) {
-    gl_FragColor.r = .0;
-    gl_FragColor.g = .0;
-    gl_FragColor.b = .001 * (2. * rnd(id) - 1.);
-    gl_FragColor.a = .001 * (2. * rnd(id * .12345) - 1.);
+    gl_FragColor.r = .001 * rnd(id + 2.) - .0005;
+    gl_FragColor.g = .001 * rnd(id + 3.) - .0005;
+    // gl_FragColor.b = .01 * (2. * rnd(id) - 1.);
+    // gl_FragColor.a = .01 * (2. * rnd(id * .12345) - 1.);
+    gl_FragColor.ba = vec2(.0001,0) * rot(.01 * rnd(id * .01) * 2. * 3.1415);
   }
 
   // physics
   else {
     // // force
-    // vel *= .9;
+    // vel *= .999;
     // vel.x += .001 * snoise(vec3(pos * 1.1, u_time * .0));
     // vel.y += .001 * pow(snoise(vec3(pos, u_time) + 10.), 8.);
-    // vel.y -= .00001;
-
     float angle = atan(pos.y, pos.x);
-    // vel.x += -.00001 * sin(angle);
-    // vel.y += -.00001 * cos(angle);
-    vel *= rot(.001);
+    vel.y -= sin(angle) * .0001;
+
+    float n = snoise(vec3(angle, pos.x, u_time));
+    vel.x += .0001 * sin(angle) * n;
+    vel.y -= .0001 * cos(angle) * n;
 
     // // avoid center
     // // vec2 vecToCenter = pos-.5;

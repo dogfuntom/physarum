@@ -33,7 +33,7 @@ void main() {
   // color.a = clamp(1. / u_time, 0., 1.);
   // color.a = (.5 + .5 * sin(u_time * 1.));// * u_time / exp(u_time);// / u_time;
   color.rgb = vec3(0.);
-  color.a = .01 + .01 * sin(u_time * 1.);
+  color.a = .01 * (.5 + .5 * sin(u_time * 3.));
 
   // ещё хорошо бы сделать черновик сайта себе
 

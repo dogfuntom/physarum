@@ -29,7 +29,7 @@ const programDraw = twgl.createProgramInfo(gl, [vFlat, fDraw])
 const programShow = twgl.createProgramInfo(gl, [vFlat, fShow])
 
 const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE }]
-const n = 160
+const n = 1000
 const m = n
 const drawSize = 1024
 let fb1 = twgl.createFramebufferInfo(gl, attachments, n, m)
