@@ -116,7 +116,8 @@ void main() {
   //   float mass = rnd(length(v_position));
 
   // init
-  if(u_tick == 0. || rnd(id + u_time) < .01) {
+  // if(u_tick == 0. || rnd(floor(id * 1000000. + u_time)) < .01) {
+  if(rnd(id + u_time) < .01) {
   // if(u_tick == 0.) {
     gl_FragColor.r = rnd(floor(id) * .1 + u_mouse.x) * 2. - 1.;
     gl_FragColor.g = rnd(floor(id) + .2 + u_mouse.y) * 2. - 1.;

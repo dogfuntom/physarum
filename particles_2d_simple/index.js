@@ -32,7 +32,6 @@ const programClear = twgl.createProgramInfo(gl, [vFlat, fClear])
 const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE }]
 const n = 512
 const m = n
-const drawSize = 512
 let fb1 = twgl.createFramebufferInfo(gl, attachments, n, m)
 let fb2 = twgl.createFramebufferInfo(gl, attachments, n, m)
 
@@ -116,7 +115,7 @@ function draw(time) {
     twgl.setUniforms(programRender, {
       u_tex_fbo: fb2.attachments[0],
       u_time: time,
-      u_resolution: [drawSize, drawSize],
+      u_resolution: [gl.canvas.width, gl.canvas.height],
     });
     twgl.bindFramebufferInfo(gl, null)
     twgl.drawBufferInfo(gl, pointsBuffer, gl.POINTS)
