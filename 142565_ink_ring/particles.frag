@@ -39,24 +39,27 @@ void main() {
   // if(u_tick == 0. || rnd(floor(id * 1000000. + u_time)) < .01) {
   if(rnd(id + u_time) < .01) {
   // if(u_tick == 0.) {
-    gl_FragColor.r = rnd(id + 1. + u_time * .001 + length(pos)) * 2. - 1.;
-    gl_FragColor.g = rnd(id + 2. + u_time * .001 + length(pos)) * 2. - 1.;
-    // gl_FragColor.ba = vec2(.001,0) * rot(rnd(id * .01) * 2. * 3.1415);
+    float angle = rnd(id + u_time * .001 + length(pos));
+
+    // gl_FragColor.r = rnd(id + 1. + u_time * .001 + length(pos)) * 2. - 1.;
+    // gl_FragColor.g = rnd(id + 2. + u_time * .001 + length(pos)) * 2. - 1.;
+    gl_FragColor.rg = vec2(.5,0) * rot(rnd(angle) * 2. * 3.1415);
   }
 
   // physics
   else {
     // // force
     vel *= .95;
-    vel.x += .0001 * snoise3d(u_mouse.x + vec3(u_time * .1, pos * 4.));
-    vel.y += .0001 * snoise3d(u_mouse.y + vec3(u_time * .1, pos * 4. + 99.));
-    vel.x += .00005 * snoise2d(pos * 32. + u_mouse.x);
-    vel.y += .00005 * snoise2d(pos * 32. + u_mouse.x + 99.);
+    vel.x += .0001 * snoise3d(u_mouse.x + vec3(u_time * .1, pos * 10.));
+    vel.y += .0001 * snoise3d(u_mouse.y + vec3(u_time * .1, pos * 10. + 99.));
+    vel.x += .00002 * snoise2d(pos * 32. + u_mouse.x);
+    vel.y += .00002 * snoise2d(pos * 32. + u_mouse.x + 99.);
     // vel.y += .00001 * snoise2d(rnd(length(floor(pos * 8.))) + 9.);
     // vel.y += .001 * pow(snoise(vec3(pos, u_time) + 10.), 8.);
     // float angle = atan(pos.y, pos.x);
-    vel.y += .0001 * u_mouse.y;
-    vel.x += .0001 * u_mouse.x;
+    // vel.y += .0001 * u_mouse.y;
+    // vel.x += .0001 * u_mouse.x;
+    vel += vec2(.0001 * u_mouse) * rot(atan(pos.y, pos.x));
 
     // vec2 vecToMouse = pos - u_mouse;
     // vel -= 1./vecToMouse * .000001;
