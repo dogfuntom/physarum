@@ -34,7 +34,7 @@ const programDiffusion = twgl.createProgramInfo(gl, [vFlat, fDiffusion])
 const programShow = twgl.createProgramInfo(gl, [vFlat, fShow])
 
 const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE }]
-const n = 500
+const n = 1000
 const m = n
 const size = 1000
 let fb1 = twgl.createFramebufferInfo(gl, attachments, n, m)

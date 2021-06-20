@@ -36,7 +36,7 @@ void main() {
   // color.b = snoise2d((floor(pos * 4.)) + 3. + u_time * .1);
   // color.a = clamp(1. / u_time, 0., 1.);
   // color.a = (.5 + .5 * sin(u_time * 1.));// * u_time / exp(u_time);// / u_time;
-  color.rgb = vec3(.003);
+  color.rgb = vec3(.0003);
   color.a = 1.;
 
   position = pos;
