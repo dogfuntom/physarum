@@ -38,7 +38,7 @@ void main() {
   // color.rgb *= .01;
   // color.a = clamp(1. / u_time, 0., 1.);
   // color.a = (.5 + .5 * sin(u_time * 1.));// * u_time / exp(u_time);// / u_time;
-  color.rgb = vec3(.005);
+  color.rgb = vec3(.001);
   color.a = 1.;
 
   position = pos;

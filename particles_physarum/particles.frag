@@ -49,6 +49,10 @@ vec2 turn(vec2 pos, vec2 vel) {
   // } else if(senseL > senseR) {
   //   vel *= rot(LOOKUP_ANGLE);
   // }
+  
+  if(sense0 > senseC && sense0 > senseR && sense0 > senseL)
+    return vel;
+  
   if(senseC > senseL && senseC > senseR) {
       vel += normalize(vel) * 10. * u_mouse.x * (senseC - sense0);
   } else if(senseL < senseR) {
@@ -86,8 +90,8 @@ void main() {
   float mass = rnd(id);
 
   // init
-  if(rnd(id + u_time) < .001 || u_tick < 2.) {
-  // if(u_tick == 0.) {
+  // if(rnd(id + u_time) < .001 || u_tick < 2.) {
+  if(u_tick == 0.) {
     float angle = rnd(id + u_time * .001 + length(pos)) * 2. * 3.1415;
     gl_FragColor.r = rnd(id + 1. + u_time * .001 + length(pos)) * 2. - 1.;
     gl_FragColor.g = rnd(id + 2. + u_time * .001 + length(pos)) * 2. - 1.;
@@ -98,8 +102,8 @@ void main() {
   // physics
   else {
     // // force
-    // vel *= .3;
-    vel = normalize(vel) * .005;
+    // vel *= .9;
+    vel = normalize(vel) * .0005;
 
     // vel.x += .001 * snoise3d(u_mouse.x + vec3(u_time * .1, pos * 10.));
     // vel.y += .001 * snoise3d(u_mouse.y + vec3(u_time * .1, pos * 10. + 99.));
@@ -107,15 +111,15 @@ void main() {
     // vel.y += .002 * snoise2d(pos * 32. + u_mouse.x + 99.);
    // vel += vec2(.0001 * u_mouse) * rot(atan(pos.y, pos.x));
 
-    vel = turn(pos, vel);// * 1.001;
+    // vel = turn(pos, vel);// * 1.001;
 
-    // vel -= grad(pos) * u_mouse.x * 10.;
+    vel -= grad(pos) * u_mouse.x * 10.;
 
     // vec2 vecToCenter = u_mouse - pos;
     // float repulsion = 1. / length(vecToCenter);
     // vel -= sign(rnd(id) - .9) * repulsion * vec2(.001, 0) * rot(atan(vecToCenter.y, vecToCenter.x));
 
-    pos += vel / mass;
+    pos +=  vel;// / mass;
     pos = fract(pos * .5 + .5) * 2. - 1.;
 
     gl_FragColor = vec4(pos, vel);
