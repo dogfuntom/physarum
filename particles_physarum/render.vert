@@ -30,13 +30,15 @@ void main() {
   // float mass = rnd(length(v_position));
   gl_PointSize = 1.;
 
-    // color = mix(#FFFF00FF, #FF00FFFF, length(vel.y*500.));
-  // color.r = snoise2d((floor(pos * 4.)) + 1. + u_time * .1);
-  // color.g = snoise2d((floor(pos * 4.)) + 2. + u_time * .1);
-  // color.b = snoise2d((floor(pos * 4.)) + 3. + u_time * .1);
+    // color = mix(#000000ff, #bbbbbbff, length(vel.y*500.));
+  // color.r = snoise2d((floor(pos * 2.)) + 1. + u_time * .1);
+  // color.g = snoise2d((floor(pos * 2.)) + 2. + u_time * .1);
+  // color.b = snoise2d((floor(pos * 2.)) + 3. + u_time * .1);
+
+  // color.rgb *= .01;
   // color.a = clamp(1. / u_time, 0., 1.);
   // color.a = (.5 + .5 * sin(u_time * 1.));// * u_time / exp(u_time);// / u_time;
-  color.rgb = vec3(.0003);
+  color.rgb = vec3(.005);
   color.a = 1.;
 
   position = pos;

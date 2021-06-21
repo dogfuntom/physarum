@@ -32,14 +32,16 @@ vec2 turn(vec2 pos, vec2 vel) {
   vec2 sensorL = uv + (rot(-LOOKUP_ANGLE) * normalize(vel)) * LOOKUP_DIST;
   vec2 sensorC = uv + normalize(vel) * LOOKUP_DIST;
   vec2 sensorR = uv + (rot(LOOKUP_ANGLE) * normalize(vel)) * LOOKUP_DIST;
+  vec2 sensor0 = uv;
 
   float senseL = texture2D(u_tex_draw, sensorL).r;
   float senseC = texture2D(u_tex_draw, sensorC).r;
   float senseR = texture2D(u_tex_draw, sensorR).r;
+  float sense0 = texture2D(u_tex_draw, sensor0).r;
 
   if(senseC < senseL && senseC < senseR) {
     if(rnd(vel.x) < .5)
-      vel *= rot(LOOKUP_ANGLE);
+      vel *= rot(+LOOKUP_ANGLE);
     else
       vel *= rot(-LOOKUP_ANGLE);
   } else if(senseL < senseR) {
@@ -47,16 +49,23 @@ vec2 turn(vec2 pos, vec2 vel) {
   } else if(senseL > senseR) {
     vel *= rot(LOOKUP_ANGLE);
   }
+  // if(senseC > senseL && senseC > senseR) {
+  //     vel += normalize(vel) * 10. * u_mouse.x * (senseC - sense0);
+  // } else if(senseL < senseR) {
+  //     vel += normalize(vel) * 10. * u_mouse.x * rot(-LOOKUP_ANGLE) * (senseR - sense0);
+  // } else if(senseL > senseR) {
+  //     vel += normalize(vel) * 10. * u_mouse.x * rot(LOOKUP_ANGLE)* (senseL - sense0);
+  // }
   return vel;
 }
 
 vec2 grad(vec2 pos) {
   vec2 gr;
-  gr.x = texture2D(u_tex_draw, fract(pos * .5 + .5 + vec2(1, 0) / u_tex_draw_res)).r -
-    texture2D(u_tex_draw, fract(pos * .5 + .5 - vec2(1, 0) / u_tex_draw_res)).r;
-  gr.y = texture2D(u_tex_draw, fract(pos * .5 + .5 + vec2(0, 1) / u_tex_draw_res)).r -
-    texture2D(u_tex_draw, fract(pos * .5 + .5 - vec2(0, 1) / u_tex_draw_res)).r;
-  return vec2(.01) * gr;
+  gr.x = texture2D(u_tex_draw, fract(pos * .5 + .5 + vec2(LOOKUP_DIST, 0) / u_tex_draw_res)).r -
+    texture2D(u_tex_draw, fract(pos * .5 + .5 - vec2(LOOKUP_DIST, 0) / u_tex_draw_res)).r;
+  gr.y = texture2D(u_tex_draw, fract(pos * .5 + .5 + vec2(0, LOOKUP_DIST) / u_tex_draw_res)).r -
+    texture2D(u_tex_draw, fract(pos * .5 + .5 - vec2(0, LOOKUP_DIST) / u_tex_draw_res)).r;
+  return gr;
 }
 
 void main() {
@@ -74,40 +83,40 @@ void main() {
   vec2 pos = particle.xy;
   vec2 vel = particle.zw;
   //   // хак! Массу высчитываем прямо тут
-  //   float mass = rnd(length(v_position));
+  float mass = rnd(id);
 
   // init
-  // if(u_tick == 0. || rnd(floor(id * 1000000. + u_time)) < .01) {
-  // if(rnd(id + u_time) < .1) {
-  if(u_tick == 0.) {
-    float angle = rnd(id + u_time * .001 + length(pos));
-
-    // gl_FragColor.r = rnd(id + 1. + u_time * .001 + length(pos)) * 2. - 1.;
-    // gl_FragColor.g = rnd(id + 2. + u_time * .001 + length(pos)) * 2. - 1.;
-    gl_FragColor.rg = vec2(.5, 0) * rot(rnd(angle) * 2. * 3.1415);
-    gl_FragColor.ba = vec2(.5, 0) * rot(rnd(angle) * 2. * 3.1415 + 3.1415 * .8);
+  if(rnd(id + u_time) < .001 || u_tick < 2.) {
+  // if(u_tick == 0.) {
+    float angle = rnd(id + u_time * .001 + length(pos)) * 2. * 3.1415;
+    gl_FragColor.r = rnd(id + 1. + u_time * .001 + length(pos)) * 2. - 1.;
+    gl_FragColor.g = rnd(id + 2. + u_time * .001 + length(pos)) * 2. - 1.;
+    // gl_FragColor.rg = vec2(.5, 0) * rot(angle);
+    gl_FragColor.ba = vec2(.5, 0) * rot(floor(angle / 3.1415 / 2. * 8.) / 8. * 2. * 3.1415 + 3.1415);
   }
 
   // physics
   else {
     // // force
-    // vel *= .99;
+    // vel *= .3;
     vel = normalize(vel) * .005;
 
-    vel.x += .0001 * snoise3d(u_mouse.x + vec3(u_time * .1, pos * 10.));
-    vel.y += .0001 * snoise3d(u_mouse.y + vec3(u_time * .1, pos * 10. + 99.));
+    // vel.x += .001 * snoise3d(u_mouse.x + vec3(u_time * .1, pos * 10.));
+    // vel.y += .001 * snoise3d(u_mouse.y + vec3(u_time * .1, pos * 10. + 99.));
     // vel.x += .002 * snoise2d(pos * 32. + u_mouse.x);
     // vel.y += .002 * snoise2d(pos * 32. + u_mouse.x + 99.);
-    // vel += vec2(.0001 * u_mouse) * rot(atan(pos.y, pos.x));
+   // vel += vec2(.0001 * u_mouse) * rot(atan(pos.y, pos.x));
 
-    vel = turn(pos, vel);
+    vel = turn(pos, vel);// * 1.001;
 
-    vel -= grad(pos);
+    // vel -= grad(pos) * u_mouse.x * 10.;
 
+    // vec2 vecToCenter = u_mouse - pos;
+    // float repulsion = 1. / length(vecToCenter);
+    // vel -= sign(rnd(id) - .9) * repulsion * vec2(.001, 0) * rot(atan(vecToCenter.y, vecToCenter.x));
 
-    pos += vel;// / mass * .01;
+    pos += vel / mass;
     pos = fract(pos * .5 + .5) * 2. - 1.;
-
 
     gl_FragColor = vec4(pos, vel);
   }

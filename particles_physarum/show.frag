@@ -6,6 +6,7 @@ uniform vec2 u_resolution;
 
 void main() {
     gl_FragColor.rgb = 8. * texture2D(u_tex_draw, gl_FragCoord.xy / u_resolution).rgb;
+    // gl_FragColor.rgb = pow(gl_FragColor.rgb, vec3(.5));
     gl_FragColor.a = 1.;
     // gl_FragColor = #ff00ffff;
 }
