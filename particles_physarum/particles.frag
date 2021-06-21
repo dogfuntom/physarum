@@ -39,23 +39,23 @@ vec2 turn(vec2 pos, vec2 vel) {
   float senseR = texture2D(u_tex_draw, sensorR).r;
   float sense0 = texture2D(u_tex_draw, sensor0).r;
 
-  if(senseC < senseL && senseC < senseR) {
-    if(rnd(vel.x) < .5)
-      vel *= rot(+LOOKUP_ANGLE);
-    else
-      vel *= rot(-LOOKUP_ANGLE);
-  } else if(senseL < senseR) {
-    vel *= rot(-LOOKUP_ANGLE);
-  } else if(senseL > senseR) {
-    vel *= rot(LOOKUP_ANGLE);
-  }
-  // if(senseC > senseL && senseC > senseR) {
-  //     vel += normalize(vel) * 10. * u_mouse.x * (senseC - sense0);
+  // if(senseC < senseL && senseC < senseR) {
+  //   if(rnd(vel.x) < .5)
+  //     vel *= rot(+LOOKUP_ANGLE);
+  //   else
+  //     vel *= rot(-LOOKUP_ANGLE);
   // } else if(senseL < senseR) {
-  //     vel += normalize(vel) * 10. * u_mouse.x * rot(-LOOKUP_ANGLE) * (senseR - sense0);
+  //   vel *= rot(-LOOKUP_ANGLE);
   // } else if(senseL > senseR) {
-  //     vel += normalize(vel) * 10. * u_mouse.x * rot(LOOKUP_ANGLE)* (senseL - sense0);
+  //   vel *= rot(LOOKUP_ANGLE);
   // }
+  if(senseC > senseL && senseC > senseR) {
+      vel += normalize(vel) * 10. * u_mouse.x * (senseC - sense0);
+  } else if(senseL < senseR) {
+      vel += normalize(vel) * 10. * u_mouse.x * rot(-LOOKUP_ANGLE) * (senseR - sense0);
+  } else if(senseL > senseR) {
+      vel += normalize(vel) * 10. * u_mouse.x * rot(LOOKUP_ANGLE)* (senseL - sense0);
+  }
   return vel;
 }
 
