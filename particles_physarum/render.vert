@@ -9,6 +9,8 @@ uniform vec2 u_resolution;
 varying vec4 color;
 varying vec2 position;
 
+#define DEPOSITE .001
+
 // #define rnd(x) fract(54321.987 * sin(987.12345 * x))
 #pragma glslify: snoise2d = require(../modules/math/glsl-noise/simplex/2d.glsl)
 
@@ -34,11 +36,10 @@ void main() {
   // color.r = snoise2d((floor(pos * 2.)) + 1. + u_time * .1);
   // color.g = snoise2d((floor(pos * 2.)) + 2. + u_time * .1);
   // color.b = snoise2d((floor(pos * 2.)) + 3. + u_time * .1);
-
-  // color.rgb *= .01;
+ 
   // color.a = clamp(1. / u_time, 0., 1.);
   // color.a = (.5 + .5 * sin(u_time * 1.));// * u_time / exp(u_time);// / u_time;
-  color.rgb = vec3(.001);
+  color.rgb = vec3(DEPOSITE);
   color.a = 1.;
 
   position = pos;

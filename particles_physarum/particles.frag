@@ -24,10 +24,14 @@ float rnd(float x) {
   return random(vec2(x * .0001));
 }
 
-#define LOOKUP_DIST (u_mouse.x * 50./u_tex_draw_res.x)
-#define LOOKUP_ANGLE u_mouse.y
+#define LOOKUP_DIST u_mouse.x * 10.1
+#define LOOKUP_ANGLE .1
+#define TURN_ANGLE LOOKUP_ANGLE * 5.5
+#define STEP_SIZE u_mouse.y
+#define RESPAWN
 
 vec2 turn(vec2 pos, vec2 vel) {
+
   vec2 uv = pos * .5 + .5;// + vec2(1, 0) / u_tex_draw_res);
   vec2 sensorL = uv + (rot(-LOOKUP_ANGLE) * normalize(vel)) * LOOKUP_DIST;
   vec2 sensorC = uv + normalize(vel) * LOOKUP_DIST;
@@ -37,29 +41,28 @@ vec2 turn(vec2 pos, vec2 vel) {
   float senseL = texture2D(u_tex_draw, sensorL).r;
   float senseC = texture2D(u_tex_draw, sensorC).r;
   float senseR = texture2D(u_tex_draw, sensorR).r;
-  float sense0 = texture2D(u_tex_draw, sensor0).r;
+  // float sense0 = texture2D(u_tex_draw, sensor0).r;
 
-  // if(senseC < senseL && senseC < senseR) {
-  //   if(rnd(vel.x) < .5)
-  //     vel *= rot(+LOOKUP_ANGLE);
-  //   else
-  //     vel *= rot(-LOOKUP_ANGLE);
-  // } else if(senseL < senseR) {
-  //   vel *= rot(-LOOKUP_ANGLE);
-  // } else if(senseL > senseR) {
-  //   vel *= rot(LOOKUP_ANGLE);
-  // }
-  
-  if(sense0 > senseC && sense0 > senseR && sense0 > senseL)
+
+  if(senseC > senseL && senseC > senseR)
     return vel;
-  
-  if(senseC > senseL && senseC > senseR) {
-      vel += normalize(vel) * 10. * u_mouse.x * (senseC - sense0);
+  if(senseL == senseR) {
+      vel *= rot(sign(rnd(vel.x)-.5) * TURN_ANGLE);
   } else if(senseL < senseR) {
-      vel += normalize(vel) * 10. * u_mouse.x * rot(-LOOKUP_ANGLE) * (senseR - sense0);
+    vel *= rot(-TURN_ANGLE);
   } else if(senseL > senseR) {
-      vel += normalize(vel) * 10. * u_mouse.x * rot(LOOKUP_ANGLE)* (senseL - sense0);
+    vel *= rot(TURN_ANGLE);
   }
+  
+  // if(sense0 > senseC && sense0 > senseR && sense0 > senseL)
+  //   return vel;
+  // if(senseC > senseL && senseC > senseR) {
+  //     vel += normalize(vel) * 10. * u_mouse.x * (senseC - sense0);
+  // } else if(senseL < senseR) {
+  //     vel += normalize(vel) * 10. * u_mouse.x * rot(-LOOKUP_ANGLE) * (senseR - sense0);
+  // } else if(senseL > senseR) {
+  //     vel += normalize(vel) * 10. * u_mouse.x * rot(LOOKUP_ANGLE)* (senseL - sense0);
+  // }
   return vel;
 }
 
@@ -73,37 +76,31 @@ vec2 grad(vec2 pos) {
 }
 
 void main() {
-    // поскольку v_id получить не можем (тут нет айдишников вершин, вершин всего 4)
-    // вычислим айдишник пикселя из его координат, зная разрешение
   float id = (floor(gl_FragCoord.x) + floor(gl_FragCoord.y) * u_resolution.x) * .0001;
-
-    // vec2 pos;
-    // pos.x = floor(rnd(id) * 2.) / 2.;
-    // pos.y = floor(rnd(id + .01) * 2.) / 2.;
-    // gl_FragColor = vec4(pos, 0, 0);
-    // координаты нормально работают.
 
   vec4 particle = texture2D(u_tex_fbo, v_position);
   vec2 pos = particle.xy;
   vec2 vel = particle.zw;
-  //   // хак! Массу высчитываем прямо тут
   float mass = rnd(id);
 
   // init
-  // if(rnd(id + u_time) < .001 || u_tick < 2.) {
+  #ifdef RESPAWN
+  if(rnd(id + u_time) < .001 || u_tick < 2.) {
+  #else
   if(u_tick == 0.) {
-    float angle = rnd(id + u_time * .001 + length(pos)) * 2. * 3.1415;
+  #endif
+    // float angle = rnd(id + u_time * .001 + length(pos)) * 2. * 3.1415;
     gl_FragColor.r = rnd(id + 1. + u_time * .001 + length(pos)) * 2. - 1.;
     gl_FragColor.g = rnd(id + 2. + u_time * .001 + length(pos)) * 2. - 1.;
     // gl_FragColor.rg = vec2(.5, 0) * rot(angle);
-    gl_FragColor.ba = vec2(.5, 0) * rot(floor(angle / 3.1415 / 2. * 8.) / 8. * 2. * 3.1415 + 3.1415);
+    gl_FragColor.ba = vec2(1, 0);// * rot(rnd(id)*2.*3.1415);
   }
 
   // physics
   else {
     // // force
     // vel *= .9;
-    vel = normalize(vel) * .0005;
+    vel = normalize(vel) * STEP_SIZE;
 
     // vel.x += .001 * snoise3d(u_mouse.x + vec3(u_time * .1, pos * 10.));
     // vel.y += .001 * snoise3d(u_mouse.y + vec3(u_time * .1, pos * 10. + 99.));
@@ -111,9 +108,9 @@ void main() {
     // vel.y += .002 * snoise2d(pos * 32. + u_mouse.x + 99.);
    // vel += vec2(.0001 * u_mouse) * rot(atan(pos.y, pos.x));
 
-    // vel = turn(pos, vel);// * 1.001;
+    vel = turn(pos, vel);// * 1.001;
 
-    vel -= grad(pos) * u_mouse.x * 10.;
+    // vel -= grad(pos) * u_mouse.x * 10.;
 
     // vec2 vecToCenter = u_mouse - pos;
     // float repulsion = 1. / length(vecToCenter);
