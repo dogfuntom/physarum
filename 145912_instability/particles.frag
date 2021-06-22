@@ -24,10 +24,15 @@ float rnd(float x) {
   return random(vec2(x * .0001));
 }
 
+ 
 #define LOOKUP_DIST u_mouse.x * 10.1
 #define LOOKUP_ANGLE .1
 #define TURN_ANGLE LOOKUP_ANGLE * 5.5
 #define STEP_SIZE u_mouse.y
+// #define LOOKUP_DIST (u_mouse.x*.5+.5) * .01
+// #define LOOKUP_ANGLE u_mouse.y
+// #define TURN_ANGLE LOOKUP_ANGLE * 2.
+// #define STEP_SIZE .01
 #define RESPAWN
 
 vec2 turn(vec2 pos, vec2 vel) {

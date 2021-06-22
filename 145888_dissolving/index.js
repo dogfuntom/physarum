@@ -190,10 +190,10 @@ function setMousePos(e) {
 
 canvas.addEventListener('mousemove', setMousePos);
 
-canvas.addEventListener('mouseleave', () => {
-  mousepos[0] = 0.;
-  mousepos[1] = 0.;
-});
+// canvas.addEventListener('mouseleave', () => {
+//   mousepos[0] = 0.;
+//   mousepos[1] = 0.;
+// });
 
 function handleTouch(e) {
   e.preventDefault();
