@@ -3,7 +3,7 @@ precision mediump float;
 uniform sampler2D u_tex_draw;
 uniform vec2 u_resolution;
 uniform float DECAY;
-#define DIFFUSE_RADIUS 7
+#define DIFFUSE_RADIUS 0
 
 
 void main() {
@@ -21,8 +21,7 @@ void main() {
     for(int i = -DIFFUSE_RADIUS; i <= DIFFUSE_RADIUS; i++) {
         for(int j = -DIFFUSE_RADIUS; j <= DIFFUSE_RADIUS; j++) {
             vec2 ij = vec2(i,j);
-            // float k = 1./(length(ij)+1.);
-            float k = 1.;//(length(ij)+1.);
+            float k = 1./(length(ij)+1.);
             val += k * texture2D(u_tex_draw, fract((gl_FragCoord.xy - ij) / u_resolution));
             k_sum += k;
         }

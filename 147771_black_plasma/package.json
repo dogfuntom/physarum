@@ -1,6 +1,8 @@
 {
     "dependencies": {
         "dat.gui": "^0.7.7",
+        "glsl-noise": "*",
+        "glsl-scale-linear": "^1.0.0",
         "glslify-hex": "^2.1.1",
         "twgl.js": "^4.19.1"
     },

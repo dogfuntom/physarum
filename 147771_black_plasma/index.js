@@ -3,34 +3,39 @@
 // пробую, как у фьюзов. Плюс максимально упростить то, что есть. Например, рисовать прямо на канвас, без дро.
 
 let twgl = require('twgl.js')
-const dat = require('dat.gui')
-const gui = new dat.GUI()
+// const dat = require('dat.gui')
+// const gui = new dat.GUI()
 
 
 var obj = {
-  LOOKUP_DIST: .1,
-  LOOKUP_ANGLE: .1,
-  TURN_ANGLE: .1,
-  STEP_SIZE: .1,
-  DECAY: .5,
-  DIFFUSE_RADIUS: 2,
-  DEPOSITE: .001,
-  SENCE_MIN: .001,
-  SENCE_MAX: 1,
-  LIGHTNESS: 100,
-  // RESPAW: true,
+  "LOOKUP_DIST": 0.001,
+  "LOOKUP_ANGLE": 0.627,
+  "TURN_ANGLE": 1.035,
+  "STEP_SIZE": 0.008,
+  "DECAY": 0.215,
+  "DEPOSITE": 0.00000128,
+  "SENCE_MIN": 0,
+  "SENCE_MAX": 0.5,
+  "LIGHTNESS": 216,
+  "SIZE_MAX": 1064,
+  "REPULSION": 12802.7,
+  "FRICTION": 0.14
 }
 
-gui.remember(obj)
-gui.add(obj, 'LOOKUP_DIST').min(-.1).max(.1).step(0.001)
-gui.add(obj, 'LOOKUP_ANGLE').min(-Math.PI*.5).max(Math.PI*.5).step(0.001)
-gui.add(obj, 'TURN_ANGLE').min(-Math.PI*.5).max(Math.PI*.5).step(0.001)
-gui.add(obj, 'STEP_SIZE').min(-.1).max(.1).step(0.001)
-gui.add(obj, 'DECAY').min(0).max(1).step(0.001)
-// gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(8).step(1)
-gui.add(obj, 'DEPOSITE').min(0).max(.0001).step(.000001)
-gui.add(obj, 'SENCE_MIN').min(0).max(.01).step(.00001)
-gui.add(obj, 'LIGHTNESS').min(1).max(1000).step(1)
+// gui.remember(obj)
+// gui.add(obj, 'LOOKUP_DIST').min(0).max(.01).step(0.00001)
+// gui.add(obj, 'LOOKUP_ANGLE').min(0).max(Math.PI*.5).step(0.001)
+// gui.add(obj, 'TURN_ANGLE').min(0).max(Math.PI*.5).step(0.001)
+// gui.add(obj, 'STEP_SIZE').min(0).max(.1).step(0.001)
+// gui.add(obj, 'DECAY').min(0).max(1).step(0.001)
+// // gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(8).step(1)
+// gui.add(obj, 'DEPOSITE').min(0).max(.00001).step(.00000001)
+// gui.add(obj, 'SENCE_MIN').min(0).max(.01).step(.00001)
+// gui.add(obj, 'SENCE_MAX').min(.5).max(1).step(.00001)
+// gui.add(obj, 'LIGHTNESS').min(1).max(1000).step(1)
+// gui.add(obj, 'SIZE_MAX').min(0).max(10000).step(1)
+// gui.add(obj, 'REPULSION').min(0).max(100000).step(.1)
+// gui.add(obj, 'FRICTION').min(0).max(1).step(.01)
 
 
 const mousepos = [0, 0]
@@ -39,6 +44,8 @@ const vFlat = require('./flat.vert')
 const fParticles = require('./particles.frag')
 const vRender = require('./render.vert')
 const fRender = require('./render.frag')
+const vRenderShow = require('./renderShow.vert')
+const fRenderShow = require('./renderShow.frag')
 const fClear = require('./clear.frag')
 const fDiffusion = require('./diffusion.frag')
 const fShow = require('./show.frag')
@@ -47,8 +54,8 @@ const canvas = document.getElementById('canvasgl')
 const gl = twgl.getWebGLContext(canvas, {
   antialias: true,
   depth: false,
-  preserveDrawingBuffer: true,
-  // premultipliedAlpha: false, 
+  // preserveDrawingBuffer: true,
+  // premultipliedAlpha: false,
   // alpha: false,
 })
 
@@ -58,12 +65,13 @@ gl.getExtension("WEBGL_color_buffer_float")
 
 const programParticles = twgl.createProgramInfo(gl, [vFlat, fParticles]);
 const programRender = twgl.createProgramInfo(gl, [vRender, fRender]);
+const programRenderShow = twgl.createProgramInfo(gl, [vRenderShow, fRenderShow]);
 const programClear = twgl.createProgramInfo(gl, [vFlat, fClear])
 const programDiffusion = twgl.createProgramInfo(gl, [vFlat, fDiffusion])
 const programShow = twgl.createProgramInfo(gl, [vFlat, fShow])
 
 const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE }]
-const n = 1000
+const n = 16
 const m = n
 const size = 1000
 let fb1 = twgl.createFramebufferInfo(gl, attachments, n, m)
@@ -87,7 +95,7 @@ for (let i = 0; i < n; i++) {
 const pointsObject = {
   v_id: { data: pointId, numComponents: 1 },
   v_position: { data: pointPositions, numComponents: 2 },
-  v_mass: { data: pointMass, numComponents: 1 }, // не используем пока что. Вычисляем из координат ФБО
+  // v_mass: { data: pointMass, numComponents: 1 }, // не используем пока что. Вычисляем из координат ФБО
 }
 const pointsBuffer = twgl.createBufferInfoFromArrays(gl, pointsObject)
 
@@ -130,7 +138,7 @@ let temp
 
 
 
-gl.enable(gl.BLEND)
+gl.enable(gl.BLEND);
 function draw(time) {
   time = new Date() / 1000 - timeStart
 
@@ -173,6 +181,8 @@ function draw(time) {
       STEP_SIZE: obj.STEP_SIZE,
       SENCE_MIN: obj.SENCE_MIN,
       SENCE_MAX: obj.SENCE_MAX,
+      REPULSION: obj.REPULSION,
+      FRICTION: obj.FRICTION,
         });
     twgl.bindFramebufferInfo(gl, fb2)
     twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN)
@@ -180,23 +190,21 @@ function draw(time) {
 
   {  // render particles from FBO
     gl.blendFunc(gl.ONE, gl.ONE)
-    // оооо, тут мэджик. Суть такая: умножаем сорс на дист, и прибавляем дист на ноль (то есть ничего)
-    // это работает, потому что сорс мы делаем vec4(.9, .9, .9, 1)
-    // То есть, мы при умножении уменьшаем белость цвета, но сохраняем альфу
-    // gl.blendFunc(gl.ONE, gl.ZERO)
     gl.useProgram(programRender.program)
     twgl.setBuffersAndAttributes(gl, programRender, pointsBuffer)
     twgl.setUniforms(programRender, {
       u_tex_fbo: fb2.attachments[0],
       u_time: time,
       u_resolution: [size, size],
+      u_tex_fbo_res: [n, m],
       DEPOSITE: obj.DEPOSITE,
+      SIZE_MAX: obj.SIZE_MAX,
     });
     twgl.bindFramebufferInfo(gl, draw1)
     twgl.drawBufferInfo(gl, pointsBuffer, gl.POINTS)
   }
 
-  // to screen
+{  // to screen
   gl.blendFunc(gl.ONE, gl.ZERO)
   gl.useProgram(programShow.program)
   twgl.setBuffersAndAttributes(gl, programShow, positionBuffer)
@@ -207,6 +215,28 @@ function draw(time) {
   })
   twgl.bindFramebufferInfo(gl, null)
   twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN)
+}
+
+  // {  // render particles from FBO
+  //   // gl.blendFunc(gl.ONE, gl.ONE)
+  //   // gl.useProgram(programRender.program)
+  //   // twgl.setBuffersAndAttributes(gl, programRender, pointsBuffer)
+  //   // twgl.setUniforms(programRender, {
+  //   gl.blendFunc(gl.ONE, gl.ZERO)
+  //   gl.useProgram(programRenderShow.program)
+  //     twgl.setBuffersAndAttributes(gl, programRenderShow, pointsBuffer)
+  //     twgl.setUniforms(programRenderShow, {
+  //       u_tex_fbo: fb2.attachments[0],
+  //     u_time: time,
+  //     u_resolution: [size, size],
+  //     u_tex_fbo_res: [n, m],
+  //     DEPOSITE: obj.DEPOSITE,
+  //     SIZE_MAX: obj.SIZE_MAX,
+  //   });
+  //   twgl.bindFramebufferInfo(gl, null)
+  //   twgl.drawBufferInfo(gl, pointsBuffer, gl.POINTS)
+  // }
+
 
   temp = draw1
   draw1 = draw2
@@ -229,10 +259,10 @@ function setMousePos(e) {
 
 canvas.addEventListener('mousemove', setMousePos);
 
-// canvas.addEventListener('mouseleave', () => {
-//   mousepos[0] = 0.;
-//   mousepos[1] = 0.;
-// });
+canvas.addEventListener('mouseleave', () => {
+  mousepos[0] = 0.;
+  mousepos[1] = 0.;
+});
 
 function handleTouch(e) {
   e.preventDefault();
