@@ -3,7 +3,7 @@ precision mediump float;
 uniform sampler2D u_tex_draw;
 uniform vec2 u_resolution;
 uniform float DECAY;
-#define DIFFUSE_RADIUS 7
+#define DIFFUSE_RADIUS 4
 
 
 void main() {

@@ -49,13 +49,13 @@ vec2 turn(vec2 pos, vec2 vel) {
 
 // stadard
   if(senseC > senseL && senseC > senseR)
-    return vel;
+    return vel * senseC;
   if(senseL == senseR) {
-      vel *= rot(sign(rnd(vel.x)-.5) * TURN_ANGLE);
+      vel *= senseR * rot(sign(rnd(vel.x)-.5) * TURN_ANGLE);
   } else if(senseL < senseR) {
-    vel *= rot(-TURN_ANGLE);
+    vel *= senseR * rot(-TURN_ANGLE);
   } else if(senseL > senseR) {
-    vel *= rot(TURN_ANGLE);
+    vel *= senseL * rot(TURN_ANGLE);
   }
 
   // // middle way
@@ -115,7 +115,7 @@ void main() {
   else {
     // // force
     // vel *= .9;
-    vel = normalize(vel) * STEP_SIZE;
+    vel = normalize(vel) * STEP_SIZE * 10000.;
 
     // vel.x += .001 * snoise3d(u_mouse.x + vec3(u_time * .1, pos * 10.));
     // vel.y += .001 * snoise3d(u_mouse.y + vec3(u_time * .1, pos * 10. + 99.));
