@@ -32,6 +32,7 @@ uniform float TURN_ANGLE;
 uniform float STEP_SIZE;
 uniform float SENCE_MIN;
 uniform float SENCE_MAX;
+uniform float SENSE_ADD;
 #define RESPAWN
 
 vec2 turn(vec2 pos, vec2 vel) {
@@ -51,11 +52,11 @@ vec2 turn(vec2 pos, vec2 vel) {
   if(senseC > senseL && senseC > senseR)
     return vel * senseC;
   if(senseL == senseR) {
-      vel *= senseR * rot(sign(rnd(vel.x)-.5) * TURN_ANGLE);
+      vel *= (senseR + SENSE_ADD) * rot(sign(rnd(vel.x)-.5) * TURN_ANGLE);
   } else if(senseL < senseR) {
-    vel *= senseR * rot(-TURN_ANGLE);
+    vel *= (senseR + SENSE_ADD) * rot(-TURN_ANGLE);
   } else if(senseL > senseR) {
-    vel *= senseL * rot(TURN_ANGLE);
+    vel *= (senseL + SENSE_ADD) * rot(TURN_ANGLE);
   }
 
   // // middle way
@@ -105,8 +106,8 @@ void main() {
   if(u_tick == 0.) {
   #endif
     // float angle = rnd(id + u_time * .001 + length(pos)) * 2. * 3.1415;
-    gl_FragColor.r = rnd(id + 1. + u_time * .001 + length(pos)) * 2. - 1.;
-    gl_FragColor.g = rnd(id + 2. + u_time * .001 + length(pos)) * 2. - 1.;
+    gl_FragColor.r = .01 * (rnd(id + 1. + u_time * .001 + length(pos)) * 2. - 1.);
+    gl_FragColor.g = .01 * (rnd(id + 2. + u_time * .001 + length(pos)) * 2. - 1.);
     // gl_FragColor.rg = vec2(.5, 0) * rot(angle);
     gl_FragColor.ba = vec2(1, 0) * STEP_SIZE * rot(rnd(id)*2.*3.1415);
   }

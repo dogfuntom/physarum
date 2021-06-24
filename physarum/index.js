@@ -18,18 +18,20 @@ var obj = {
   SENCE_MIN: .001,
   SENCE_MAX: 1,
   LIGHTNESS: 100,
+  SENSE_ADD: .0001,
   // RESPAW: true,
 }
 
 gui.remember(obj)
 gui.add(obj, 'LOOKUP_DIST').min(-.1).max(.1).step(0.001)
+gui.add(obj, 'STEP_SIZE').min(-.1).max(.5).step(0.001)
 gui.add(obj, 'LOOKUP_ANGLE').min(-Math.PI*.5).max(Math.PI*.5).step(0.001)
 gui.add(obj, 'TURN_ANGLE').min(-Math.PI*.5).max(Math.PI*.5).step(0.001)
-gui.add(obj, 'STEP_SIZE').min(-.1).max(.1).step(0.001)
+gui.add(obj, 'DEPOSITE').min(0).max(.00001).step(.00000001)
 gui.add(obj, 'DECAY').min(0).max(1).step(0.001)
 // gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(8).step(1)
-gui.add(obj, 'DEPOSITE').min(0).max(.0001).step(.000001)
 gui.add(obj, 'SENCE_MIN').min(0).max(.01).step(.00001)
+gui.add(obj, 'SENSE_ADD').min(-.01).max(.01).step(.00001)
 gui.add(obj, 'LIGHTNESS').min(1).max(1000).step(1)
 
 
@@ -65,7 +67,7 @@ const programShow = twgl.createProgramInfo(gl, [vFlat, fShow])
 const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE }]
 const n = 1000
 const m = n
-const size = 1000
+const size = 500
 let fb1 = twgl.createFramebufferInfo(gl, attachments, n, m)
 let fb2 = twgl.createFramebufferInfo(gl, attachments, n, m)
 let draw1 = twgl.createFramebufferInfo(gl, attachments, size, size)
@@ -173,6 +175,7 @@ function draw(time) {
       STEP_SIZE: obj.STEP_SIZE,
       SENCE_MIN: obj.SENCE_MIN,
       SENCE_MAX: obj.SENCE_MAX,
+      SENSE_ADD: obj.SENSE_ADD,
         });
     twgl.bindFramebufferInfo(gl, fb2)
     twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN)
