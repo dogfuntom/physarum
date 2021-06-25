@@ -2,26 +2,29 @@ let s
 let time0 = new Date() / 1000
 let seed
 
-function preload(){
+function preload() {
   s = loadShader('s.vert', 's.frag')
 }
 
 function setup() {
-  let c = createCanvas(windowWidth/2, windowHeight/2, WEBGL)
+  let c = createCanvas(windowWidth / 2, windowHeight / 2, WEBGL)
   noStroke()
-  mouseClicked()
+  for (let i = 0; i < 30; i++) {
+    draw()
+    mouseClicked()
+  }
 }
 
 function draw() {
   shader(s)
-  s.setUniform('u_res', [width*4, height*4])
+  s.setUniform('u_res', [width * 4, height * 4])
   s.setUniform('t', new Date() / 1000 - time0)
-  s.setUniform('m', [mouseX/width, mouseY/height])
+  s.setUniform('m', [mouseX / width, mouseY / height])
   s.setUniform('seed', seed)
-  rect(0,0,width, height)
+  rect(0, 0, width, height)
 }
 
-function windowResized(){
+function windowResized() {
   resizeCanvas(windowWidth, windowHeight)
 }
 
@@ -34,7 +37,12 @@ function random_hash() {
 
 
 function mouseClicked() {
-  tokenData = {"hash": random_hash()}
+  var image = new Image()
+  image.src = document.querySelector('canvas').toDataURL()
+  console.log(image)
+  document.body.appendChild(image)
+
+  tokenData = { "hash": random_hash() }
   console.log(tokenData.hash)
   seed = parseInt(tokenData.hash.slice(0, 16), 16) / 1e13
   console.log(seed)

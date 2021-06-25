@@ -25,7 +25,7 @@ void main() {
     for(float i = 0.; i < 100.; i++) { // @zozuar 's style
         pp = p = vec3(uv * d, d - 11.);
         // p.yz *= rot(-m.y * 4.);
-        p.xz *= rot(m.x * 4.);
+        // p.xz *= rot(m.x * 4.);
         if(rnd(seed + 12.) < .2)
             p.x = mod(p.x, 4.) - 2.;
         if(rnd(seed + 13.) < .2)
@@ -44,11 +44,11 @@ void main() {
             if(float(j)>3.*rnd(seed+15.)) break;
         }
 
-        gl += .02/* * rnd(seed + 5.)*/ / length(p);
-        if(rnd(seed + 7.) < .1)
-            p.xyz = p.yzx;
-        else if(rnd(seed + 7.) < .4)
-            p.xyz = p.zxy;
+        gl += .02/* * rnd(seed + 5.)*/ / length(p.xz);
+        // if(rnd(seed + 7.) < .1)
+        //     p.xyz = p.yzx;
+        // else if(rnd(seed + 7.) < .4)
+        //     p.xyz = p.zxy;
         d += e = length(p.xy) / ss;
         j = i;
 
