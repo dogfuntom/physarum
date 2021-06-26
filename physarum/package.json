@@ -1,6 +1,7 @@
 {
     "dependencies": {
         "dat.gui": "^0.7.7",
+        "gif.js": "^0.2.0",
         "glslify-hex": "^2.1.1",
         "twgl.js": "^4.19.1"
     },

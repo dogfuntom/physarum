@@ -29,4 +29,5 @@ void main() {
         }
     }
     gl_FragColor = val / k_sum * DECAY;
+    // gl_FragColor *= smoothstep(1., .9, length((gl_FragCoord.xy * 2. - u_resolution) / u_resolution));
 }
