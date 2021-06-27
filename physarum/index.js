@@ -49,6 +49,7 @@ var obj = {
   SENCE_MAX: 1,
   LIGHTNESS: 100,
   SENSE_ADD: .0001,
+  RESPAWN_P: .001,
   // RESPAW: true,
   record: function () {
     if (gifConfig.isRecording) {
@@ -71,6 +72,7 @@ gui.add(obj, 'DECAY').min(0).max(1).step(0.001)
 // gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(8).step(1)
 gui.add(obj, 'SENCE_MIN').min(0).max(.0001).step(.000001)
 gui.add(obj, 'SENSE_ADD').min(-.0001).max(.0001).step(.0000001)
+gui.add(obj, 'RESPAWN_P').min(0).max(.1).step(.000001)
 gui.add(obj, 'LIGHTNESS').min(1).max(1000).step(1)
 gui.add(obj, 'record')
 
@@ -213,6 +215,7 @@ function draw(time) {
       SENCE_MIN: obj.SENCE_MIN,
       SENCE_MAX: obj.SENCE_MAX,
       SENSE_ADD: obj.SENSE_ADD,
+      RESPAWN_P: obj.RESPAWN_P,
     });
     twgl.bindFramebufferInfo(gl, fb2)
     twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN)

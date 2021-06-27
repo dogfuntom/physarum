@@ -33,7 +33,7 @@ uniform float STEP_SIZE;
 uniform float SENCE_MIN;
 uniform float SENCE_MAX;
 uniform float SENSE_ADD;
-#define RESPAWN
+uniform float RESPAWN_P;
 
 vec2 turn(vec2 pos, vec2 vel) {
 
@@ -100,15 +100,11 @@ void main() {
   float mass = rnd(id);
 
   // init
-  #ifdef RESPAWN
-  if(rnd(id + u_time) < .001 || u_tick < 2.) {
-  #else
-  if(u_tick == 0.) {
-  #endif
-    gl_FragColor.r = (rnd(id + 1. + u_time * .001 + length(pos)) * 2. - 1.);
-    gl_FragColor.g = (rnd(id + 2. + u_time * .001 + length(pos)) * 2. - 1.);
-    // float angle = rnd(id + u_time * .001 + length(pos)) * 2. * 3.1415;
-    // gl_FragColor.rg = vec2(.5, 0) * rot(angle);
+  if(rnd(id + u_time) < RESPAWN_P || u_tick < 2.) {
+    // gl_FragColor.r = (rnd(id + 1. + u_time * .001 + length(pos)) * 2. - 1.);
+    // gl_FragColor.g = (rnd(id + 2. + u_time * .001 + length(pos)) * 2. - 1.);
+    float angle = rnd(id + u_time * .001 + length(pos)) * 2. * 3.1415;
+    gl_FragColor.rg = vec2(.5, 0) * rot(angle);
     gl_FragColor.ba = vec2(1, 0) * STEP_SIZE * rot(rnd(id)*2.*3.1415);
   }
 
