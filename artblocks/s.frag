@@ -47,20 +47,30 @@ vec2 wob(vec2 uv) {
 const float t1 = GLASS;
 const float t2 = PHONG;
 
+float smin(float d1, float d2, float k) {
+    float h = clamp(0.5 + 0.5 * (d2 - d1) / k, 0.0, 1.0);
+    return mix(d2, d1, h) - k * h * (1.0 - h);
+}
+
+float distIn(vec3 p) {
+    return length(p) - 1.;
+}
+
+float gyrShape(vec3 p) {
+    float scale = 1. + 1. * R(2.);
+    float offset = R(1.);
+    float cyl = length(p.xz) - 1.;
+    float gyr = abs(dot(sin(p * scale - offset), cos(p.zxy * scale - offset))) / scale * .5 - .0001;
+    return max(gyr, cyl);
+}
+
 vec2 dist(vec3 p) {
     p.xz *= rot(t - 2.);
     p.xy *= rot(R(4.));
-    float bumps = R(5.);
+    float bumps = 0.;//R(5.);
     float s1 = .7 * (length(p) - 2. + dot(sin(p * 50.), cos(p.zxy * 50.)) / 50. * .1 * bumps * bumps * bumps * bumps * bumps * bumps * bumps * bumps); //
-    float cyl = length(p.xz) - 1.;
     float s2 = length(p) - 1. * R(0.);
-    float scale = 1. + 1. * R(2.);
-    float offset = R(1.);
-    float gyr = abs(dot(sin(p * scale - offset), cos(p.zxy * scale - offset))) / scale * .5 - .0001;
-    // float s2_o = s2-.1;
-    // vec2 shape1 = vec2(max(s1, -s2_o), t1);
-    // vec2 shape2 = vec2(max(s2, s1), t2);
-    vec2 shape2 = vec2(max(s1, max(gyr, cyl)), PHONG_NORMAL);
+    vec2 shape2 = vec2(max(s1, gyrShape(p)), PHONG_RAINBOW);
     vec2 shape1 = vec2(max(s1, -shape2.x + 30. * E), GLASS);
     // return shape1;
     return (shape1.x < shape2.x ? shape1 : shape2);
@@ -109,9 +119,9 @@ void main() {
         if(rm.y < 100.) {
             float phong = (dot(n, vec3(1, 1, -1)) * .5 + .5);
             if(rm.y == PHONG_RAINBOW) {
-                O.rgb += phong * hsv((dot(n, rd) + length(p.xz)) * .3 - R(2.), 1., 1.);
+                O.rgb += phong * hsv(.5*dot(n, vec3(0,0,1)) - R(2.), 1., 1.);
             } else if(rm.y == PHONG_NORMAL) {
-                O.rgb += vec3(n) * .5 + .5;
+                O.rgb += phong * vec3(-n) * .5 + .5;
             } else {
                 O += .5 * phong;
                 break;
@@ -139,6 +149,9 @@ void main() {
         // ЗЕРКАЛЬНЫЙ
         else if(rm.y < 300.) {
             O += .3 * (dt * dt * dt * dt);
+            float phong = (dot(n, vec3(1, 1, -1)) * .5 + .5);
+            O.rgb += phong * hsv((dot(n, rd) + length(p.xz)) * .3 - R(2.), 1., 1.);
+            okoeff++;
             okoeff += .3;
             rd = reflect(rd, n);
             ro = p + 2. * E * n * sign(dot(rd, n));
