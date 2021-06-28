@@ -9,10 +9,11 @@ function preload() {
 function setup() {
   let c = createCanvas(windowWidth / 2, windowHeight / 2, WEBGL)
   noStroke()
-  // for (let i = 0; i < 30; i++) {
-  //   draw()
+  for (let i = 0; i < 30; i++) {
+    draw()
     mouseClicked()
-  // }
+  }
+  noLoop()
 }
 
 function draw() {
@@ -37,10 +38,10 @@ function random_hash() {
 
 
 function mouseClicked() {
-  // var image = new Image()
-  // image.src = document.querySelector('canvas').toDataURL()
-  // console.log(image)
-  // document.body.appendChild(image)
+  var image = new Image()
+  image.src = document.querySelector('canvas').toDataURL()
+  console.log(image)
+  document.body.appendChild(image)
 
   tokenData = { "hash": random_hash() }
   console.log(tokenData.hash)

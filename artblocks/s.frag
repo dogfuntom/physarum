@@ -7,7 +7,7 @@ uniform vec2 m;
 float seedInc = 0.;
     // #define R rnd(seed+seedInc++)
     #define R(x) rnd(seed+x)
-    #define E .0001
+    #define E .001
     #define MAXD 100.
     #define O gl_FragColor
 
@@ -53,7 +53,14 @@ float smin(float d1, float d2, float k) {
 }
 
 float distIn(vec3 p) {
-    return length(p) - 1.;
+    float res = MAXD;
+    for(int i = 2; i < 7; i++) {
+        float rad = pow(1.5 / float(i), 1.5);
+        vec3 offset = vec3(R(.001 + float(i)), R(.002 + float(i)), R(.003 + float(i))) * 2. - 1.;
+        offset *= 1. - rad * .5;
+        res = smin(res, length(p - offset) - rad, R(10.) + .1);
+    }
+    return res;
 }
 
 float gyrShape(vec3 p) {
@@ -66,11 +73,19 @@ float gyrShape(vec3 p) {
 
 vec2 dist(vec3 p) {
     p.xz *= rot(t - 2.);
-    p.xy *= rot(R(4.));
+    p.xy *= rot(.785);//R(4.));
     float bumps = 0.;//R(5.);
     float s1 = .7 * (length(p) - 2. + dot(sin(p * 50.), cos(p.zxy * 50.)) / 50. * .1 * bumps * bumps * bumps * bumps * bumps * bumps * bumps * bumps); //
+    if(R(12.) < .1) {
+        vec3 pt = p;
+        // if(R(12.) < .1) pt.xy *= rot(3.14 / 4.);
+        float rad1 = .1 + .4 * R(13.);
+        float rad2 = 2.+.1+.1*R(14.)+rad1;
+        float tor = length(vec2(pt.y, length(pt.xz) - rad2)) - rad1;
+        s1 = min(s1, tor);
+    }
     float s2 = length(p) - 1. * R(0.);
-    vec2 shape2 = vec2(max(s1, gyrShape(p)), PHONG_RAINBOW);
+    vec2 shape2 = vec2(max(s1, distIn(p)), MIRROR);//PHONG_RAINBOW
     vec2 shape1 = vec2(max(s1, -shape2.x + 30. * E), GLASS);
     // return shape1;
     return (shape1.x < shape2.x ? shape1 : shape2);
@@ -90,9 +105,9 @@ void main() {
     float okoeff = 0.;
 
         // повторим несколько раз, пока или расстояние или число шагов не выйдет за пределы дозволенного.
-    for(float k = 0.; k < 8.; k++) {
+    for(float k = 0.; k < 6.; k++) {
         d = 0.;
-        for(float i = 0.; i < 100.; i++) {
+        for(float i = 0.; i < 50.; i++) {
             p = rd * d + ro;
             rm = dist(p);
             e = rm.x;
@@ -119,7 +134,7 @@ void main() {
         if(rm.y < 100.) {
             float phong = (dot(n, vec3(1, 1, -1)) * .5 + .5);
             if(rm.y == PHONG_RAINBOW) {
-                O.rgb += phong * hsv(.3*dot(n, vec3(0,0,1)) - R(2.), 1., 1.);
+                O.rgb += phong * hsv(.3 * dot(n, vec3(0, 0, 1)) - R(2.), 1., 1.);
             } else if(rm.y == PHONG_NORMAL) {
                 O.rgb += phong * vec3(-n) * .5 + .5;
             } else {
@@ -141,6 +156,8 @@ void main() {
             } else {
                 // rd = refract(rd, -n, .8);
                 ro = p + 30. * E * n * 1.;
+                O.rgb+=R(21.)*.5*d*hsv(R(20.), 1., 1.);
+                okoeff+=R(21.)*.5*d;
             }
 
             inside = 1 - inside;
