@@ -22,7 +22,7 @@ vec3 hsv(float h, float s, float v) {
 void main() {
     float ep, d, e = 1., i, j, s = 1., ss = 1., gl;
     vec3 p, pp;
-    for(float i = 0.; i < 100.; i++) { // @zozuar 's style
+    for(float i = 0.; i < 100.; i++) {
         pp = p = vec3(uv * d, d - 11.);
         // p.yz *= rot(-m.y * 4.);
         // p.xz *= rot(m.x * 4.);

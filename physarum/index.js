@@ -1,11 +1,22 @@
 'use strict'
+let twgl = require('twgl.js')
+const dat = require('dat.gui')
+const canvas = document.getElementById('canvasgl')
+const gl = twgl.getWebGLContext(canvas, {
+  antialias: true,
+  depth: false,
+  preserveDrawingBuffer: true,
+  // premultipliedAlpha: false, 
+  // alpha: false,
+})
+const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE }]
 
 const n = 1000
 const m = n
-const size = 1000
+let size = 3000
+let draw1 = twgl.createFramebufferInfo(gl, attachments, size, size)
+let draw2 = twgl.createFramebufferInfo(gl, attachments, size, size)
 
-let twgl = require('twgl.js')
-const dat = require('dat.gui')
 const gui = new dat.GUI()
 let GIF = require('gif.js')
 let gifConfig = {
@@ -48,8 +59,12 @@ var obj = {
   SENCE_MIN: .001,
   SENCE_MAX: 1,
   LIGHTNESS: 100,
-  SENSE_ADD: .0001,
+  // SENSE_ADD: .0001,
+  REPULSION: 100,
   RESPAWN_P: .001,
+  DIFFUSE_RADIUS: 1,
+  FRICTION: .1,
+  RES: 1000,
   // RESPAW: true,
   record: function () {
     if (gifConfig.isRecording) {
@@ -63,16 +78,26 @@ var obj = {
 }
 
 gui.remember(obj)
-gui.add(obj, 'LOOKUP_DIST').min(0).max(1).step(0.0001)
-gui.add(obj, 'STEP_SIZE').min(0).max(1).step(0.0001)
+gui.add(obj, 'LOOKUP_DIST').min(0).max(.1).step(0.0001)
+gui.add(obj, 'STEP_SIZE').min(0).max(.1).step(0.0001)
+gui.add(obj, 'FRICTION').min(0).max(.9999).step(0.0001)
 gui.add(obj, 'LOOKUP_ANGLE').min(0).max(Math.PI * 2.).step(0.001)
 gui.add(obj, 'TURN_ANGLE').min(0).max(Math.PI * 2.).step(0.001)
 gui.add(obj, 'DEPOSITE').min(0).max(.00001).step(.00000001)
 gui.add(obj, 'DECAY').min(0).max(1).step(0.001)
-// gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(8).step(1)
 gui.add(obj, 'SENCE_MIN').min(0).max(.0001).step(.000001)
-gui.add(obj, 'SENSE_ADD').min(-.0001).max(.0001).step(.0000001)
+gui.add(obj, 'REPULSION').min(0).max(100000).step(.000001)
+// gui.add(obj, 'SENSE_ADD').min(-.0001).max(.0001).step(.0000001)
+gui.add(obj, 'RES').min(2).max(3000).step(1).onFinishChange(
+  function(){
+    size = this.getValue()
+    draw1 = twgl.createFramebufferInfo(gl, attachments, size, size)
+    draw2 = twgl.createFramebufferInfo(gl, attachments, size, size)
+  }
+)
 gui.add(obj, 'RESPAWN_P').min(0).max(.1).step(.000001)
+// gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(10).step(1)
+// gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(10).step(1)
 gui.add(obj, 'LIGHTNESS').min(1).max(1000).step(1)
 gui.add(obj, 'record')
 
@@ -87,14 +112,6 @@ const fClear = require('./clear.frag')
 const fDiffusion = require('./diffusion.frag')
 const fShow = require('./show.frag')
 
-const canvas = document.getElementById('canvasgl')
-const gl = twgl.getWebGLContext(canvas, {
-  antialias: true,
-  depth: false,
-  preserveDrawingBuffer: true,
-  // premultipliedAlpha: false, 
-  // alpha: false,
-})
 
 twgl.addExtensionsToContext(gl)
 gl.getExtension("OES_texture_float")
@@ -106,11 +123,8 @@ const programClear = twgl.createProgramInfo(gl, [vFlat, fClear])
 const programDiffusion = twgl.createProgramInfo(gl, [vFlat, fDiffusion])
 const programShow = twgl.createProgramInfo(gl, [vFlat, fShow])
 
-const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE }]
 let fb1 = twgl.createFramebufferInfo(gl, attachments, n, m)
 let fb2 = twgl.createFramebufferInfo(gl, attachments, n, m)
-let draw1 = twgl.createFramebufferInfo(gl, attachments, size, size)
-let draw2 = twgl.createFramebufferInfo(gl, attachments, size, size)
 
 // can it be removed?
 const pointId = []
@@ -186,7 +200,7 @@ function draw(time) {
       u_tex_draw: draw2.attachments[0],
       u_resolution: [size, size],
       DECAY: obj.DECAY,
-      // DIFFUSE_RADIUS: obj.DIFFUSE_RADIUS,
+      DIFFUSE_RADIUS: obj.DIFFUSE_RADIUS,
     });
     twgl.bindFramebufferInfo(gl, draw1);
     twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
@@ -216,6 +230,8 @@ function draw(time) {
       SENCE_MAX: obj.SENCE_MAX,
       SENSE_ADD: obj.SENSE_ADD,
       RESPAWN_P: obj.RESPAWN_P,
+      FRICTION: obj.FRICTION,
+      REPULSION: obj.REPULSION,
     });
     twgl.bindFramebufferInfo(gl, fb2)
     twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN)
@@ -233,7 +249,7 @@ function draw(time) {
       u_tex_fbo: fb2.attachments[0],
       u_time: time,
       u_resolution: [size, size],
-      DEPOSITE: obj.DEPOSITE,
+      DEPOSITE: obj.DEPOSITE*1e6/size/size,
     });
     twgl.bindFramebufferInfo(gl, draw1)
     twgl.drawBufferInfo(gl, pointsBuffer, gl.POINTS)

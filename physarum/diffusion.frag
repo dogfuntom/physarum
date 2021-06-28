@@ -3,8 +3,8 @@ precision mediump float;
 uniform sampler2D u_tex_draw;
 uniform vec2 u_resolution;
 uniform float DECAY;
-#define DIFFUSE_RADIUS  1
-
+uniform float DIFFUSE_RADIUS;
+#define DIFFUSE_RADIUS_MAX  10
 
 void main() {
     vec4 val = vec4(0);
@@ -19,9 +19,13 @@ void main() {
 //    gl_FragColor = val * DECAY;
 
     float k_sum = 0.;
-    for(int i = -DIFFUSE_RADIUS; i <= DIFFUSE_RADIUS; i++) {
-        for(int j = -DIFFUSE_RADIUS; j <= DIFFUSE_RADIUS; j++) {
-            vec2 ij = vec2(i,j);
+    for(int i = -DIFFUSE_RADIUS_MAX; i <= DIFFUSE_RADIUS_MAX; i++) {
+        if(abs(float(i)) > DIFFUSE_RADIUS)
+            continue;
+        for(int j = -DIFFUSE_RADIUS_MAX; j <= DIFFUSE_RADIUS_MAX; j++) {
+            if(abs(float(j)) > DIFFUSE_RADIUS)
+                continue;
+            vec2 ij = vec2(i, j);
             // float k = 1./(length(ij)+1.);
             float k = 1.;//(length(ij)+1.);
             val += k * texture2D(u_tex_draw, fract((gl_FragCoord.xy - ij) / u_resolution));
