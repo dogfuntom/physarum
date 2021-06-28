@@ -119,7 +119,7 @@ void main() {
         if(rm.y < 100.) {
             float phong = (dot(n, vec3(1, 1, -1)) * .5 + .5);
             if(rm.y == PHONG_RAINBOW) {
-                O.rgb += phong * hsv(.5*dot(n, vec3(0,0,1)) - R(2.), 1., 1.);
+                O.rgb += phong * hsv(.3*dot(n, vec3(0,0,1)) - R(2.), 1., 1.);
             } else if(rm.y == PHONG_NORMAL) {
                 O.rgb += phong * vec3(-n) * .5 + .5;
             } else {
