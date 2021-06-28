@@ -40,6 +40,7 @@ vec2 wob(vec2 uv) {
     #define rot(a) mat2(cos(a),sin(a),-sin(a),cos(a))
     #define PHONG 0.
     #define PHONG_RAINBOW 1.
+    #define PHONG_NORMAL 2.
     #define GLASS 100.
     #define MIRROR 200.
 
@@ -47,20 +48,20 @@ const float t1 = GLASS;
 const float t2 = PHONG;
 
 vec2 dist(vec3 p) {
-    p.xz *= rot(R(2.) - 2.);
+    p.xz *= rot(t - 2.);
     p.xy *= rot(R(4.));
-    float bumps=R(5.);
-    float s1 = .7 * (length(p) - 2. + dot(sin(p * 50.), cos(p.zxy * 50.)) / 50. * .1*bumps*bumps*bumps*bumps*bumps*bumps*bumps*bumps); //
+    float bumps = R(5.);
+    float s1 = .7 * (length(p) - 2. + dot(sin(p * 50.), cos(p.zxy * 50.)) / 50. * .1 * bumps * bumps * bumps * bumps * bumps * bumps * bumps * bumps); //
     float cyl = length(p.xz) - 1.;
     float s2 = length(p) - 1. * R(0.);
     float scale = 1. + 1. * R(2.);
     float offset = R(1.);
-    float gyr = abs(dot(sin(p * scale - offset), cos(p.zxy * scale - offset))) / scale * .5 - .01;
+    float gyr = abs(dot(sin(p * scale - offset), cos(p.zxy * scale - offset))) / scale * .5 - .0001;
     // float s2_o = s2-.1;
     // vec2 shape1 = vec2(max(s1, -s2_o), t1);
     // vec2 shape2 = vec2(max(s2, s1), t2);
-    vec2 shape2 = vec2(max(s1, max(gyr, cyl)), PHONG_RAINBOW);
-    vec2 shape1 = vec2(max(s1, -shape2.x + 100. * E), GLASS);
+    vec2 shape2 = vec2(max(s1, max(gyr, cyl)), PHONG_NORMAL);
+    vec2 shape1 = vec2(max(s1, -shape2.x + 30. * E), GLASS);
     // return shape1;
     return (shape1.x < shape2.x ? shape1 : shape2);
 }
@@ -109,6 +110,8 @@ void main() {
             float phong = (dot(n, vec3(1, 1, -1)) * .5 + .5);
             if(rm.y == PHONG_RAINBOW) {
                 O.rgb += phong * hsv((dot(n, rd) + length(p.xz)) * .3 - R(2.), 1., 1.);
+            } else if(rm.y == PHONG_NORMAL) {
+                O.rgb += vec3(n) * .5 + .5;
             } else {
                 O += .5 * phong;
                 break;
