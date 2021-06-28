@@ -5,9 +5,10 @@ uniform float seed;
 uniform vec2 m;
 
 float seedInc = 0.;
-    #define R rnd(seed+seedInc++)
-    #define E .001
-    #define MAXD 40.
+    // #define R rnd(seed+seedInc++)
+    #define R(x) rnd(seed+x)
+    #define E .0001
+    #define MAXD 100.
     #define O gl_FragColor
 
     // типа делаем марблс
@@ -38,42 +39,31 @@ vec2 wob(vec2 uv) {
 
     #define rot(a) mat2(cos(a),sin(a),-sin(a),cos(a))
     #define PHONG 0.
+    #define PHONG_RAINBOW 1.
     #define GLASS 100.
     #define MIRROR 200.
 
 const float t1 = GLASS;
-const float t2 = MIRROR;
+const float t2 = PHONG;
 
 vec2 dist(vec3 p) {
-    p.xz *= rot(t * .3 - 2.);
-    p.xy *= rot(t * .3);
-    float s1 = length(p) - 2.; //
-    float s2 = length(p.xy) - 1.;
-    float s2_o = length(p.xy) - 1.01;
-    vec2 shape1 = vec2(max(s1, -s2_o), t1);
-    vec2 shape2 = vec2(max(s2, s1), t2);
+    p.xz *= rot(R(2.) - 2.);
+    p.xy *= rot(R(4.));
+    float bumps=R(5.);
+    float s1 = .7 * (length(p) - 2. + dot(sin(p * 50.), cos(p.zxy * 50.)) / 50. * .1*bumps*bumps*bumps*bumps*bumps*bumps*bumps*bumps); //
+    float cyl = length(p.xz) - 1.;
+    float s2 = length(p) - 1. * R(0.);
+    float scale = 1. + 1. * R(2.);
+    float offset = R(1.);
+    float gyr = abs(dot(sin(p * scale - offset), cos(p.zxy * scale - offset))) / scale * .5 - .01;
+    // float s2_o = s2-.1;
+    // vec2 shape1 = vec2(max(s1, -s2_o), t1);
+    // vec2 shape2 = vec2(max(s2, s1), t2);
+    vec2 shape2 = vec2(max(s1, max(gyr, cyl)), PHONG_RAINBOW);
+    vec2 shape1 = vec2(max(s1, -shape2.x + 100. * E), GLASS);
+    // return shape1;
     return (shape1.x < shape2.x ? shape1 : shape2);
 }
-
-    // vec2 distn(vec3 p) {
-    //     p.xz *= rot(t * .3);
-    //     p.xy *= rot(t * .3);
-
-    //     // p = mod(p, 16.) - 8.;
-    //     // p = abs(p) - 2.;
-
-    //     // vec3 n = vec3(-.5, -.809, .309);
-    //     float s1 = length(p) - 2.;
-    //     float s2 = length(p.xy) - 1.;
-    //     // vec2 shape1 = vec2(max(s1,-s2), t1);
-    //     vec2 shape1 = vec2(s1, t1);
-    //     vec2 shape2 = vec2(max(s1,s2), t2);
-    //     // s.x = abs(s.x);
-    //     // for(int k = 0; k < 5; k++)
-    //         // p.xy = abs(p.xy), p -= 2. * min(0., dot(p, n)) * n;
-    //         // d += e = .69 * (length(vec2(length(pp) - 2., length(p - vec3(.3, .2, 1.9)) - .3)) - .1);
-    //     return (shape1.x < shape2.x ? shape1 : shape2);
-    // }
 
 vec3 norm(vec3 p) {
     vec2 e = vec2(E, 0);
@@ -83,15 +73,15 @@ vec3 norm(vec3 p) {
 void main() {
     int inside = 0;
     float d, e = 1., i, j, gl;
-    vec3 p, rd = normalize(vec3(uv, 1)), ro = vec3(0, 0, -4);
+    // vec3 p, rd = normalize(vec3(uv, 1)), ro = vec3(0, 0, -4);
+    vec3 p, rd = vec3(0, 0, 1), ro = vec3(uv * 3., -4);
     vec2 rm;
     float okoeff = 0.;
 
         // повторим несколько раз, пока или расстояние или число шагов не выйдет за пределы дозволенного.
-    for(float k = 0.; k < 7.; k++) {
-            // raymarching
+    for(float k = 0.; k < 8.; k++) {
         d = 0.;
-        for(float i = 0.; i < 150.; i++) {
+        for(float i = 0.; i < 100.; i++) {
             p = rd * d + ro;
             rm = dist(p);
             e = rm.x;
@@ -116,7 +106,13 @@ void main() {
 
         // МАТОВЫЙ
         if(rm.y < 100.) {
-            O += dot(n, vec3(1, 1, -1)) * .5 + .5;
+            float phong = (dot(n, vec3(1, 1, -1)) * .5 + .5);
+            if(rm.y == PHONG_RAINBOW) {
+                O.rgb += phong * hsv((dot(n, rd) + length(p.xz)) * .3 - R(2.), 1., 1.);
+            } else {
+                O += .5 * phong;
+                break;
+            }
             okoeff++;
             break;
         }
@@ -126,17 +122,12 @@ void main() {
             if(inside == 0) {
                 O += pow(dot(n, normalize(vec3(1, 1, -2))), 200.);
                 O += pow(dot(n, normalize(vec3(.5, 1.3, -2))), 3200.);
-                O += pow(1.-dot(rd,-n),5.);
-                // okoeff++;
-                // O.rgb += vec3(.1, .8, .1);
-                // okoeff++;
-                // float sg = -sign(dot(rd, n));
+                O += pow(1. - dot(rd, -n), 5.);
                 rd = refract(rd, n, .8);
-                ro = p + 2. * E * n * -1.;
+                ro = p + 30. * E * n * -1.;
             } else {
-                rd = refract(rd, -n, .8);
-                // float sg = sign(dot(rd, n));
-                ro = p + 2. * E * n * 1.;
+                // rd = refract(rd, -n, .8);
+                ro = p + 30. * E * n * 1.;
             }
 
             inside = 1 - inside;
@@ -168,5 +159,7 @@ void main() {
 
     O /= okoeff;
 
+    // O-=O;
+    // O+=1./d;
     O.a = 1.;
 }
