@@ -56,8 +56,8 @@ var obj = {
   DECAY: .5,
   DIFFUSE_RADIUS: 2,
   DEPOSITE: .001,
-  SENCE_MIN: .001,
-  SENCE_MAX: 1,
+  // SENCE_MIN: .001,
+  // SENCE_MAX: 1,
   LIGHTNESS: 100,
   // SENSE_ADD: .0001,
   REPULSION: 100,
@@ -75,17 +75,27 @@ var obj = {
       gifConfig.isRecording = true
     }
   },
+  randomize: function(){
+    // obj.FRICTION = Math.random()
+    // obj.STEP_SIZE = Math.random()*
+    gui.__controllers.forEach(c=>{
+      console.log(c.property)
+      if(c.constructor.name != 'NumberControllerSlider') return
+      if(c.property == 'LIGHTNESS') return
+      c.setValue(c.__min+Math.random()*(c.__max-c.__min))
+    })
+  }
 }
 
 gui.remember(obj)
-gui.add(obj, 'LOOKUP_DIST').min(0).max(.1).step(0.0001)
-gui.add(obj, 'STEP_SIZE').min(0).max(.1).step(0.0001)
+let ld = gui.add(obj, 'LOOKUP_DIST').min(0).max(.1).step(0.0001)
+gui.add(obj, 'STEP_SIZE').min(0.00001).max(.1).step(0.0001)
 gui.add(obj, 'FRICTION').min(0).max(.9999).step(0.0001)
 gui.add(obj, 'LOOKUP_ANGLE').min(0).max(Math.PI * 2.).step(0.001)
 gui.add(obj, 'TURN_ANGLE').min(0).max(Math.PI * 2.).step(0.001)
 gui.add(obj, 'DEPOSITE').min(0).max(.00001).step(.00000001)
 gui.add(obj, 'DECAY').min(0).max(1).step(0.001)
-gui.add(obj, 'SENCE_MIN').min(0).max(.0001).step(.000001)
+// gui.add(obj, 'SENCE_MIN').min(0).max(.0001).step(.000001)
 gui.add(obj, 'REPULSION').min(0).max(100000).step(.000001)
 // gui.add(obj, 'SENSE_ADD').min(-.0001).max(.0001).step(.0000001)
 gui.add(obj, 'RES').min(2).max(3000).step(1).onFinishChange(
@@ -100,6 +110,7 @@ gui.add(obj, 'RESPAWN_P').min(0).max(.1).step(.000001)
 // gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(10).step(1)
 gui.add(obj, 'LIGHTNESS').min(1).max(1000).step(1)
 gui.add(obj, 'record')
+gui.add(obj, 'randomize')
 
 
 const mousepos = [0, 0]
