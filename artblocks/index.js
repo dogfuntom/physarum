@@ -8,7 +8,7 @@ function preload() {
 }
 
 function setup() {
-  let c = createCanvas(windowHeight / 2, windowHeight / 2, WEBGL)
+  let c = createCanvas(540, 540, WEBGL)
   noStroke()
   if (RENDER) {
     for (let i = 0; i < 50; i++) {
