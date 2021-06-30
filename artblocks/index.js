@@ -1,7 +1,7 @@
 let s
 let time0 = new Date() / 1000
 let seed
-const RENDER = false
+const RENDER = true
 
 function preload() {
   s = loadShader('s.vert', 's.frag')
