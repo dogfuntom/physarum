@@ -24,7 +24,6 @@ float rnd(float x) {
   return random(vec2(x * .0001));
 }
 
- 
 uniform float LOOKUP_DIST;
 #define LOOKUP_DIST_CENTER LOOKUP_DIST * 1.
 uniform float LOOKUP_ANGLE;
@@ -37,6 +36,7 @@ uniform float SENCE_MAX;
 uniform float RESPAWN_P;
 uniform float FRICTION;
 uniform float REPULSION;
+uniform float ANGLE_SPREAD;
 
 vec2 turn(vec2 pos, vec2 vel) {
 
@@ -46,20 +46,25 @@ vec2 turn(vec2 pos, vec2 vel) {
   vec2 sensorR = uv + (rot(LOOKUP_ANGLE) * normalize(vel)) * LOOKUP_DIST;
   vec2 sensor0 = uv;
 
-  float senseL = texture2D(u_tex_draw, sensorL).r; senseL = clamp(senseL, SENCE_MIN, SENCE_MAX);
-  float senseC = texture2D(u_tex_draw, sensorC).r; senseC = clamp(senseC, SENCE_MIN, SENCE_MAX);
-  float senseR = texture2D(u_tex_draw, sensorR).r; senseR = clamp(senseR, SENCE_MIN, SENCE_MAX);
+  float senseL = texture2D(u_tex_draw, sensorL).r;
+  senseL = clamp(senseL, SENCE_MIN, SENCE_MAX);
+  float senseC = texture2D(u_tex_draw, sensorC).r;
+  senseC = clamp(senseC, SENCE_MIN, SENCE_MAX);
+  float senseR = texture2D(u_tex_draw, sensorR).r;
+  senseR = clamp(senseR, SENCE_MIN, SENCE_MAX);
   float sense0 = texture2D(u_tex_draw, sensor0).r;
+
+ float turn_angle_rnd = TURN_ANGLE + ANGLE_SPREAD*(rnd(length(pos))*2.-1.);
 
 // stadard
   if(senseC > senseL && senseC > senseR)
     return vel * senseC;
   if(senseL == senseR) {
-      vel *= (senseR + SENSE_ADD) * rot(sign(rnd(vel.x)-.5) * TURN_ANGLE);
+    vel *= (senseR + SENSE_ADD) * rot(sign(rnd(vel.x) - .5) * (turn_angle_rnd));
   } else if(senseL < senseR) {
-    vel *= (senseR + SENSE_ADD) * rot(-TURN_ANGLE);
+    vel *= (senseR + SENSE_ADD) * rot(-turn_angle_rnd);
   } else if(senseL > senseR) {
-    vel *= (senseL + SENSE_ADD) * rot(TURN_ANGLE);
+    vel *= (senseL + SENSE_ADD) * rot(turn_angle_rnd);
   }
 
   // // middle way
@@ -72,7 +77,7 @@ vec2 turn(vec2 pos, vec2 vel) {
   // } else if(senseL < senseR) {
   //   vel *= rot(TURN_ANGLE);
   // }
-  
+
   // if(sense0 > senseC && sense0 > senseR && sense0 > senseL)
   //   return vel;
   // if(senseC > senseL && senseC > senseR) {
@@ -107,32 +112,40 @@ void main() {
     // gl_FragColor.r = (rnd(id + 1. + u_time * .001 + length(pos)) * 2. - 1.);
     // gl_FragColor.g = (rnd(id + 2. + u_time * .001 + length(pos)) * 2. - 1.);
     float angle = rnd(id + u_time * .001 + length(pos)) * 2. * 3.1415;
-    gl_FragColor.rg = vec2(.5, 0) * rot(angle);
-    gl_FragColor.ba = vec2(.0001, 0) * STEP_SIZE * rot(rnd(id)*2.*3.1415);
+    gl_FragColor.rg = vec2(.2, 0) * rot(angle);
+    gl_FragColor.ba = vec2(.0001, 0) * STEP_SIZE * rot(rnd(id) * 2. * 3.1415);
   }
 
   // physics
   else {
     // // force
-    vel *= 1.-FRICTION;
+    vel *= 1. - FRICTION;
     // vel = normalize(vel);
 
-    // vel.x += .001 * snoise3d(u_mouse.x + vec3(u_time * .1, pos * 10.));
-    // vel.y += .001 * snoise3d(u_mouse.y + vec3(u_time * .1, pos * 10. + 99.));
+    // vel.x += .01 * snoise3d(u_mouse.x + vec3(u_time * .001, pos * 10.));
+    // vel.y += .01 * snoise3d(u_mouse.y + vec3(u_time * .001, pos * 10. + 99.));
     // vel.x += .002 * snoise2d(pos * 32. + u_mouse.x);
     // vel.y += .002 * snoise2d(pos * 32. + u_mouse.x + 99.);
-   // vel += vec2(.0001 * u_mouse) * rot(atan(pos.y, pos.x));
+  //  vel += vec2(-.001,0) * rot(atan(pos.y, pos.x));
+
+  // spinning
+    // vel += vec2(0, -.0005) * rot(atan(pos.y, pos.x));
 
     vel += turn(pos, normalize(vel)) * STEP_SIZE * 10000.;// * 1.001;
 
-    vel -= REPULSION*grad(pos);
+    vel -= REPULSION * grad(pos);
 
     // vec2 vecToCenter = u_mouse - pos;
     // float repulsion = 1. / length(vecToCenter);
     // vel -= sign(rnd(id) - .9) * repulsion * vec2(.0001, 0) * rot(atan(vecToCenter.y, vecToCenter.x));
 
-    pos +=  vel;// / mass;
+    pos += vel;// / mass;
     pos = fract(pos * .5 + .5) * 2. - 1.;
+    if(length(pos) > .9) {
+      pos = normalize(pos) * .9;
+      vec2 n=normalize(vec2(pos));
+      vel = reflect(vel, -n);
+    }
 
     gl_FragColor = vec4(pos, vel);
   }

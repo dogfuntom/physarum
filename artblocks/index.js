@@ -1,33 +1,44 @@
 let s
 let time0 = new Date() / 1000
 let seed
+const RENDER = false
 
 function preload() {
   s = loadShader('s.vert', 's.frag')
 }
 
 function setup() {
-  let c = createCanvas(windowWidth / 2, windowHeight / 2, WEBGL)
+  let c = createCanvas(windowHeight / 2, windowHeight / 2, WEBGL)
   noStroke()
-  for (let i = 0; i < 30; i++) {
-    draw()
+  if (RENDER) {
+    for (let i = 0; i < 50; i++) {
+      draw()
+      mouseClicked()
+    }
+    document.querySelector('canvas').remove()
+    document.querySelector('img').remove()
+    noLoop()
+  }
+  else {
     mouseClicked()
   }
-  noLoop()
 }
 
 function draw() {
   shader(s)
-  s.setUniform('u_res', [width * 4, height * 4])
+  s.setUniform('u_res', [height * 4, height * 4])
   s.setUniform('t', new Date() / 1000 - time0)
   s.setUniform('m', [mouseX / width, mouseY / height])
   s.setUniform('seed', seed)
-  rect(0, 0, width, height)
+  if (RENDER) {
+    s.setUniform('t', Math.random() * 100)
+  }
+  rect(0, 0, height, height)
 }
 
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight)
-}
+// function windowResized() {
+//   resizeCanvas(windowWidth, windowHeight)
+// }
 
 function random_hash() {
   let chars = "0123456789abcdef";
@@ -38,10 +49,13 @@ function random_hash() {
 
 
 function mouseClicked() {
-  var image = new Image()
-  image.src = document.querySelector('canvas').toDataURL()
-  console.log(image)
-  document.body.appendChild(image)
+  if (RENDER) {
+    var image = new Image()
+    image.src = document.querySelector('canvas').toDataURL()
+    image.width = 200
+    console.log(image)
+    document.body.appendChild(image)
+  }
 
   tokenData = { "hash": random_hash() }
   console.log(tokenData.hash)

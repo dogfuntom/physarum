@@ -52,6 +52,7 @@ var obj = {
   LOOKUP_DIST: .1,
   LOOKUP_ANGLE: .1,
   TURN_ANGLE: .1,
+  ANGLE_SPREAD: .1,
   STEP_SIZE: .1,
   DECAY: .5,
   DIFFUSE_RADIUS: 2,
@@ -93,6 +94,7 @@ gui.add(obj, 'STEP_SIZE').min(0.00001).max(.1).step(0.0001)
 gui.add(obj, 'FRICTION').min(0).max(.9999).step(0.0001)
 gui.add(obj, 'LOOKUP_ANGLE').min(0).max(Math.PI * 2.).step(0.001)
 gui.add(obj, 'TURN_ANGLE').min(0).max(Math.PI * 2.).step(0.001)
+gui.add(obj, 'ANGLE_SPREAD').min(0).max(Math.PI).step(0.001)
 gui.add(obj, 'DEPOSITE').min(0).max(.00001).step(.00000001)
 gui.add(obj, 'DECAY').min(0).max(1).step(0.001)
 // gui.add(obj, 'SENCE_MIN').min(0).max(.0001).step(.000001)
@@ -235,6 +237,7 @@ function draw(time) {
       u_resolution: [n, m],
       LOOKUP_DIST: obj.LOOKUP_DIST,
       LOOKUP_ANGLE: obj.LOOKUP_ANGLE,
+      ANGLE_SPREAD: obj.ANGLE_SPREAD,
       TURN_ANGLE: obj.TURN_ANGLE,
       STEP_SIZE: obj.STEP_SIZE,
       SENCE_MIN: obj.SENCE_MIN,
