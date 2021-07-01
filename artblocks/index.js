@@ -1,7 +1,7 @@
 let s
 let time0 = new Date() / 1000
 let seed
-const RENDER = true
+const RENDER = false
 
 function preload() {
   s = loadShader('s.vert', 's.frag')
@@ -11,7 +11,7 @@ function setup() {
   let c = createCanvas(540, 540, WEBGL)
   noStroke()
   if (RENDER) {
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 200; i++) {
       draw()
       mouseClicked()
     }

@@ -72,13 +72,15 @@ float spiral(vec3 p) {
     return res;
 }
 
-float metaballs(vec3 p) {
+float metaballs(vec3 p, float firstPosK) {
     float res = MAXD;
     for(int i = 2; i < 5; i++) {
         float rad = pow(1.5 / float(i), 1.5);
         vec3 offset = vec3(R(.001 + float(i)), R(.002 + float(i)), R(.003 + float(i))) * 2. - 1.;
+        if(i == 2)
+            offset *= firstPosK;
         offset *= 1. - rad * .5;
-        res = smin(res, length(p-offset) - rad, .3);
+        res = smin(res, length(p - offset) - rad, .3);
     }
     return res;
 }
@@ -94,7 +96,7 @@ float gyr(vec3 p) {
 float distIn(vec3 p) {
     float res;
     if(R(50.) < .1) {
-        res = metaballs(p);
+        res = metaballs(p, 1.);
     } else if(R(50.) < .2) {
         res = gyr(p);
     } else {
@@ -104,16 +106,24 @@ float distIn(vec3 p) {
 }
 
 vec2 dist(vec3 p) {
-    p.xz *= rot(t - 2.);
+    p.xz *= rot(m.x*8.);
+    // p.xz *= rot(t - 2.);
     p.xy *= rot(.785);
     float bumpsAmp = 2.;
     float bumpsScale = 2.;
     float bumps = 0.;
     if(R(41.) < .1)
         bumps = dot(sin(p * bumpsScale - t * 0.), cos(p.zxy * bumpsScale + t * 0.)) / bumpsScale * .1 * bumpsAmp;
-    float s1 = .7 * (length(p) - 2. + bumps); //
+
+    float s1;
+    if(R(.22) < .9) {
+        s1 = .7 * (length(p) - 2. + bumps);
+    } else {
+        s1 = metaballs(p * .5, 0.) / .5;
+    }
+
     // float s1 = .7 * (length(p) - 2.);
-    vec2 extra = vec2(MAXD, R(13.) < .2 ? MIRROR : PHONG_NORMAL);
+    vec2 extra = vec2(MAXD, R(13.) < .9 ? MIRROR : PHONG_NORMAL);
     if(R(12.) < .05) {
         vec3 pt = p;
         // if(R(12.) < .1) pt.xy *= rot(3.14 / 4.);
@@ -184,7 +194,9 @@ void main() {
             vec3 rd_ = rd;
             rd_.xy *= rot(R(30.) * PI2);
             rd_.xz *= rot(R(31.) * PI2);
-            O.rgb += rd_ * .5 + .5;
+            rd_.xz *= rot(R(.33) * sin(rd_.y * 20. * R(.44)));
+            // O.rgb += (rd_ * .5 + .5);// * pow(abs(R(99.)*2.-1.), .1);
+            O.rgb += hsv(R(.44)+length(uv)*.05,R(.55)*R(.55)*.8,.9);// * pow(abs(R(99.)*2.-1.), .1);
             okoeff++;
             break;
         } else 
@@ -228,7 +240,7 @@ void main() {
 
         // ЗЕРКАЛЬНЫЙ
         else if(rm.y < 300.) {
-            // O += .3 * (dt * dt * dt * dt);
+            O -= .5;
             // float phong = (dot(n, vec3(1, 1, -1)) * .5 + .5);
             // O.rgb += phong * hsv((dot(n, rd) + length(p.xz)) * .3 - R(2.), 1., 1.);
             // okoeff++;
