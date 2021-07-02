@@ -22,7 +22,7 @@ let GIF = require('gif.js')
 let gifConfig = {
   FPS: 25,
   loopDuration: 10,
-  size: 512,
+  size: 256,
   isRecording: false,
 }
 gifConfig.numberOfFrames = Math.floor(gifConfig.FPS * gifConfig.loopDuration)
@@ -45,6 +45,8 @@ var gif = new GIF({
   workers: 2,
   workerScript: URL.createObjectURL(blob),
   quality: 1,
+  // width: gifConfig.size,
+  // height: gifConfig.size,
 });
 
 
@@ -106,9 +108,9 @@ gui.add(obj, 'RES').min(2).max(3000).step(1).onFinishChange(
     draw1 = twgl.createFramebufferInfo(gl, attachments, size, size)
     draw2 = twgl.createFramebufferInfo(gl, attachments, size, size)
   }
-)
+  )
+  gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(5).step(1)
 gui.add(obj, 'RESPAWN_P').min(0).max(.1).step(.000001)
-// gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(10).step(1)
 // gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(10).step(1)
 gui.add(obj, 'LIGHTNESS').min(1).max(1000).step(1)
 gui.add(obj, 'record')

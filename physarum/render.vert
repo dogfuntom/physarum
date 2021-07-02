@@ -39,8 +39,9 @@ void main() {
  
   // color.a = clamp(1. / u_time, 0., 1.);
   // color.a = (.5 + .5 * sin(u_time * 1.));// * u_time / exp(u_time);// / u_time;
-  color.rgb = vec3(DEPOSITE);
-  color.a = 1.;
+  float velCol = smoothstep(.0,.01,length(vel)*.1);
+  color.rgb = vec3(pow(velCol,.1), pow(velCol,.6), pow(velCol,.2))*.0001;
+  color.a = DEPOSITE;
 
   position = pos;
 }

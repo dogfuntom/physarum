@@ -10,7 +10,7 @@ float seedInc = 0.;
 #define PI 3.1415
 #define PI2 6.283
 #define E .0001
-#define MAXD 100.
+#define MAXD 50.
 #define RM_STEPS 100.
 #define O gl_FragColor
 

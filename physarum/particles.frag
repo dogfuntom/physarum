@@ -38,21 +38,21 @@ uniform float FRICTION;
 uniform float REPULSION;
 uniform float ANGLE_SPREAD;
 
-vec2 turn(vec2 pos, vec2 vel) {
+vec2 turn(vec2 pos, vec2 vel, float mass) {
 
   vec2 uv = pos * .5 + .5;// + vec2(1, 0) / u_tex_draw_res);
-  vec2 sensorL = uv + (rot(-LOOKUP_ANGLE) * normalize(vel)) * LOOKUP_DIST;
-  vec2 sensorC = uv + normalize(vel) * LOOKUP_DIST_CENTER;
-  vec2 sensorR = uv + (rot(LOOKUP_ANGLE) * normalize(vel)) * LOOKUP_DIST;
+  vec2 sensorL = uv + (rot(-LOOKUP_ANGLE) * normalize(vel)) * LOOKUP_DIST * mass;
+  vec2 sensorC = uv + normalize(vel) * LOOKUP_DIST_CENTER * mass;
+  vec2 sensorR = uv + (rot(LOOKUP_ANGLE) * normalize(vel)) * LOOKUP_DIST * mass;
   vec2 sensor0 = uv;
 
-  float senseL = texture2D(u_tex_draw, sensorL).r;
+  float senseL = texture2D(u_tex_draw, sensorL).a;
   senseL = clamp(senseL, SENCE_MIN, SENCE_MAX);
-  float senseC = texture2D(u_tex_draw, sensorC).r;
+  float senseC = texture2D(u_tex_draw, sensorC).a;
   senseC = clamp(senseC, SENCE_MIN, SENCE_MAX);
-  float senseR = texture2D(u_tex_draw, sensorR).r;
+  float senseR = texture2D(u_tex_draw, sensorR).a;
   senseR = clamp(senseR, SENCE_MIN, SENCE_MAX);
-  float sense0 = texture2D(u_tex_draw, sensor0).r;
+  float sense0 = texture2D(u_tex_draw, sensor0).a;
 
  float turn_angle_rnd = TURN_ANGLE + ANGLE_SPREAD*(rnd(length(pos))*2.-1.);
 
@@ -131,7 +131,7 @@ void main() {
   // spinning
     // vel += vec2(0, -.0005) * rot(atan(pos.y, pos.x));
 
-    vel += turn(pos, normalize(vel)) * STEP_SIZE * 10000.;// * 1.001;
+    vel += turn(pos, normalize(vel),mass) * STEP_SIZE * 10000.;// * 1.001;
 
     vel -= REPULSION * grad(pos);
 
@@ -139,7 +139,7 @@ void main() {
     // float repulsion = 1. / length(vecToCenter);
     // vel -= sign(rnd(id) - .9) * repulsion * vec2(.0001, 0) * rot(atan(vecToCenter.y, vecToCenter.x));
 
-    pos += vel;// / mass;
+    // reflect from circle
     pos = fract(pos * .5 + .5) * 2. - 1.;
     if(length(pos) > .9) {
       pos = normalize(pos) * .9;
@@ -147,6 +147,7 @@ void main() {
       vel = reflect(vel, -n);
     }
 
+    pos += vel;// / mass;
     gl_FragColor = vec4(pos, vel);
   }
 }

@@ -11,7 +11,7 @@ function setup() {
   let c = createCanvas(540, 540, WEBGL)
   noStroke()
   if (RENDER) {
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 50; i++) {
       draw()
       mouseClicked()
     }
@@ -32,7 +32,8 @@ function draw() {
   s.setUniform('seed', seed)
   if (RENDER) {
     s.setUniform('t', Math.random() * 100)
-  }
+    s.setUniform('m', [Math.random(), mouseY / height])
+}
   rect(0, 0, height, height)
 }
 
