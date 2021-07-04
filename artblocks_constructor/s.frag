@@ -7,6 +7,17 @@ uniform vec2 m;
 uniform vec2 u_res;
 uniform sampler2D backbuffer;
 
+/*
+
+План такой
+- реймаршинг кубиков, как попало.
+- 
+
+*/ 
+
+
+#define AA 8.
+
 // float seedInc = 0.;
 // // #define R rnd(seed+seedInc++)
 // #define R(x) rnd(seed+x)
@@ -166,17 +177,17 @@ float rnd(float x) {
 
 void main() {
     // gl_FragColor = texture2D(backbuffer, uv * .5 + .5);
-    gl_FragColor = vec4(1,0,.5,1);
-    // if(tick==0.) {
-    //     // vec2 uv_ = uv + rnd(uv - t / 1000.) / u_res;
-    //     // uv_ = uv_ / dot(uv_, uv_);
-    //     // uv_ = mod(uv_, 1.);
-    //     // gl_FragColor = vec4(vec3(length(uv_)), 1);
-    //     // gl_FragColor = mix(texture2D(backbuffer, uv * .5 + .5), gl_FragColor, 1. / (tick + 1.));
-    // } else {
-    //     // gl_FragColor = texture2D(backbuffer, uv * .5 + .5);
-    // }
-    // return;
+    // gl_FragColor = vec4(1,0,.5,1);
+    if(tick < AA * AA) {
+        vec2 uv_ = uv * vec2(1, -1) + 4. * vec2(mod(tick, AA), floor(tick / AA)) / AA / u_res;
+        uv_ = uv_ / dot(uv_, uv_);
+        uv_ = mod(uv_, 1.);
+        gl_FragColor = vec4(vec3(length(uv_)), 1);
+        gl_FragColor = mix(texture2D(backbuffer, uv * vec2(1, -1) * .5 + .5), gl_FragColor, 1. / (tick + 1.));
+        // gl_FragColor = mix(texture2D(backbuffer, uv*vec2(1,-1) * .5 + .5), gl_FragColor, 1.);
+    } else {
+        gl_FragColor = texture2D(backbuffer, (uv * vec2(1, -1) * .5 + .5));
+    }
     // if(mod(tick, 2.) == .0) {
     //     gl_FragColor.rgb = 1. - gl_FragColor.rgb;
     // }
