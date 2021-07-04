@@ -41,9 +41,9 @@ uniform float ANGLE_SPREAD;
 vec2 turn(vec2 pos, vec2 vel, float mass) {
 
   vec2 uv = pos * .5 + .5;// + vec2(1, 0) / u_tex_draw_res);
-  vec2 sensorL = uv + (rot(-LOOKUP_ANGLE) * normalize(vel)) * LOOKUP_DIST * mass;
+  vec2 sensorL = uv + (rot(-LOOKUP_ANGLE * mass) * normalize(vel)) * LOOKUP_DIST * mass;
   vec2 sensorC = uv + normalize(vel) * LOOKUP_DIST_CENTER * mass;
-  vec2 sensorR = uv + (rot(LOOKUP_ANGLE) * normalize(vel)) * LOOKUP_DIST * mass;
+  vec2 sensorR = uv + (rot(LOOKUP_ANGLE * mass) * normalize(vel)) * LOOKUP_DIST * mass;
   vec2 sensor0 = uv;
 
   float senseL = texture2D(u_tex_draw, sensorL).a;
@@ -106,6 +106,8 @@ void main() {
   vec2 pos = particle.xy;
   vec2 vel = particle.zw;
   float mass = rnd(id);
+  // float mass = sin(rnd(id)*6.28-u_time);
+  // if(mod(floor(u_time / 4.),2.)==0.) mass==1.-mass;
 
   // init
   if(rnd(id + u_time) < RESPAWN_P || u_tick < 2.) {
