@@ -206,7 +206,7 @@ function cyl(strokeOpacity) {
 }
 
 function setup() {
-    let c = createCanvas(540, 540, WEBGL)
+    let c = createCanvas(400, 400, WEBGL)
     randomSeed(0)
     placeBlocks();
     bg = "#023047";
@@ -295,7 +295,7 @@ function draw() {
         sP = tmp
 
     }
-    noLoop()
+    // noLoop()
 }
 
 function mouseMoved() {
