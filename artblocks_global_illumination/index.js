@@ -1,4 +1,22 @@
+
+
 console.clear();
+const RENDERER = 'ao'// p5, ao, gi
+
+
+let s
+let sP
+let time0 = new Date() / 1000
+let seed
+let b, bP
+let tmp
+let u_bgColor
+let positions, sizes,colors
+function preload() {
+    s = loadShader('s.vert', 's.frag')
+    sP = loadShader('s.vert', 's.frag')
+}
+
 let cam;
 
 function Block(size, position, color) {
@@ -6,7 +24,6 @@ function Block(size, position, color) {
     // this.rotation = rotation.copy();
     this.position = position.copy();
     this.color = color;
-
     this.draw = (strokeOpacity = 255) => {
         // rotateY(PI / 2);
         // resetMatrix()
@@ -88,13 +105,14 @@ function placeBlocks() {
         .map(() => Array(gridSize.z).fill(0));
 
     // chose ramdom pos X, Z of new block
-    for (let n = 0; /*blocks.length < 10*/ n < 8; n++) {
+    for (let n = 0; /*blocks.length < 10*/ n < 10; n++) {
         let blockColor = random(["#8ecae6", "#219ebc", "#ffb703", "#fb8500"]);
 
+
         let blockSize = random(blockSizes).copy();
-        let maxHeight = 999
+        let maxHeight = -999
         let blockPos
-        for (let try_ = 0; try_ < 1; try_++) {
+        for (let try_ = 0; try_ < 10; try_++) {
             let maxHeightTry = 0;
             let blockPosTry = createVector(floor(random(0, gridSize.x - blockSize.x)), 0, floor(random(0, gridSize.z - blockSize.z)));
             for (let x = blockPosTry.x; x < blockPosTry.x + blockSize.x; x++) {
@@ -102,7 +120,7 @@ function placeBlocks() {
                     maxHeightTry = max(maxHeightTry, blocksHeightMap[x][z]);
                 }
             }
-            if (maxHeightTry < maxHeight) {
+            if (maxHeightTry > maxHeight) {
                 maxHeight = maxHeightTry
                 blockPos = blockPosTry
             }
@@ -188,42 +206,97 @@ function cyl(strokeOpacity) {
 }
 
 function setup() {
-    createCanvas(windowHeight, windowHeight, WEBGL);
-    cam = createCamera();
-    // cam.upY(1);
-    cam.ortho(-200, 200, -200, 200, 0.1, 10000);
-    setCamera(cam);
+    let c = createCanvas(540, 540, WEBGL)
+    randomSeed(0)
     placeBlocks();
-    // blocks.forEach((b) => b.draw());
-    bg = "#023047"; //random(["silver", "gray", "white"]);
-    // cam.setPosition(
-    //   300 * sin(frameCount / 100),
-    //   -300,
-    //   300 * cos(frameCount / 100)
-    // );
-    // cam.lookAt(0, 0, 0);
-    cam.setPosition(300, -300, 300);
+    bg = "#023047";
 
-    mouseMoved()
+    if (RENDERER=='p5') {
+        cam = createCamera();
+        cam.ortho(-200, 200, -200, 200, 0.1, 10000);
+        setCamera(cam);
+        cam.setPosition(300, -300, 300);
+        background(bg);
+        noStroke();
+        cam.setPosition(
+            300,// + (mouseX - width / 2) * 8,
+            -300,// + (mouseY - height / 2) * 8,
+            300
+        );
+        cam.lookAt(0, 0, 0);
+        ambientLight(55);
+        lights(10);
+        blocks.forEach((b) => { b.log(); b.draw() });
+    }
+    else if(RENDERER=='ao') {
+        u_bgColor = color(bg).levels.slice(0,3)
+        // pixelDensity(.5)
+        // frameRate(1)
+        b = createGraphics(width, height, WEBGL)
+        bP = createGraphics(width, height, WEBGL)
+        b.background('red')
+        b.circle(0, 0, 100)
+        bP.background('green')
+        bP.circle(0, 0, 100)
+        b.noStroke()
+        bP.noStroke()
+        positions = Array(340)
+            .fill()
+            .map((d, i) => i < blocks.length ? [
+                blocks[i].position.x,
+                blocks[i].position.y,
+                blocks[i].position.z] : [0, 0, 0]
+            ).flat()
+            sizes = Array(340)
+            .fill()
+            .map((d, i) => i < blocks.length ? [
+                blocks[i].size.x,
+                blocks[i].size.y,
+                blocks[i].size.z] : [0, 0, 0]
+            ).flat()
+            colors = Array(340)
+            .fill()
+            .map((d, i) => i < blocks.length ? color(blocks[i].color).levels.slice(0,3) : [0, 0, 0]
+            ).flat()
+            console.log(colors)
+            
+    }
 }
 
 function draw() {
-    // groundBlock.draw(50)
-    // background('#f0e5')
-    noLoop();
+    if (RENDERER=='ao' || RENDERER=='gi') {
+        // background('yellow')
+        b.shader(s)
+        s.setUniform('u_res', [width, height])
+        s.setUniform('t', new Date() / 1000 - time0)
+        s.setUniform('tick', frameCount - 1)
+        s.setUniform('backbuffer', bP)
+        s.setUniform('blocksNumber', blocks.length)
+        s.setUniform('positions', positions)
+        s.setUniform('sizes', sizes)
+        s.setUniform('colors', colors)
+        s.setUniform('gridSize', gridSize.x)
+        s.setUniform('bgColor', u_bgColor)
+        // s.setUniform('arr', Array(1024).fill(2))
+        // s.setUniform('pos', Array(1021).fill(0).map(d=>[1,2,3]))
+
+        // let poss = [random(-4,4),random(-4,4),random(-4,4)]
+        // s.setUniform('posf', [random(-4,4),random(-4,4),random(-4,4),random(-4,4),random(-4,4)])
+        // s.setUniform('arr_', Array(10).fill(3).map(d=>[1,2,3]))
+        // s.setUniform('arr3', Array(1021).fill(4).map(d=>[1,2,3]))
+        b.rect(0, 0, width, height)
+        image(b, -width / 2, -height / 2, width, height)
+        tmp = b
+        b = bP
+        bP = tmp
+
+        tmp = s
+        s = sP
+        sP = tmp
+
+    }
+    noLoop()
 }
 
 function mouseMoved() {
-    background(bg);
-    noStroke();
-    cam.setPosition(
-        300,// + (mouseX - width / 2) * 8,
-        -300,// + (mouseY - height / 2) * 8,
-        300
-    );
-    cam.lookAt(0, 0, 0);
-    ambientLight(55);
-    lights(10);
-    blocks.forEach((b) => { b.log(); b.draw() });
-    loop()
 }
