@@ -11,10 +11,12 @@ let seed
 let b, bP
 let tmp
 let u_bgColor
-let positions, sizes,colors
+let positions, sizes, colors
 function preload() {
-    s = loadShader('s.vert', 's.frag')
-    sP = loadShader('s.vert', 's.frag')
+    if (RENDERER == 'ao' || RENDERER == 'gi') {
+        s = loadShader('s.vert', RENDERER + '.frag')
+        sP = loadShader('s.vert', RENDERER + '.frag')
+    }
 }
 
 let cam;
@@ -211,7 +213,7 @@ function setup() {
     placeBlocks();
     bg = "#023047";
 
-    if (RENDERER=='p5') {
+    if (RENDERER == 'p5') {
         cam = createCamera();
         cam.ortho(-200, 200, -200, 200, 0.1, 10000);
         setCamera(cam);
@@ -228,8 +230,8 @@ function setup() {
         lights(10);
         blocks.forEach((b) => { b.log(); b.draw() });
     }
-    else if(RENDERER=='ao') {
-        u_bgColor = color(bg).levels.slice(0,3)
+    else if (RENDERER == 'ao' || RENDERER=='gi') {
+        u_bgColor = color(bg).levels.slice(0, 3)
         // pixelDensity(.5)
         // frameRate(1)
         b = createGraphics(width, height, WEBGL)
@@ -247,25 +249,25 @@ function setup() {
                 blocks[i].position.y,
                 blocks[i].position.z] : [0, 0, 0]
             ).flat()
-            sizes = Array(340)
+        sizes = Array(340)
             .fill()
             .map((d, i) => i < blocks.length ? [
                 blocks[i].size.x,
                 blocks[i].size.y,
                 blocks[i].size.z] : [0, 0, 0]
             ).flat()
-            colors = Array(340)
+        colors = Array(340)
             .fill()
-            .map((d, i) => i < blocks.length ? color(blocks[i].color).levels.slice(0,3) : [0, 0, 0]
+            .map((d, i) => i < blocks.length ? color(blocks[i].color).levels.slice(0, 3) : [0, 0, 0]
             ).flat()
-            console.log(positions)
-            
+        console.log(positions)
+
     }
 }
 
 function draw() {
     console.log('hasd')
-    if (RENDERER=='ao' || RENDERER=='gi') {
+    if (RENDERER == 'ao' || RENDERER == 'gi') {
         // background('yellow')
         b.shader(s)
         s.setUniform('u_res', [width, height])
