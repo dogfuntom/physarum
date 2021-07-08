@@ -258,12 +258,13 @@ function setup() {
             .fill()
             .map((d, i) => i < blocks.length ? color(blocks[i].color).levels.slice(0,3) : [0, 0, 0]
             ).flat()
-            console.log(colors)
+            console.log(positions)
             
     }
 }
 
 function draw() {
+    console.log('hasd')
     if (RENDERER=='ao' || RENDERER=='gi') {
         // background('yellow')
         b.shader(s)
@@ -272,6 +273,7 @@ function draw() {
         s.setUniform('tick', frameCount - 1)
         s.setUniform('backbuffer', bP)
         s.setUniform('blocksNumber', blocks.length)
+        // console.log(blocks.length)
         s.setUniform('positions', positions)
         s.setUniform('sizes', sizes)
         s.setUniform('colors', colors)

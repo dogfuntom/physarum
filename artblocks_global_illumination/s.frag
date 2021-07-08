@@ -20,7 +20,7 @@ uniform sampler2D backbuffer;
 
 // Play with the two following values to change quality.
 // You want as many samples as your GPU can bear. :)
-#define MAXDEPTH 4
+#define MAXDEPTH 2
 
 // Uncomment to see how many samples never reach a light source
 //#define DEBUG
@@ -37,6 +37,7 @@ float seed = 0.;
 float rand() {
     return fract(sin(seed++) * 43758.5453123);
 }
+mat2 rot(float a){float s=sin(a),c=cos(a);return mat2(c,-s,s,c);}
 
 struct Ray {
     vec3 o, d;
@@ -58,31 +59,77 @@ void initSpheres() {
     spheres[5] = Sphere(1e5, vec3(50., 1e5 + 81.6, 81.6), vec3(0.), vec3(.75), DIFF);
     spheres[6] = Sphere(16.5, vec3(27., 16.5, 47.), vec3(0.), vec3(1.), SPEC);
     spheres[7] = Sphere(16.5, vec3(73., 16.5, 78.), vec3(0.), vec3(.7, 1., .9), REFR);
-    spheres[8] = Sphere(600., vec3(50., 681.33, 81.6), vec3(10.), vec3(0.), DIFF);
+    spheres[8] = Sphere(600., vec3(50., 681.33, 81.6), vec3(5.), vec3(0.), DIFF);
 }
 
+// vec2 SDF(vec3 pos) {
+//     pos.z -= 20.;
+//     pos.y += 5.;
+//     vec2 s1 = vec2(length(pos - vec3(0, -100, 0)) - 100., 6.);
+//     vec2 s2 = vec2(length(pos - vec3(0, 6, 0)) - 1., 8.); // lamp
+//     vec2 s3 = vec2(pos.y, 4.);
+//     vec2 s4 = vec2(length(pos - vec3(-5, 3, 0)) - 3., 4.);
+//     vec2 res = s1;
+//     res = res.x < s2.x ? res : s2;
+//     res = res.x < s3.x ? res : s3;
+//     res = res.x < s4.x ? res : s4;
+//     return res;
+// }
 
-vec2 SDF(vec3 pos) {
-    vec2 s1 = vec2(length(pos - vec3(50., -1e5, 81.6)) - 1e5, 6.);
-    vec2 s2 = vec2(length(pos - vec3(50., 130., 81.6)) - 100., 8.); // lamp
-    vec2 s3 = vec2(length(pos - vec3(27., 16.5, 47.)) - 16.5, 7.);
-    vec2 s4 = vec2(length(pos - vec3(73., 16.5, 78.)) - 16.5, 4.);
+vec2 SDF(vec3 p) {
+    p.z -= 10.;
+    p.y -= -5.;
+    p.xz *= rot(PI/4.);
+    // vec2 s1 = vec2(length(p - vec3(0, -110, 0)) - 100., 6.);
+    vec2 s2 = vec2(length(p - vec3(0, 120, 0)) - 100., 8.); // lamp
+    vec2 s1 = vec2(p.y-1., 4.);
+    // vec2 s4 = vec2(length(p - vec3(5, 1, 4)) - 3., 4.);
     vec2 res = s1;
-    res = res.x<s2.x?res:s2;
-    res = res.x<s3.x?res:s3;
-    res = res.x<s4.x?res:s4;
+    res = res.x < s2.x ? res : s2;
+    // res = res.x < s3.x ? res : s3;
+    // res = res.x < s4.x ? res : s4;
+    // return res;
+
+
+    // float col;
+    // float sp = 1e9;
+    for(int i = 0; i < 340; i++) {
+        if(i >= blocksNumber)
+            break;
+        vec3 pb = p;
+        pb.xz += gridSize / 2.;
+        pb -= positions[i];
+        pb -= sizes[i] / 2.;
+        float cornerR = .05;
+        // pb = abs(pb);
+        // float box = (pb.x+pb.y+pb.z-cornerR)*0.57735027;// TODO заменить на бивел от Гази
+        // float box = length(pb - clamp(pb, -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR)) - cornerR;
+        vec2 box = vec2(length(pb - clamp(pb, -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR)) - cornerR, 4);
+        vec2 l = sizes[i].xz;
+        pb.xz += (l - 1.) / 2.;
+        pb.xz = pb.xz - clamp(floor(pb.xz+.5), vec2(0.), l - 1.);
+        float h=.2;
+        vec2 stud = vec2(max(length(pb.xz) - .28, abs(pb.y - sizes[i].y/2.-h/2.) - h/2.), 4);
+        res=res.x<box.x?res:box;
+        res=res.x<stud.x?res:stud;
+    }
+    // float lamp = length(p - vec3(0, 1200, 0)) - 100.;
+    //     if(sp<lamp){
+    //         sp=lamp;
+    //         col=8.;
+    //     }
+
+    // return vec2(sp,col);
+    // return vec4(sp,col);
     return res;
 }
 
-vec3 GetNormal( vec3 pos )
-{
-    vec2 d = vec2(-1,1)*.01;
-    return normalize(
-        		SDF(pos+d.xxx).x*d.xxx+
-        		SDF(pos+d.yyx).x*d.yyx+
-        		SDF(pos+d.yxy).x*d.yxy+
-        		SDF(pos+d.xyy).x*d.xyy
-        	);
+vec3 GetNormal(vec3 pos) {
+    vec2 d = vec2(-1, 1) * .01;
+    return normalize(SDF(pos + d.xxx).x * d.xxx +
+        SDF(pos + d.yyx).x * d.yyx +
+        SDF(pos + d.yxy).x * d.yxy +
+        SDF(pos + d.xyy).x * d.xyy);
 }
 
 int Trace(Ray ray, out float t, out Sphere s, int avoid) {
@@ -98,10 +145,14 @@ int Trace(Ray ray, out float t, out Sphere s, int avoid) {
         if(d < e)
             break;
     }
-    if(rm.y==4.) s = spheres[4];
-    if(rm.y==6.) s = spheres[6];
-    if(rm.y==7.) s = spheres[7];
-    if(rm.y==8.) s = spheres[8];
+    if(rm.y == 4.)
+        s = spheres[4];
+    if(rm.y == 6.)
+        s = spheres[6];
+    if(rm.y == 7.)
+        s = spheres[7];
+    if(rm.y == 8.)
+        s = spheres[8];
     return int(rm.y);
 }
 
@@ -120,8 +171,7 @@ vec3 radiance(Ray r) {
         if((id = Trace(r, t, obj, id)) < 0)
             break;
         vec3 x = t * r.d + r.o;
-        vec3 n = GetNormal(x), 
-        nl = n * sign(-dot(n, r.d));
+        vec3 n = GetNormal(x), nl = n * sign(-dot(n, r.d));
 
 		//vec3 f = obj.c;
 		//float p = dot(f, vec3(1.2126, 0.7152, 0.0722));
@@ -186,32 +236,16 @@ void main() {
     initSpheres();
     vec2 st = gl_FragCoord.xy / u_res.xy;
     seed = t + u_res.y * gl_FragCoord.x / u_res.x + gl_FragCoord.y / u_res.y;
-	// vec2 uv = 2. * gl_FragCoord.xy / u_res.xy - 1.;
-    vec3 camPos = vec3((2. * .5 * u_res.xy / u_res.xy - 1.) * vec2(48., 40.) + vec2(50., 40.8), 169.);
-    vec3 cz = normalize(vec3(50., 40., 81.6) - camPos);
-    vec3 cx = vec3(1., 0., 0.);
-    vec3 cy = normalize(cross(cx, cz));
-    cx = cross(cz, cy);
+    // vec3 camPos = vec3(uv * 20., 0.);
+    vec3 camPos = vec3(0.);
     vec3 color = texture2D(backbuffer, uv * vec2(1, -1) * .5 + .5).rgb * float(tick);
-    color += radiance(Ray(camPos, normalize(.53135 * (u_res.x / u_res.y * uv.x * cx + uv.y * cy) + cz)));
+    color += radiance(Ray(camPos, normalize(vec3(uv, 1))));
     gl_FragColor = vec4(color / float(tick + 1.), 1.);
-
 }
 
+/*
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+{
 
 
 
@@ -347,38 +381,10 @@ void main() {
 // 		gl_FragColor += texelFetch(iChannel0,ivec2(fragCoord.xy),0);
 //     }
 // }
+}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+*/
 
 // /*
 
