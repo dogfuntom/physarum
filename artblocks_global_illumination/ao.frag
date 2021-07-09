@@ -99,8 +99,8 @@ void main() {
     float d = 0., e, j;
     vec4 rm;
     float camDist = 400.;
-    float focusDistance = camDist - 5.;
-    float blurAmount = 0.;//.8;
+    float focusDistance = camDist - 10.;
+    float blurAmount = 10.8;
     vec2 uv_=uv+random2f()*2./u_res;
     vec3 p, ro = vec3(uv_ * camScale + camOffset, 0);
     vec3 focus = ro + vec3(0, 0, focusDistance);

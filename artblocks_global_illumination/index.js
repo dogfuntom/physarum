@@ -155,12 +155,12 @@ let colors = [
 function placeBlocks() {
     // let blocksNum = 10
     // let gs = 4
-    // let blocksNum = 20
-    // let gs = 8
+    let blocksNum = 20
+    let gs = 8
     // let blocksNum = 40
     // let gs = 12
-    let blocksNum = 80
-    let gs = 24
+    // let blocksNum = 80
+    // let gs = 24
     console.log(gs)
 
     groundBlock = new Block(createVector(gs, 1, gs), createVector(0, -.5, 0),random(colors));
