@@ -105,7 +105,7 @@ let colors = ["#ffb703", "#fb8500", "#8ecae6", "#219ebc", "#023047",]
 
 function placeBlocks() {
     // groundBlock = new Block(createVector(10, 1, 10), createVector(-10, -2, -10));
-    let gs = floor(random(8,20)/2)*2
+    let gs = 10//floor(random(8,20)/2)*2
     gridSize = createVector(gs, gs, gs);
     blockSizes = [
         createVector(1, 1, 1),
@@ -118,17 +118,19 @@ function placeBlocks() {
         // createVector(2, 1, 2),
     ];
 
-    blocks.push(new Block(createVector(1,1,1),createVector(0,mouseY ,0),'#f0f'))
-    blocks.push(new Block(createVector(1,1,1),createVector(40,0,0),'#f0f'))
-    blocks.push(new Block(createVector(1,1,1),createVector(0,0, 10),'#f0f'))
-    blocks.push(new Block(createVector(1,1,1),createVector(0,0,-10),'#f0f'))
+    blocks.push(new Block(createVector(1, 1, 5), createVector(0, 1, 0), '#f0f'))
+    blocks.push(new Block(createVector(3, 1, 1), createVector(0, 0, 0), '#f0f'))
+    return
+    // blocks.push(new Block(createVector(1,1,1),createVector(40,0,0),'#f0f'))
+    // blocks.push(new Block(createVector(1,1,1),createVector(0,0, 10),'#f0f'))
+    // blocks.push(new Block(createVector(1,1,1),createVector(0,0,-10),'#f0f'))
 
     blocksHeightMap = Array(gridSize.x)
         .fill()
         .map(() => Array(gridSize.z).fill(0));
 
     // chose ramdom pos X, Z of new block
-    for (let n = 0; /*blocks.length < 10*/ n < random(10,1000); n++) {
+    for (let n = 0; /*blocks.length < 10*/ n < random(10, 1000); n++) {
         let blockColor = random(colors);
 
         const COMPACT = -1
@@ -200,7 +202,7 @@ function placeBlocks() {
             //             }
             //         }
             let block = new Block(blockSize, blockPos, blockColor);
-            // blocks.push(block);
+            blocks.push(block);
             //     }
         }
     }
@@ -257,6 +259,10 @@ let rot = (vec, ang) => {
     )
 }
 
+
+
+
+
 function setup() {
     let c = createCanvas(500, 500, WEBGL)
     // randomSeed(11)
@@ -284,8 +290,10 @@ function setup() {
         vertices.forEach(v => {
             let pos = v.copy()
             pos.add(b.position)
-        // console.log(pos)
-        let yz = rot([pos.y, -pos.z], u_camAngYZ) // z is mirrored
+            // pos.add(.5)
+            pos.add(b.size.copy().mult(.5))
+            // console.log(pos)
+            let yz = rot([pos.y, -pos.z], u_camAngYZ) // z is mirrored
             pos.y = yz[0]
             pos.z = yz[1]
             let xz = rot([pos.x, -pos.z], u_camAngXZ)
@@ -301,7 +309,7 @@ function setup() {
     viewBox.left = -viewBox.right
     viewBox.width = viewBox.right - viewBox.left
     viewBox.height = viewBox.top - viewBox.bottom
-    viewBox.scale = max(viewBox.width/2, viewBox.height/2, 1)
+    viewBox.scale = max(viewBox.width / 2, viewBox.height / 2, 1)
     viewBox.offset = { x: viewBox.left + viewBox.width / 2, y: viewBox.bottom + viewBox.height / 2 }
     // viewBox.offset = { x: 0, y: 0 }
 
@@ -395,70 +403,70 @@ function draw() {
         sP = tmp
 
     }
-    // if (frameCount > 9) noLoop()
+    if (frameCount > 9) noLoop()
 }
 
 function mouseMoved() {
-u_camAngXZ=mouseX/width*PI
-console.log(mouseX, u_camAngXZ)
+    // u_camAngXZ = mouseX / width * PI
+    // console.log(mouseX, u_camAngXZ)
 
-blocks = []
-    placeBlocks();
-    // Теперь найдём самую верхнюю и самую нижнюю серёдку блока в координатах камеры
-    // для этого у каждого блока координаты цента (вектор) повёрнём на угол А, потом на угол Б.
-    // будем трекать самый левый, самый правый, самый нижний и самый верхний точки. Это и будет вьюпорт.
-    viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
-    blocks.forEach(b => {
-        // console.log(Object.values(b.position))
-        let s = b.size.copy().mult(.5)
-        let vertices = [
-            createVector(s.x, s.y, s.z),
-            createVector(-s.x, s.y, s.z),
-            createVector(s.x, s.y, -s.z),
-            createVector(-s.x, s.y, -s.z),
-            createVector(s.x, -s.y, s.z),
-            createVector(-s.x, -s.y, s.z),
-            createVector(s.x, -s.y, -s.z),
-            createVector(-s.x, -s.y, -s.z),
-        ]
-        vertices.forEach(v => {
-            let pos = v.copy()
-            pos.add(b.position)
-        // console.log(pos)
-        let yz = rot([pos.y, -pos.z], u_camAngYZ) // z is mirrored
-            pos.y = yz[0]
-            pos.z = yz[1]
-            let xz = rot([pos.x, -pos.z], u_camAngXZ)
-            pos.x = xz[0]
-            pos.z = xz[1]
-            // console.log('after', pos)
-            // if(pos.x<viewBox.left)viewBox.left=pos.x
-            if (pos.x > viewBox.right) viewBox.right = pos.x
-            if (pos.y < viewBox.bottom) viewBox.bottom = pos.y
-            if (pos.y > viewBox.top) viewBox.top = pos.y
-        })
-    })
-    viewBox.left = -viewBox.right
-    viewBox.width = viewBox.right - viewBox.left
-    viewBox.height = viewBox.top - viewBox.bottom
-    viewBox.scale = max(viewBox.width/2, viewBox.height/2, 1)
-    viewBox.offset = { x: viewBox.left + viewBox.width / 2, y: viewBox.bottom + viewBox.height / 2 }
-    positions = Array(300)
-    .fill()
-    .map((d, i) => i < blocks.length ? [
-        blocks[i].position.x,
-        blocks[i].position.y,
-        blocks[i].position.z] : [0, 0, 0]
-    ).flat()
-sizes = Array(300)
-    .fill()
-    .map((d, i) => i < blocks.length ? [
-        blocks[i].size.x,
-        blocks[i].size.y,
-        blocks[i].size.z] : [0, 0, 0]
-    ).flat()
-colors = Array(300)
-    .fill()
-    .map((d, i) => i < blocks.length ? color(blocks[i].color).levels.slice(0, 3) : [0, 0, 0]
-    ).flat()
+    // blocks = []
+    // placeBlocks();
+    // // Теперь найдём самую верхнюю и самую нижнюю серёдку блока в координатах камеры
+    // // для этого у каждого блока координаты цента (вектор) повёрнём на угол А, потом на угол Б.
+    // // будем трекать самый левый, самый правый, самый нижний и самый верхний точки. Это и будет вьюпорт.
+    // viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
+    // blocks.forEach(b => {
+    //     // console.log(Object.values(b.position))
+    //     let s = b.size.copy().mult(.5)
+    //     let vertices = [
+    //         createVector(s.x, s.y, s.z),
+    //         createVector(-s.x, s.y, s.z),
+    //         createVector(s.x, s.y, -s.z),
+    //         createVector(-s.x, s.y, -s.z),
+    //         createVector(s.x, -s.y, s.z),
+    //         createVector(-s.x, -s.y, s.z),
+    //         createVector(s.x, -s.y, -s.z),
+    //         createVector(-s.x, -s.y, -s.z),
+    //     ]
+    //     vertices.forEach(v => {
+    //         let pos = v.copy()
+    //         pos.add(b.position)
+    //         // console.log(pos)
+    //         let yz = rot([pos.y, -pos.z], u_camAngYZ) // z is mirrored
+    //         pos.y = yz[0]
+    //         pos.z = yz[1]
+    //         let xz = rot([pos.x, pos.z], u_camAngXZ)
+    //         pos.x = xz[0]
+    //         pos.z = xz[1]
+    //         // console.log('after', pos)
+    //         // if(pos.x<viewBox.left)viewBox.left=pos.x
+    //         if (pos.x > viewBox.right) viewBox.right = pos.x
+    //         if (pos.y < viewBox.bottom) viewBox.bottom = pos.y
+    //         if (pos.y > viewBox.top) viewBox.top = pos.y
+    //     })
+    // })
+    // viewBox.left = -viewBox.right
+    // viewBox.width = viewBox.right - viewBox.left
+    // viewBox.height = viewBox.top - viewBox.bottom
+    // viewBox.scale = max(viewBox.width / 2, viewBox.height / 2, 1)
+    // viewBox.offset = { x: viewBox.left + viewBox.width / 2, y: viewBox.bottom + viewBox.height / 2 }
+    // positions = Array(300)
+    //     .fill()
+    //     .map((d, i) => i < blocks.length ? [
+    //         blocks[i].position.x,
+    //         blocks[i].position.y,
+    //         blocks[i].position.z] : [0, 0, 0]
+    //     ).flat()
+    // sizes = Array(300)
+    //     .fill()
+    //     .map((d, i) => i < blocks.length ? [
+    //         blocks[i].size.x,
+    //         blocks[i].size.y,
+    //         blocks[i].size.z] : [0, 0, 0]
+    //     ).flat()
+    // colors = Array(300)
+    //     .fill()
+    //     .map((d, i) => i < blocks.length ? color(blocks[i].color).levels.slice(0, 3) : [0, 0, 0]
+    //     ).flat()
 }
