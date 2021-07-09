@@ -11,7 +11,7 @@ let seed
 let b, bP
 let tmp
 let u_bgColor
-let positions, sizes, colors
+let positions, sizes
 function preload() {
     if (RENDERER == 'ao' || RENDERER == 'gi') {
         s = loadShader('s.vert', RENDERER + '.frag')
@@ -87,10 +87,11 @@ let blockSizes;
 let blocksHeightMap;
 let gridSize;
 let bg;
+let colors = ["#ffb703", "#fb8500", "#8ecae6", "#219ebc", "#023047",]
 
 function placeBlocks() {
     // groundBlock = new Block(createVector(10, 1, 10), createVector(-10, -2, -10));
-    let gs = 8
+    let gs = 16
     gridSize = createVector(gs, gs, gs);
     blockSizes = [
         createVector(1, 1, 6),
@@ -107,60 +108,69 @@ function placeBlocks() {
         .map(() => Array(gridSize.z).fill(0));
 
     // chose ramdom pos X, Z of new block
-    for (let n = 0; /*blocks.length < 10*/ n < 10; n++) {
-        let blockColor = random(["#8ecae6", "#219ebc", "#ffb703", "#fb8500"]);
+    for (let n = 0; /*blocks.length < 10*/ n < 50; n++) {
+        let blockColor = random(colors);
 
+        const COMPACT = -1
+        const SPARSE = 1
+
+        let strategy = SPARSE
 
         let blockSize = random(blockSizes).copy();
-        let maxHeight = -999
+        let maxHeight = -999 * strategy
         let blockPos
-        for (let try_ = 0; try_ < 10; try_++) {
+        for (let try_ = 0; try_ < 5; try_++) {
             let maxHeightTry = 0;
-            let blockPosTry = createVector(floor(random(0, gridSize.x - blockSize.x)), 0, floor(random(0, gridSize.z - blockSize.z)));
+            let blockPosTry = createVector(floor(random(-gs / 2, gs / 2 - blockSize.x)), 0, floor(random(-gs / 2, gs / 2 - blockSize.z)));
+            // blockPos.x = - blockPos.x - blockSize.x;
             for (let x = blockPosTry.x; x < blockPosTry.x + blockSize.x; x++) {
                 for (let z = blockPosTry.z; z < blockPosTry.z + blockSize.z; z++) {
-                    maxHeightTry = max(maxHeightTry, blocksHeightMap[x][z]);
+                    maxHeightTry = max(maxHeightTry, blocksHeightMap[x + gs / 2][z + gs / 2]);
                 }
             }
-            if (maxHeightTry > maxHeight) {
+            if (maxHeightTry * strategy > maxHeight * strategy) {
                 maxHeight = maxHeightTry
                 blockPos = blockPosTry
             }
         }
         blockPos.y = maxHeight + blockSize.y;
-
+        
         let studL = (studR = 0);
         for (let x = blockPos.x; x < blockPos.x + blockSize.x; x++) {
             for (let z = blockPos.z; z < blockPos.z + blockSize.z; z++) {
-                if (x >= gridSize.x / 2) studR++;
+                if (x >= 0) studR++;
                 else studL++;
             }
         }
         // console.log(blocksHeightMap)
-
-
+        
+        
         //     // три кейса. деталь посерёдке. деталь сбоку. деталь неудачно легла.
         //     // if(studR!=studL || studC != studF) continue
-
+        
         //если лежит по одну сторону от осей или если ровно посерёдке
         // let len = blockPos.copy().sub(gridSize.x/2).mag()
         if ((studR * studL == 0 || studR == studL)/* && len < gs/2*/) {
             for (let x = blockPos.x; x < blockPos.x + blockSize.x; x++) {
                 for (let z = blockPos.z; z < blockPos.z + blockSize.z; z++) {
-                    blocksHeightMap[x][z] = maxHeight + blockSize.y;
+                    blocksHeightMap[x + gs / 2][z + gs / 2] = maxHeight + blockSize.y;
                 }
             }
             let block = new Block(blockSize, blockPos, blockColor);
             blocks.push(block);
-            // если не по центу, добавляе такой же симметричный
+            // если не по центру, добавляем такой же симметричный
             if (studR * studL == 0) {
                 // console.log("------");
                 // console.log(blockSize.x, "size");
                 // console.log(blockPos.x, "before");
-                blockPos.x = gridSize.x - 1 - blockPos.x - blockSize.x + 1;
+                console.log(blockPos)
+                // blockPos.x = gridSize.x - 1 - blockPos.x - blockSize.x + 1;
+                blockPos.x = - blockPos.x - blockSize.x;
+                console.log(blockPos)
                 for (let x = blockPos.x; x < blockPos.x + blockSize.x; x++) {
                     for (let z = blockPos.z; z < blockPos.z + blockSize.z; z++) {
-                        blocksHeightMap[x][z] = maxHeight + blockSize.y;
+                        console.log(x+gs/2,z+gs/2,blocksHeightMap)
+                        blocksHeightMap[x+gs/2][z+gs/2] = maxHeight + blockSize.y;
                     }
                 }
                 let block = new Block(blockSize, blockPos, blockColor);
@@ -207,11 +217,18 @@ function cyl(strokeOpacity) {
     pop();
 }
 
+
+
+
+
+
+
 function setup() {
-    let c = createCanvas(400, 400, WEBGL)
-    randomSeed(0)
+    let c = createCanvas(500, 500, WEBGL)
+    // randomSeed(11)
+    // colors=shuffle(colors)
+    bg = colors.pop()
     placeBlocks();
-    bg = "#023047";
 
     if (RENDERER == 'p5') {
         cam = createCamera();
@@ -230,9 +247,9 @@ function setup() {
         lights(10);
         blocks.forEach((b) => { b.log(); b.draw() });
     }
-    else if (RENDERER == 'ao' || RENDERER=='gi') {
+    else if (RENDERER == 'ao' || RENDERER == 'gi') {
         u_bgColor = color(bg).levels.slice(0, 3)
-        // pixelDensity(.5)
+        pixelDensity(1)
         // frameRate(1)
         b = createGraphics(width, height, WEBGL)
         bP = createGraphics(width, height, WEBGL)
@@ -242,21 +259,21 @@ function setup() {
         bP.circle(0, 0, 100)
         b.noStroke()
         bP.noStroke()
-        positions = Array(340)
+        positions = Array(300)
             .fill()
             .map((d, i) => i < blocks.length ? [
                 blocks[i].position.x,
                 blocks[i].position.y,
                 blocks[i].position.z] : [0, 0, 0]
             ).flat()
-        sizes = Array(340)
+        sizes = Array(300)
             .fill()
             .map((d, i) => i < blocks.length ? [
                 blocks[i].size.x,
                 blocks[i].size.y,
                 blocks[i].size.z] : [0, 0, 0]
             ).flat()
-        colors = Array(340)
+        colors = Array(300)
             .fill()
             .map((d, i) => i < blocks.length ? color(blocks[i].color).levels.slice(0, 3) : [0, 0, 0]
             ).flat()
@@ -271,11 +288,11 @@ function draw() {
         // background('yellow')
         b.shader(s)
         s.setUniform('u_res', [width, height])
+        // console.log(width, height)
         s.setUniform('t', new Date() / 1000 - time0)
         s.setUniform('tick', frameCount - 1)
         s.setUniform('backbuffer', bP)
         s.setUniform('blocksNumber', blocks.length)
-        // console.log(blocks.length)
         s.setUniform('positions', positions)
         s.setUniform('sizes', sizes)
         s.setUniform('colors', colors)
@@ -299,7 +316,7 @@ function draw() {
         sP = tmp
 
     }
-    // noLoop()
+    if(frameCount>9)noLoop()
 }
 
 function mouseMoved() {
