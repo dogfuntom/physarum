@@ -19,6 +19,7 @@ uniform sampler2D backbuffer;
 #define PI 3.1415
 uniform float camScale;
 uniform vec2 camOffset;
+uniform vec2 camAng;
 
 /*
 
@@ -40,7 +41,7 @@ vec4 dist(vec3 p) {
     // p.xz *= rot(t);
     p.x=abs(p.x);
     vec3 col=bgColor;
-    float sp = p.y+3.;
+    float sp = p.y;
     for(int i = 0; i < 340; i++) {
         if(i >= blocksNumber)
             break;
@@ -110,8 +111,8 @@ void main() {
         j = i;
         p = d * rd + ro;
         p.z -= camDist;
-        p.yz *= rot(PI / 4.);
-        p.xz *= rot(PI / 4.);
+        p.yz *= rot(camAng.x);
+        p.xz *= rot(camAng.y);
         rm = dist(p);
         d += e = rm.x;
         if(e < .001)
@@ -123,11 +124,11 @@ void main() {
         gl_FragColor.rgb = bgColor / 255.;
     }
 
-    // if(tick < AA * AA) {
-    gl_FragColor = mix(texture2D(backbuffer, uv * vec2(1, -1) * .5 + .5), gl_FragColor, 1. / (floor(tick / skipLines) + 1.));
-        // gl_FragColor = mix(texture2D(backbuffer, uv*vec2(1,-1) * .5 + .5), gl_FragColor, 1.);
-    // } else {
-        // gl_FragColor = texture2D(backbuffer, (uv * vec2(1, -1) * .5 + .5));
-    // }
+    // // if(tick < AA * AA) {
+    // gl_FragColor = mix(texture2D(backbuffer, uv * vec2(1, -1) * .5 + .5), gl_FragColor, 1. / (floor(tick / skipLines) + 1.));
+    //     // gl_FragColor = mix(texture2D(backbuffer, uv*vec2(1,-1) * .5 + .5), gl_FragColor, 1.);
+    // // } else {
+    //     // gl_FragColor = texture2D(backbuffer, (uv * vec2(1, -1) * .5 + .5));
+    // // }
 
 }

@@ -14,6 +14,9 @@ let u_bgColor
 let u_camDir
 let viewBox
 let positions, sizes
+let u_camAngYZ
+let u_camAngXZ
+
 function preload() {
     if (RENDERER == 'ao' || RENDERER == 'gi') {
         s = loadShader('s.vert', RENDERER + '.frag')
@@ -102,7 +105,7 @@ let colors = ["#ffb703", "#fb8500", "#8ecae6", "#219ebc", "#023047",]
 
 function placeBlocks() {
     // groundBlock = new Block(createVector(10, 1, 10), createVector(-10, -2, -10));
-    let gs = 8
+    let gs = floor(random(8,20)/2)*2
     gridSize = createVector(gs, gs, gs);
     blockSizes = [
         createVector(1, 1, 1),
@@ -115,12 +118,17 @@ function placeBlocks() {
         // createVector(2, 1, 2),
     ];
 
+    blocks.push(new Block(createVector(1,1,1),createVector(0,mouseY ,0),'#f0f'))
+    blocks.push(new Block(createVector(1,1,1),createVector(40,0,0),'#f0f'))
+    blocks.push(new Block(createVector(1,1,1),createVector(0,0, 10),'#f0f'))
+    blocks.push(new Block(createVector(1,1,1),createVector(0,0,-10),'#f0f'))
+
     blocksHeightMap = Array(gridSize.x)
         .fill()
         .map(() => Array(gridSize.z).fill(0));
 
     // chose ramdom pos X, Z of new block
-    for (let n = 0; /*blocks.length < 10*/ n < 20; n++) {
+    for (let n = 0; /*blocks.length < 10*/ n < random(10,1000); n++) {
         let blockColor = random(colors);
 
         const COMPACT = -1
@@ -147,7 +155,7 @@ function placeBlocks() {
             }
         }
         blockPos.y = maxHeight + blockSize.y;
-        if (blockPos.x == 0) console.log(blockPos, '00000000')
+        // if (blockPos.x == 0) console.log(blockPos, '00000000')
 
         let studL = 0
         let studR = 0
@@ -160,11 +168,11 @@ function placeBlocks() {
             }
         }
         // console.log(blocksHeightMap)
-        
-        
+
+
         // //     // три кейса. деталь посерёдке. деталь сбоку. деталь неудачно легла.
         // //     // if(studR!=studL || studC != studF) continue
-        
+
         //если лежит по одну сторону от осей или если ровно посерёдке
         // // let len = blockPos.copy().sub(gridSize.x/2).mag()
         if ((studL == 0 || studR == studL)/* && len < gs/2*/) {
@@ -178,9 +186,9 @@ function placeBlocks() {
             //     blocks.push(block);
             //     // если не по центру, добавляем такой же симметричный
             //     if (studR * studL == 0) {
-                //         // console.log("------");
-                //         // console.log(blockSize.x, "size");
-                //         // console.log(blockPos.x, "before");
+            //         // console.log("------");
+            //         // console.log(blockSize.x, "size");
+            //         // console.log(blockPos.x, "before");
             //         console.log(blockPos)
             //         // blockPos.x = gridSize.x - 1 - blockPos.x - blockSize.x + 1;
             //         blockPos.x = - blockPos.x - blockSize.x;
@@ -192,7 +200,7 @@ function placeBlocks() {
             //             }
             //         }
             let block = new Block(blockSize, blockPos, blockColor);
-            blocks.push(block);
+            // blocks.push(block);
             //     }
         }
     }
@@ -251,43 +259,53 @@ let rot = (vec, ang) => {
 
 function setup() {
     let c = createCanvas(500, 500, WEBGL)
-    // u_camDir = createVector(1,1,1)
-    let u_camAngYZ = PI / 4
-    let u_camAngXZ = PI / 4
-    // u_camAngleA=u_camDir.angleBetween(createVector(1,0,0))
-    // u_camAngleB=u_camDir.angleBetween(createVector(1,0,0))
     // randomSeed(11)
-    // colors=shuffle(colors)
+    u_camAngYZ = PI / 4
+    u_camAngXZ = PI / 4
     bg = colors.pop()
     placeBlocks();
     // Теперь найдём самую верхнюю и самую нижнюю серёдку блока в координатах камеры
     // для этого у каждого блока координаты цента (вектор) повёрнём на угол А, потом на угол Б.
     // будем трекать самый левый, самый правый, самый нижний и самый верхний точки. Это и будет вьюпорт.
     viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
-    console.log("blocks", blocks)
     blocks.forEach(b => {
-        // console.log('before', b)
-        let pos = b.position.copy()
+        // console.log(Object.values(b.position))
+        let s = b.size.copy().mult(.5)
+        let vertices = [
+            createVector(s.x, s.y, s.z),
+            createVector(-s.x, s.y, s.z),
+            createVector(s.x, s.y, -s.z),
+            createVector(-s.x, s.y, -s.z),
+            createVector(s.x, -s.y, s.z),
+            createVector(-s.x, -s.y, s.z),
+            createVector(s.x, -s.y, -s.z),
+            createVector(-s.x, -s.y, -s.z),
+        ]
+        vertices.forEach(v => {
+            let pos = v.copy()
+            pos.add(b.position)
+        // console.log(pos)
         let yz = rot([pos.y, -pos.z], u_camAngYZ) // z is mirrored
-        pos.y = yz[0]
-        pos.z = yz[1]
-        let xz = rot([pos.x, pos.z], u_camAngXZ) // z is not mirrored anymore
-        pos.x = xz[0]
-        pos.z = xz[1]
-        // console.log('after', pos)
-        // if(pos.x<viewBox.left)viewBox.left=pos.x
-        if (pos.x > viewBox.right) viewBox.right = pos.x
-        if (pos.y < viewBox.bottom) viewBox.bottom = pos.y
-        if (pos.y > viewBox.top) viewBox.top = pos.y
+            pos.y = yz[0]
+            pos.z = yz[1]
+            let xz = rot([pos.x, -pos.z], u_camAngXZ)
+            pos.x = xz[0]
+            pos.z = xz[1]
+            // console.log('after', pos)
+            // if(pos.x<viewBox.left)viewBox.left=pos.x
+            if (pos.x > viewBox.right) viewBox.right = pos.x
+            if (pos.y < viewBox.bottom) viewBox.bottom = pos.y
+            if (pos.y > viewBox.top) viewBox.top = pos.y
+        })
     })
     viewBox.left = -viewBox.right
     viewBox.width = viewBox.right - viewBox.left
     viewBox.height = viewBox.top - viewBox.bottom
-    viewBox.scale = max(viewBox.width, viewBox.height, 16)
-    // viewBox.offset={x:viewBox.left+viewBox.width/2,y:viewBox.bottom+viewBox.height/2}
-    viewBox.offset = { x: 0, y: 0 }
+    viewBox.scale = max(viewBox.width/2, viewBox.height/2, 1)
+    viewBox.offset = { x: viewBox.left + viewBox.width / 2, y: viewBox.bottom + viewBox.height / 2 }
+    // viewBox.offset = { x: 0, y: 0 }
 
-    console.log(viewBox)
+    // console.log(viewBox)
     if (RENDERER == 'p5') {
         cam = createCamera();
         cam.ortho(-200, 200, -200, 200, 0.1, 10000);
@@ -335,13 +353,13 @@ function setup() {
             .fill()
             .map((d, i) => i < blocks.length ? color(blocks[i].color).levels.slice(0, 3) : [0, 0, 0]
             ).flat()
-        console.log(positions)
+        // console.log(positions)
 
     }
 }
 
 function draw() {
-    console.log('hasd')
+    // console.log('hasd')
     if (RENDERER == 'ao' || RENDERER == 'gi') {
         // background('yellow')
         b.shader(s)
@@ -356,8 +374,9 @@ function draw() {
         s.setUniform('colors', colors)
         s.setUniform('gridSize', gridSize.x)
         s.setUniform('bgColor', u_bgColor)
-        s.setUniform('camScale', viewBox.scale * .7)
+        s.setUniform('camScale', viewBox.scale)
         s.setUniform('camOffset', [viewBox.offset.x, viewBox.offset.y])
+        s.setUniform('camAng', [u_camAngYZ, u_camAngXZ])
         // s.setUniform('arr', Array(1024).fill(2))
         // s.setUniform('pos', Array(1021).fill(0).map(d=>[1,2,3]))
 
@@ -380,4 +399,66 @@ function draw() {
 }
 
 function mouseMoved() {
+u_camAngXZ=mouseX/width*PI
+console.log(mouseX, u_camAngXZ)
+
+blocks = []
+    placeBlocks();
+    // Теперь найдём самую верхнюю и самую нижнюю серёдку блока в координатах камеры
+    // для этого у каждого блока координаты цента (вектор) повёрнём на угол А, потом на угол Б.
+    // будем трекать самый левый, самый правый, самый нижний и самый верхний точки. Это и будет вьюпорт.
+    viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
+    blocks.forEach(b => {
+        // console.log(Object.values(b.position))
+        let s = b.size.copy().mult(.5)
+        let vertices = [
+            createVector(s.x, s.y, s.z),
+            createVector(-s.x, s.y, s.z),
+            createVector(s.x, s.y, -s.z),
+            createVector(-s.x, s.y, -s.z),
+            createVector(s.x, -s.y, s.z),
+            createVector(-s.x, -s.y, s.z),
+            createVector(s.x, -s.y, -s.z),
+            createVector(-s.x, -s.y, -s.z),
+        ]
+        vertices.forEach(v => {
+            let pos = v.copy()
+            pos.add(b.position)
+        // console.log(pos)
+        let yz = rot([pos.y, -pos.z], u_camAngYZ) // z is mirrored
+            pos.y = yz[0]
+            pos.z = yz[1]
+            let xz = rot([pos.x, -pos.z], u_camAngXZ)
+            pos.x = xz[0]
+            pos.z = xz[1]
+            // console.log('after', pos)
+            // if(pos.x<viewBox.left)viewBox.left=pos.x
+            if (pos.x > viewBox.right) viewBox.right = pos.x
+            if (pos.y < viewBox.bottom) viewBox.bottom = pos.y
+            if (pos.y > viewBox.top) viewBox.top = pos.y
+        })
+    })
+    viewBox.left = -viewBox.right
+    viewBox.width = viewBox.right - viewBox.left
+    viewBox.height = viewBox.top - viewBox.bottom
+    viewBox.scale = max(viewBox.width/2, viewBox.height/2, 1)
+    viewBox.offset = { x: viewBox.left + viewBox.width / 2, y: viewBox.bottom + viewBox.height / 2 }
+    positions = Array(300)
+    .fill()
+    .map((d, i) => i < blocks.length ? [
+        blocks[i].position.x,
+        blocks[i].position.y,
+        blocks[i].position.z] : [0, 0, 0]
+    ).flat()
+sizes = Array(300)
+    .fill()
+    .map((d, i) => i < blocks.length ? [
+        blocks[i].size.x,
+        blocks[i].size.y,
+        blocks[i].size.z] : [0, 0, 0]
+    ).flat()
+colors = Array(300)
+    .fill()
+    .map((d, i) => i < blocks.length ? color(blocks[i].color).levels.slice(0, 3) : [0, 0, 0]
+    ).flat()
 }
