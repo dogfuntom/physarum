@@ -12,6 +12,7 @@ let b, bP
 let tmp
 let u_bgColor
 let u_camDir
+let viewBox
 let positions, sizes
 function preload() {
     if (RENDERER == 'ao' || RENDERER == 'gi') {
@@ -82,6 +83,11 @@ function Block(size, position, color) {
     };
 }
 
+
+
+
+
+
 let blocks = [];
 let groundBlock;
 let blockSizes;
@@ -90,18 +96,23 @@ let gridSize;
 let bg;
 let colors = ["#ffb703", "#fb8500", "#8ecae6", "#219ebc", "#023047",]
 
+
+
+
+
 function placeBlocks() {
     // groundBlock = new Block(createVector(10, 1, 10), createVector(-10, -2, -10));
-    let gs = 16
+    let gs = 8
     gridSize = createVector(gs, gs, gs);
     blockSizes = [
-        createVector(1, 1, 6),
-        createVector(1, 1, 2),
-        createVector(2, 1, 1),
-        createVector(1, 1, 2),
-        createVector(2, 1, 4),
+        createVector(1, 1, 1),
+        // createVector(1, 1, 6),
         createVector(4, 1, 2),
-        createVector(2, 1, 2),
+        // createVector(1, 1, 2),
+        // createVector(2, 1, 1),
+        // createVector(1, 1, 2),
+        createVector(2, 1, 4),
+        // createVector(2, 1, 2),
     ];
 
     blocksHeightMap = Array(gridSize.x)
@@ -109,20 +120,21 @@ function placeBlocks() {
         .map(() => Array(gridSize.z).fill(0));
 
     // chose ramdom pos X, Z of new block
-    for (let n = 0; /*blocks.length < 10*/ n < 50; n++) {
+    for (let n = 0; /*blocks.length < 10*/ n < 20; n++) {
         let blockColor = random(colors);
 
         const COMPACT = -1
         const SPARSE = 1
 
-        let strategy = SPARSE
+        let strategy = COMPACT
 
         let blockSize = random(blockSizes).copy();
         let maxHeight = -999 * strategy
         let blockPos
-        for (let try_ = 0; try_ < 5; try_++) {
+        for (let try_ = 0; try_ < 1; try_++) {
             let maxHeightTry = 0;
-            let blockPosTry = createVector(floor(random(- blockSize.x/2, gs/2-blockSize.x)), 0, floor(random(-gs / 2, gs / 2 - blockSize.z)));
+            let blockPosTry = createVector(floor(random(- blockSize.x / 2, gs / 2 - blockSize.x + 1)), 0, floor(random(-gs / 2, gs / 2 - blockSize.z)));
+            // Array(1000).fill().forEach(()=>console.assert(floor(random(- blockSize.x / 2, gs / 2 - blockSize.x))!=0))
             // blockPos.x = - blockPos.x - blockSize.x;
             for (let x = blockPosTry.x; x < blockPosTry.x + blockSize.x; x++) {
                 for (let z = blockPosTry.z; z < blockPosTry.z + blockSize.z; z++) {
@@ -135,49 +147,54 @@ function placeBlocks() {
             }
         }
         blockPos.y = maxHeight + blockSize.y;
-        
-        // let studL = (studR = 0);
-        // for (let x = blockPos.x; x < blockPos.x + blockSize.x; x++) {
-        //     for (let z = blockPos.z; z < blockPos.z + blockSize.z; z++) {
-        //         if (x >= 0) studR++;
-        //         else studL++;
-        //     }
-        // }
-        // // console.log(blocksHeightMap)
+        if (blockPos.x == 0) console.log(blockPos, '00000000')
+
+        let studL = 0
+        let studR = 0
+
+
+        for (let x = blockPos.x; x < blockPos.x + blockSize.x; x++) {
+            for (let z = blockPos.z; z < blockPos.z + blockSize.z; z++) {
+                if (x >= 0) studR++;
+                else studL++;
+            }
+        }
+        // console.log(blocksHeightMap)
         
         
         // //     // три кейса. деталь посерёдке. деталь сбоку. деталь неудачно легла.
         // //     // if(studR!=studL || studC != studF) continue
         
-        // //если лежит по одну сторону от осей или если ровно посерёдке
+        //если лежит по одну сторону от осей или если ровно посерёдке
         // // let len = blockPos.copy().sub(gridSize.x/2).mag()
-        // if ((studR * studL == 0 || studR == studL)/* && len < gs/2*/) {
+        if ((studL == 0 || studR == studL)/* && len < gs/2*/) {
+            // console.assert(studL==0||studL==studR, blockPos, blockSize)
             for (let x = blockPos.x; x < blockPos.x + blockSize.x; x++) {
                 for (let z = blockPos.z; z < blockPos.z + blockSize.z; z++) {
                     blocksHeightMap[x + gs / 2][z + gs / 2] = maxHeight + blockSize.y;
                 }
             }
-        //     let block = new Block(blockSize, blockPos, blockColor);
-        //     blocks.push(block);
-        //     // если не по центру, добавляем такой же симметричный
-        //     if (studR * studL == 0) {
-        //         // console.log("------");
-        //         // console.log(blockSize.x, "size");
-        //         // console.log(blockPos.x, "before");
-        //         console.log(blockPos)
-        //         // blockPos.x = gridSize.x - 1 - blockPos.x - blockSize.x + 1;
-        //         blockPos.x = - blockPos.x - blockSize.x;
-        //         console.log(blockPos)
-        //         for (let x = blockPos.x; x < blockPos.x + blockSize.x; x++) {
-        //             for (let z = blockPos.z; z < blockPos.z + blockSize.z; z++) {
-        //                 console.log(x+gs/2,z+gs/2,blocksHeightMap)
-        //                 blocksHeightMap[x+gs/2][z+gs/2] = maxHeight + blockSize.y;
-        //             }
-        //         }
-                let block = new Block(blockSize, blockPos, blockColor);
-                blocks.push(block);
-        //     }
-        // }
+            //     let block = new Block(blockSize, blockPos, blockColor);
+            //     blocks.push(block);
+            //     // если не по центру, добавляем такой же симметричный
+            //     if (studR * studL == 0) {
+                //         // console.log("------");
+                //         // console.log(blockSize.x, "size");
+                //         // console.log(blockPos.x, "before");
+            //         console.log(blockPos)
+            //         // blockPos.x = gridSize.x - 1 - blockPos.x - blockSize.x + 1;
+            //         blockPos.x = - blockPos.x - blockSize.x;
+            //         console.log(blockPos)
+            //         for (let x = blockPos.x; x < blockPos.x + blockSize.x; x++) {
+            //             for (let z = blockPos.z; z < blockPos.z + blockSize.z; z++) {
+            //                 console.log(x+gs/2,z+gs/2,blocksHeightMap)
+            //                 blocksHeightMap[x+gs/2][z+gs/2] = maxHeight + blockSize.y;
+            //             }
+            //         }
+            let block = new Block(blockSize, blockPos, blockColor);
+            blocks.push(block);
+            //     }
+        }
     }
 }
 
@@ -222,15 +239,55 @@ function cyl(strokeOpacity) {
 
 
 
-
+let rot = (vec, ang) => {
+    // ang = -ang * (Math.PI/180);
+    var cos = Math.cos(ang);
+    var sin = Math.sin(ang);
+    return new Array(
+        vec[0] * cos - vec[1] * sin,
+        vec[0] * sin + vec[1] * cos
+    )
+}
 
 function setup() {
     let c = createCanvas(500, 500, WEBGL)
+    // u_camDir = createVector(1,1,1)
+    let u_camAngYZ = PI / 4
+    let u_camAngXZ = PI / 4
+    // u_camAngleA=u_camDir.angleBetween(createVector(1,0,0))
+    // u_camAngleB=u_camDir.angleBetween(createVector(1,0,0))
     // randomSeed(11)
     // colors=shuffle(colors)
     bg = colors.pop()
     placeBlocks();
+    // Теперь найдём самую верхнюю и самую нижнюю серёдку блока в координатах камеры
+    // для этого у каждого блока координаты цента (вектор) повёрнём на угол А, потом на угол Б.
+    // будем трекать самый левый, самый правый, самый нижний и самый верхний точки. Это и будет вьюпорт.
+    viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
+    console.log("blocks", blocks)
+    blocks.forEach(b => {
+        // console.log('before', b)
+        let pos = b.position.copy()
+        let yz = rot([pos.y, -pos.z], u_camAngYZ) // z is mirrored
+        pos.y = yz[0]
+        pos.z = yz[1]
+        let xz = rot([pos.x, pos.z], u_camAngXZ) // z is not mirrored anymore
+        pos.x = xz[0]
+        pos.z = xz[1]
+        // console.log('after', pos)
+        // if(pos.x<viewBox.left)viewBox.left=pos.x
+        if (pos.x > viewBox.right) viewBox.right = pos.x
+        if (pos.y < viewBox.bottom) viewBox.bottom = pos.y
+        if (pos.y > viewBox.top) viewBox.top = pos.y
+    })
+    viewBox.left = -viewBox.right
+    viewBox.width = viewBox.right - viewBox.left
+    viewBox.height = viewBox.top - viewBox.bottom
+    viewBox.scale = max(viewBox.width, viewBox.height, 16)
+    // viewBox.offset={x:viewBox.left+viewBox.width/2,y:viewBox.bottom+viewBox.height/2}
+    viewBox.offset = { x: 0, y: 0 }
 
+    console.log(viewBox)
     if (RENDERER == 'p5') {
         cam = createCamera();
         cam.ortho(-200, 200, -200, 200, 0.1, 10000);
@@ -299,6 +356,8 @@ function draw() {
         s.setUniform('colors', colors)
         s.setUniform('gridSize', gridSize.x)
         s.setUniform('bgColor', u_bgColor)
+        s.setUniform('camScale', viewBox.scale * .7)
+        s.setUniform('camOffset', [viewBox.offset.x, viewBox.offset.y])
         // s.setUniform('arr', Array(1024).fill(2))
         // s.setUniform('pos', Array(1021).fill(0).map(d=>[1,2,3]))
 
@@ -317,7 +376,7 @@ function draw() {
         sP = tmp
 
     }
-    if(frameCount>9)noLoop()
+    // if (frameCount > 9) noLoop()
 }
 
 function mouseMoved() {

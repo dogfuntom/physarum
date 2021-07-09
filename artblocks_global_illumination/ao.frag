@@ -17,6 +17,8 @@ uniform vec2 m;
 uniform vec2 u_res;
 uniform sampler2D backbuffer;
 #define PI 3.1415
+uniform float camScale;
+uniform vec2 camOffset;
 
 /*
 
@@ -36,8 +38,9 @@ mat2 rot(float a) {
 
 vec4 dist(vec3 p) {
     // p.xz *= rot(t);
-    vec3 col;
-    float sp = 999.;
+    p.x=abs(p.x);
+    vec3 col=bgColor;
+    float sp = p.y+3.;
     for(int i = 0; i < 340; i++) {
         if(i >= blocksNumber)
             break;
@@ -75,7 +78,7 @@ vec3 norm(vec3 p) {
 vec2 random2f() {
     vec2 rn = vec2(rnd(length(uv) - t), rnd(length(uv) - t - .1));
     // rn = pow(4.0 * rn * (1.0 - rn), vec2(4)); // the bell shape
-    // rn = tan((rn-.5)*PI)/15.+.5;
+    // rn = tan((rn-.5)*PI)/10.+.5;
     float k = .5;
     vec2 a;
     a.x = .5*pow(2.0*((rn.x<0.5)?rn.x:1.0-rn.x), k);
@@ -96,9 +99,9 @@ void main() {
     vec4 rm;
     float camDist = 40.;
     float focusDistance = camDist - 5.;
-    float blurAmount = .8;
+    float blurAmount = 0.;//.8;
     vec2 uv_=uv+random2f()*2./u_res;
-    vec3 p, ro = vec3(uv_ * 8., 0);
+    vec3 p, ro = vec3(uv_ * camScale + camOffset, 0);
     vec3 focus = ro + vec3(0, 0, focusDistance);
     ro.xy += blurAmount * normalize(random2f())*rnd(length(uv_)-t-.2);
     vec3 rd = normalize(focus - ro);
@@ -108,7 +111,7 @@ void main() {
         p = d * rd + ro;
         p.z -= camDist;
         p.yz *= rot(PI / 4.);
-        // p.xz *= rot(PI / 4.);
+        p.xz *= rot(PI / 4.);
         rm = dist(p);
         d += e = rm.x;
         if(e < .001)
