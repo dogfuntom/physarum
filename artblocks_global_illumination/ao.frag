@@ -38,8 +38,8 @@ mat2 rot(float a) {
 }
 
 vec4 dist(vec3 p) {
-    // p.xz *= rot(t);
-    // p.x=abs(p.x);
+    // p.xz *= rot(t*.1);
+    p.x=abs(p.x);
     vec3 col=bgColor;
     float sp = 9999.;//p.y;
     for(int i = 0; i < 340; i++) {
