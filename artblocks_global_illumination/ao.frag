@@ -41,7 +41,7 @@ vec4 dist(vec3 p) {
     // p.xz *= rot(t*.1);
     p.x=abs(p.x);
     vec3 col=bgColor;
-    float sp = 9999.;//p.y;
+    float sp = p.y+1.;
     for(int i = 0; i < 340; i++) {
         if(i >= blocksNumber)
             break;
@@ -98,7 +98,7 @@ void main() {
     }
     float d = 0., e, j;
     vec4 rm;
-    float camDist = 40.;
+    float camDist = 400.;
     float focusDistance = camDist - 5.;
     float blurAmount = 0.;//.8;
     vec2 uv_=uv+random2f()*2./u_res;
@@ -120,15 +120,15 @@ void main() {
     }
     // gl_FragColor = vec4(vec3(10. / j) * rm.yzw / 255., 1.);
     gl_FragColor = vec4(vec3(vec3(10. / j) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5) * rm.yzw / 255., 1.);
-    if(j >= 98.) {
-        gl_FragColor.rgb = bgColor / 255.;
-    }
+    // if(j >= 98.) {
+    //     gl_FragColor.rgb = bgColor / 255.;
+    // }
 
-    // // if(tick < AA * AA) {
-    // gl_FragColor = mix(texture2D(backbuffer, uv * vec2(1, -1) * .5 + .5), gl_FragColor, 1. / (floor(tick / skipLines) + 1.));
-    //     // gl_FragColor = mix(texture2D(backbuffer, uv*vec2(1,-1) * .5 + .5), gl_FragColor, 1.);
-    // // } else {
-    //     // gl_FragColor = texture2D(backbuffer, (uv * vec2(1, -1) * .5 + .5));
-    // // }
+    // if(tick < AA * AA) {
+    gl_FragColor = mix(texture2D(backbuffer, uv * vec2(1, -1) * .5 + .5), gl_FragColor, 1. / (floor(tick / skipLines) + 1.));
+        // gl_FragColor = mix(texture2D(backbuffer, uv*vec2(1,-1) * .5 + .5), gl_FragColor, 1.);
+    // } else {
+        // gl_FragColor = texture2D(backbuffer, (uv * vec2(1, -1) * .5 + .5));
+    // }
 
 }
