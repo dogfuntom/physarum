@@ -13,7 +13,7 @@ const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.LINEAR, wrap:
 
 const n = 1000
 const m = n
-let size = 3000
+let size = 600
 let draw1 = twgl.createFramebufferInfo(gl, attachments, size, size)
 let draw2 = twgl.createFramebufferInfo(gl, attachments, size, size)
 
@@ -67,7 +67,7 @@ var obj = {
   RESPAWN_P: .001,
   DIFFUSE_RADIUS: 1,
   FRICTION: .1,
-  RES: 1000,
+  RES: size,
   // RESPAW: true,
   record: function () {
     if (gifConfig.isRecording) {
@@ -84,7 +84,7 @@ var obj = {
     gui.__controllers.forEach(c=>{
       console.log(c.property)
       if(c.constructor.name != 'NumberControllerSlider') return
-      if(c.property == 'LIGHTNESS') return
+      if(['LIGHTNESS','RESPAWN_P','REPULSION'].includes(c.property)) return
       c.setValue(c.__min+Math.random()*(c.__max-c.__min))
     })
   }

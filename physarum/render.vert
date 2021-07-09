@@ -11,8 +11,11 @@ varying vec2 position;
 
 uniform float DEPOSITE;
 
-// #define rnd(x) fract(54321.987 * sin(987.12345 * x))
 #pragma glslify: snoise2d = require(../modules/math/glsl-noise/simplex/2d.glsl)
+#pragma glslify: random = require(glsl-random)
+float rnd(float x) {
+  return random(vec2(x * .0001));
+}
 
 void main() {
   vec4 particle = texture2D(u_tex_fbo, v_position); // v_position делаем вручную в JS
@@ -40,8 +43,10 @@ void main() {
   // color.a = clamp(1. / u_time, 0., 1.);
   // color.a = (.5 + .5 * sin(u_time * 1.));// * u_time / exp(u_time);// / u_time;
   float velCol = smoothstep(.0,.01,length(vel)*.1);
-  color.rgb = vec3(pow(velCol,.1), pow(velCol,.6), pow(velCol,.2))*.0001;
+  color.rgb = vec3(pow(velCol,.1), pow(velCol,.6), pow(velCol,.2))*.0001; // instagram magents color
+  // color.rgb = vec3(v_mass,0,1.-v_mass)*.0001;
   color.a = DEPOSITE;
+  // color.a = DEPOSITE * pow(sin((u_time-length(pos))*10.)*.1+.9, 8.);
 
   position = pos;
 }

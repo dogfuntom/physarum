@@ -114,7 +114,7 @@ void main() {
     // gl_FragColor.r = (rnd(id + 1. + u_time * .001 + length(pos)) * 2. - 1.);
     // gl_FragColor.g = (rnd(id + 2. + u_time * .001 + length(pos)) * 2. - 1.);
     float angle = rnd(id + u_time * .001 + length(pos)) * 2. * 3.1415;
-    gl_FragColor.rg = vec2(.2, 0) * rot(angle);
+    gl_FragColor.rg = vec2(.6, 0) * rot(angle);
     gl_FragColor.ba = vec2(.0001, 0) * STEP_SIZE * rot(rnd(id) * 2. * 3.1415);
   }
 
@@ -141,15 +141,15 @@ void main() {
     // float repulsion = 1. / length(vecToCenter);
     // vel -= sign(rnd(id) - .9) * repulsion * vec2(.0001, 0) * rot(atan(vecToCenter.y, vecToCenter.x));
 
-    // reflect from circle
-    pos = fract(pos * .5 + .5) * 2. - 1.;
-    if(length(pos) > .9) {
-      pos = normalize(pos) * .9;
-      vec2 n=normalize(vec2(pos));
-      vel = reflect(vel, -n);
-    }
+    // // reflect from circle
+    // if(length(pos) > .9) {
+    //   pos = normalize(pos) * .9;
+    //   vec2 n=normalize(vec2(pos));
+    //   vel = reflect(vel, -n);
+    // }
 
     pos += vel;// / mass;
+    pos = fract(pos * .5 + .5) * 2. - 1.;
     gl_FragColor = vec4(pos, vel);
   }
 }
