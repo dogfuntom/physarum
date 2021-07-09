@@ -48,7 +48,7 @@ vec4 dist(vec3 p) {
         vec3 pb = p;
         // pb += gridSize / 2.;
         pb -= positions[i];
-        pb -= sizes[i] / 2.;
+        // pb -= sizes[i] / 2.;
         // float box = max(abs(pb.z) - 1., max(abs(pb.x) - 1., abs(pb.y) - 1.));
         float cornerR = .05;
         // pb = abs(pb);
