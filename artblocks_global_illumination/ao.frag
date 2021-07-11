@@ -2,43 +2,33 @@ precision highp float;
 varying vec2 uv;
 uniform float t;
 uniform float tick;
-// uniform float seed;
-uniform float gridSize;
 uniform int blocksNumber;
-// uniform float arr[1024];
 uniform vec3 positions[300];
 uniform vec3 bgColor;
 uniform vec3 sizes[300];
 uniform vec3 colors[300];
-// uniform float posf[5];
-// uniform vec3 arr3[1021];
-// uniform vec3 arr_[10];
-uniform vec2 m;
+// uniform vec2 m;
 uniform vec2 u_res;
 uniform sampler2D backbuffer;
-#define PI 3.1415
 uniform float camScale;
 uniform vec2 camOffset;
 uniform vec2 camAng;
-
-/*
-
-План такой
-- 10 Передаю размеры и координаты кубиков из лего-части. Старый рендер тоже оставляю, делаю опционаьным.
-- Координаты оставляю в текущем формате, в глсл преобразовываю.
-- Перетаскиваю ГИ
-
-*/ 
-
+#define PI 3.1415
 #define rnd(x) fract(54321.987 * sin(987.12345 * x))
+#define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
 
-mat2 rot(float a) {
-    float s = sin(a), c = cos(a);
-    return mat2(c, -s, s, c);
+vec2 random2f() {
+    vec2 rn = vec2(rnd(length(uv) - t), rnd(length(uv) - t - .1));
+    float k = .5;
+    vec2 a;
+    a.x = .5*pow(2.0*((rn.x<0.5)?rn.x:1.0-rn.x), k);
+    a.y = .5*pow(2.0*((rn.y<0.5)?rn.y:1.0-rn.y), k);
+    rn.x = (rn.x<0.5)?a.x:1.0-a.x;
+    rn.y = (rn.y<0.5)?a.y:1.0-a.y;
+    return rn * 2. - 1.;
 }
 
 vec4 dist(vec3 p) {
-    // p.xz *= rot(t*.1);
     p.x=abs(p.x);
     vec3 col=bgColor;
     float sp = p.y+1.;
@@ -46,16 +36,10 @@ vec4 dist(vec3 p) {
         if(i >= blocksNumber)
             break;
         vec3 pb = p;
-        // pb += gridSize / 2.;
         pb -= positions[i];
-        // pb -= sizes[i] / 2.;
-        // float box = max(abs(pb.z) - 1., max(abs(pb.x) - 1., abs(pb.y) - 1.));
         float cornerR = .05;
-        // pb = abs(pb);
         // float box = (pb.x+pb.y+pb.z-cornerR)*0.57735027;// TODO заменить на бивел от Гази
         float box = length(pb - clamp(pb, -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR)) - cornerR*1.4;
-        // pb.xz =mod(pb.xz,2.)-1.;
-        // pb.xz = pb.xz - 1. * clamp(ceil(p.xz / 1.), - sizes[i].xz, sizes[i].xz);
         vec2 l = sizes[i].xz;
         pb.xz += (l - 1.) / 2.;
         pb.xz = pb.xz - clamp(floor(pb.xz + .5), vec2(0.), l - 1.);
@@ -76,19 +60,6 @@ vec3 norm(vec3 p) {
     return normalize(vec3(dist(p + e.xyy).x - dist(p - e.xyy).x, dist(p + e.yxy).x - dist(p - e.yxy).x, dist(p + e.yyx).x - dist(p - e.yyx).x));
 }
 
-vec2 random2f() {
-    vec2 rn = vec2(rnd(length(uv) - t), rnd(length(uv) - t - .1));
-    // rn = pow(4.0 * rn * (1.0 - rn), vec2(4)); // the bell shape
-    // rn = tan((rn-.5)*PI)/10.+.5;
-    float k = .5;
-    vec2 a;
-    a.x = .5*pow(2.0*((rn.x<0.5)?rn.x:1.0-rn.x), k);
-    a.y = .5*pow(2.0*((rn.y<0.5)?rn.y:1.0-rn.y), k);
-    rn.x = (rn.x<0.5)?a.x:1.0-a.x;
-    rn.y = (rn.y<0.5)?a.y:1.0-a.y;
-
-    return rn * 2. - 1.;
-}
 
 void main() {
     float skipLines = 1.;
@@ -118,18 +89,15 @@ void main() {
         if(e < .001)
             break;
     }
-    // gl_FragColor = vec4(vec3(10. / j) * rm.yzw / 255., 1.);
+    // // col
     gl_FragColor = vec4((vec3(10./j) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5) * rm.yzw / 255., 1.);
+    
+    // bw
+    // gl_FragColor = vec4(vec3(10./j)*length(rm.yzw / 255.), 1.);
+    // gl_FragColor = vec4(vec3(10. / j) * rm.yzw / 255., 1.);
+
+    // glow
     // gl_FragColor = vec4((vec3(j/10.) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5) * rm.yzw / 255., 1.);
-    // if(j >= 98.) {
-    //     gl_FragColor.rgb = bgColor / 255.;
-    // }
 
-    // if(tick < AA * AA) {
     gl_FragColor = mix(texture2D(backbuffer, uv * vec2(1, -1) * .5 + .5), gl_FragColor, 1. / (floor(tick / skipLines) + 1.));
-        // gl_FragColor = mix(texture2D(backbuffer, uv*vec2(1,-1) * .5 + .5), gl_FragColor, 1.);
-    // } else {
-        // gl_FragColor = texture2D(backbuffer, (uv * vec2(1, -1) * .5 + .5));
-    // }
-
 }
