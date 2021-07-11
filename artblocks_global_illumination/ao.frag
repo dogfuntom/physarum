@@ -53,7 +53,7 @@ vec4 dist(vec3 p) {
         float cornerR = .05;
         // pb = abs(pb);
         // float box = (pb.x+pb.y+pb.z-cornerR)*0.57735027;// TODO заменить на бивел от Гази
-        float box = length(pb - clamp(pb, -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR)) - cornerR;
+        float box = length(pb - clamp(pb, -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR)) - cornerR*1.4;
         // pb.xz =mod(pb.xz,2.)-1.;
         // pb.xz = pb.xz - 1. * clamp(ceil(p.xz / 1.), - sizes[i].xz, sizes[i].xz);
         vec2 l = sizes[i].xz;
@@ -100,12 +100,12 @@ void main() {
     vec4 rm;
     float camDist = 400.;
     float focusDistance = camDist - 10.;
-    float blurAmount = 10.8;
+    float blurAmount = .0;//10.8;
     vec2 uv_=uv+random2f()*2./u_res;
     vec3 p, ro = vec3(uv_ * camScale + camOffset, 0);
     vec3 focus = ro + vec3(0, 0, focusDistance);
     ro.xy += blurAmount * normalize(random2f())*rnd(length(uv_)-t-.2);
-    vec3 rd = normalize(focus - ro);
+    vec3 rd = normalize(focus - ro)*(rnd(length(uv_-t))*.1+.9);
 
     for(float i = 0.; i < 99.; i++) {
         j = i;
@@ -119,7 +119,8 @@ void main() {
             break;
     }
     // gl_FragColor = vec4(vec3(10. / j) * rm.yzw / 255., 1.);
-    gl_FragColor = vec4(vec3(vec3(10. / j) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5) * rm.yzw / 255., 1.);
+    gl_FragColor = vec4((vec3(10./j) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5) * rm.yzw / 255., 1.);
+    // gl_FragColor = vec4((vec3(j/10.) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5) * rm.yzw / 255., 1.);
     // if(j >= 98.) {
     //     gl_FragColor.rgb = bgColor / 255.;
     // }
