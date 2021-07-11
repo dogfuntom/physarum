@@ -16,10 +16,10 @@ mat2 rot(float a) {
   return mat2(c, -s, s, c);
 }
 
-#pragma glslify: random = require(glsl-random)
 #pragma glslify: snoise2d = require(../modules/math/glsl-noise/simplex/2d.glsl)
 #pragma glslify: snoise3d = require(../modules/math/glsl-noise/simplex/3d.glsl)
 
+#pragma glslify: random = require(glsl-random)
 float rnd(float x) {
   return random(vec2(x * .0001));
 }
@@ -124,8 +124,8 @@ void main() {
     vel *= 1. - FRICTION;
     // vel = normalize(vel);
 
-    // vel.x += .01 * snoise3d(u_mouse.x + vec3(u_time * .001, pos * 10.));
-    // vel.y += .01 * snoise3d(u_mouse.y + vec3(u_time * .001, pos * 10. + 99.));
+    // vel.x += .001 * snoise3d(u_time*.02 + vec3(u_time * .001, pos));
+    // vel.y += .001 * snoise3d(u_time*.02 + vec3(u_time * .001, pos + 99.));
     // vel.x += .002 * snoise2d(pos * 32. + u_mouse.x);
     // vel.y += .002 * snoise2d(pos * 32. + u_mouse.x + 99.);
   //  vel += vec2(-.001,0) * rot(atan(pos.y, pos.x));

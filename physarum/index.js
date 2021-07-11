@@ -213,6 +213,7 @@ function draw(time) {
     twgl.setBuffersAndAttributes(gl, programDiffusion, positionBuffer);
     twgl.setUniforms(programDiffusion, {
       u_tex_draw: draw2.attachments[0],
+      u_time: time,
       u_resolution: [size, size],
       DECAY: obj.DECAY,
       DIFFUSE_RADIUS: obj.DIFFUSE_RADIUS,

@@ -4,7 +4,18 @@ uniform sampler2D u_tex_draw;
 uniform vec2 u_resolution;
 uniform float DECAY;
 uniform float DIFFUSE_RADIUS;
+uniform float u_time;
 #define DIFFUSE_RADIUS_MAX  10
+
+#define K (.06)
+#define F (.05)
+#define Da 1.5
+#define Db .9
+
+#pragma glslify: random = require(glsl-random)
+float rnd(float x) {
+  return random(vec2(x * .0001));
+}
 
 void main() {
     vec4 val = vec4(0);
@@ -33,5 +44,17 @@ void main() {
         }
     }
     gl_FragColor = val / k_sum * DECAY;
+
+    #define t(uv_) texture2D(u_tex_draw, fract(uv_)).ba
+    vec2 uv = gl_FragCoord.xy / u_resolution, _, px = 1. / u_resolution, v = gl_FragColor.ba, dx, dy, d, delta;
+    float R = 5.*random(uv+u_time);
+    _ = vec2(R + R * rnd(uv.x + .01 * uv.y + u_time), 0.);
+    dx = (-v + (t(uv + px * _) + t(uv + px * -_)) / 2.) / 2.;
+    dy = (-v + (t(uv + px * _.yx) + t(uv + px * -_.yx)) / 2.) / 2.;
+    d = (dx + dy) / 2.;
+    delta.x = Da * d.x - v.x * v.y * v.y + F * (1. - v.x);
+    delta.y = Db * d.y + v.x * v.y * v.y - (K + F) * v.y;
+    gl_FragColor = vec4(1,1,v + delta);
+
     // gl_FragColor *= smoothstep(1., .9, length((gl_FragCoord.xy * 2. - u_resolution) / u_resolution));
 }
