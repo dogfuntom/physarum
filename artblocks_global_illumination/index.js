@@ -1,40 +1,4 @@
-// Редкие текстуры
-// - черно белая, как у гази
-// - радужная, снизу вверх
-// - полоски
-// - горошек
-// - шумная текстура
-// - раскраска нормалям или жемчуг
-// - Глаз
-
-// Детальки
-// - высокие детали
-// - скошенная деталька
-// - шарик?
-// - шпиль
-// - тонкая деталька?
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// - поворот мышкой вокруг оси у. Показывать при этом урезанную версию без теней и пр
-
-// Фичи
-// - угол камеры фича
-// - сдф формы
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// symmetry: what is symmetry?
-
-// Done
-// ✓ стратегия
-// ✓ площадь под застройку
-// ✓ оси координат в центр к детали
-// ✓ 1x1 деталь
-// ✓ цветовые схемы в три буквы. Штук 10
-// ✓ кроп
-
-
 console.clear();
-const RENDERER = 'ao'// p5, ao, gi
-
-
 let s
 let sP
 let time0 = new Date() / 1000
@@ -49,13 +13,9 @@ let u_camAngYZ
 let u_camAngXZ
 
 function preload() {
-    if (RENDERER == 'ao' || RENDERER == 'gi') {
-        s = loadShader('s.vert', RENDERER + '.frag')
-        sP = loadShader('s.vert', RENDERER + '.frag')
-    }
+    s = loadShader('s.vert', 'ao.frag')
+    sP = loadShader('s.vert', 'ao.frag')
 }
-
-let cam;
 
 function Block(size, position, color) {
     this.size = size.copy();
@@ -206,10 +166,6 @@ function setup() {
     bg = colors.pop()
     placeBlocks();
 
-
-    // Теперь найдём самую верхнюю и самую нижнюю серёдку блока в координатах камеры
-    // для этого у каждого блока координаты цента (вектор) повёрнём на угол А, потом на угол Б.
-    // будем трекать самый левый, самый правый, самый нижний и самый верхний точки. Это и будет вьюпорт.
     viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
     blocks.forEach(b => {
         // console.log(Object.values(b.position))
@@ -263,57 +219,34 @@ function setup() {
     viewBox.offset = { x: viewBox.left + viewBox.width / 2, y: viewBox.bottom + viewBox.height / 2 }
     // viewBox.offset = { x: 0, y: 0 }
 
-    // console.log(viewBox)
-    if (RENDERER == 'p5') {
-        cam = createCamera();
-        cam.ortho(-200, 200, -200, 200, 0.1, 10000);
-        setCamera(cam);
-        cam.setPosition(300, -300, 300);
-        background(bg);
-        noStroke();
-        cam.setPosition(
-            300,// + (mouseX - width / 2) * 8,
-            -300,// + (mouseY - height / 2) * 8,
-            300
-        );
-        cam.lookAt(0, 0, 0);
-        ambientLight(55);
-        lights(10);
-        blocks.forEach((b) => { b.log(); b.draw() });
-    }
-    else if (RENDERER == 'ao' || RENDERER == 'gi') {
-        u_bgColor = color(bg).levels.slice(0, 3)
-        pixelDensity(1)
-        // frameRate(1)
-        b = createGraphics(width, height, WEBGL)
-        bP = createGraphics(width, height, WEBGL)
-        b.background('red')
-        b.circle(0, 0, 100)
-        bP.background('green')
-        bP.circle(0, 0, 100)
-        b.noStroke()
-        bP.noStroke()
-        positions = Array(300)
-            .fill()
-            .map((d, i) => i < blocks.length ? [
-                blocks[i].position.x,
-                blocks[i].position.y,
-                blocks[i].position.z] : [0, 0, 0]
-            ).flat()
-        sizes = Array(300)
-            .fill()
-            .map((d, i) => i < blocks.length ? [
-                blocks[i].size.x,
-                blocks[i].size.y,
-                blocks[i].size.z] : [0, 0, 0]
-            ).flat()
-        colors = Array(300)
-            .fill()
-            .map((d, i) => i < blocks.length ? color(blocks[i].color).levels.slice(0, 3) : [0, 0, 0]
-            ).flat()
-        // console.log(positions)
-
-    }
+    u_bgColor = color(bg).levels.slice(0, 3)
+    pixelDensity(1)
+    b = createGraphics(width, height, WEBGL)
+    bP = createGraphics(width, height, WEBGL)
+    b.background('red')
+    b.circle(0, 0, 100)
+    bP.background('green')
+    bP.circle(0, 0, 100)
+    b.noStroke()
+    bP.noStroke()
+    positions = Array(300)
+        .fill()
+        .map((d, i) => i < blocks.length ? [
+            blocks[i].position.x,
+            blocks[i].position.y,
+            blocks[i].position.z] : [0, 0, 0]
+        ).flat()
+    sizes = Array(300)
+        .fill()
+        .map((d, i) => i < blocks.length ? [
+            blocks[i].size.x,
+            blocks[i].size.y,
+            blocks[i].size.z] : [0, 0, 0]
+        ).flat()
+    colors = Array(300)
+        .fill()
+        .map((d, i) => i < blocks.length ? color(blocks[i].color).levels.slice(0, 3) : [0, 0, 0]
+        ).flat()
 }
 
 
@@ -336,43 +269,30 @@ function setup() {
 
 
 function draw() {
-    console.log(frameCount)
-    if (RENDERER == 'ao' || RENDERER == 'gi') {
-        // background('yellow')
-        b.shader(s)
-        s.setUniform('u_res', [width, height])
-        // console.log(width, height)
-        s.setUniform('t', new Date() / 1000 - time0)
-        s.setUniform('tick', frameCount - 1)
-        s.setUniform('backbuffer', bP)
-        s.setUniform('blocksNumber', blocks.length)
-        s.setUniform('positions', positions)
-        s.setUniform('sizes', sizes)
-        s.setUniform('colors', colors)
-        s.setUniform('gridSize', gridSize.x)
-        s.setUniform('bgColor', u_bgColor)
-        s.setUniform('camScale', viewBox.scale / 1)
-        s.setUniform('camOffset', [viewBox.offset.x, viewBox.offset.y])
-        s.setUniform('camAng', [u_camAngYZ, u_camAngXZ])
-        // s.setUniform('arr', Array(1024).fill(2))
-        // s.setUniform('pos', Array(1021).fill(0).map(d=>[1,2,3]))
+    b.shader(s)
+    s.setUniform('u_res', [width, height])
+    s.setUniform('t', new Date() / 1000 - time0)
+    s.setUniform('tick', frameCount - 1)
+    s.setUniform('backbuffer', bP)
+    s.setUniform('blocksNumber', blocks.length)
+    s.setUniform('positions', positions)
+    s.setUniform('sizes', sizes)
+    s.setUniform('colors', colors)
+    s.setUniform('gridSize', gridSize.x)
+    s.setUniform('bgColor', u_bgColor)
+    s.setUniform('camScale', viewBox.scale / 1)
+    s.setUniform('camOffset', [viewBox.offset.x, viewBox.offset.y])
+    s.setUniform('camAng', [u_camAngYZ, u_camAngXZ])
+    b.rect(0, 0, width, height)
+    image(b, -width / 2, -height / 2, width, height)
+    tmp = b
+    b = bP
+    bP = tmp
 
-        // let poss = [random(-4,4),random(-4,4),random(-4,4)]
-        // s.setUniform('posf', [random(-4,4),random(-4,4),random(-4,4),random(-4,4),random(-4,4)])
-        // s.setUniform('arr_', Array(10).fill(3).map(d=>[1,2,3]))
-        // s.setUniform('arr3', Array(1021).fill(4).map(d=>[1,2,3]))
-        b.rect(0, 0, width, height)
-        image(b, -width / 2, -height / 2, width, height)
-        tmp = b
-        b = bP
-        bP = tmp
+    tmp = s
+    s = sP
+    sP = tmp
 
-        tmp = s
-        s = sP
-        sP = tmp
-
-    }
-    // circle(0,0,4)
     if (frameCount > 99) noLoop()
 }
 
@@ -385,54 +305,4 @@ function draw() {
 
 
 function mouseMoved() {
-    // u_camAngXZ = mouseX / width * TAU
-    // u_camAngYZ = mouseY / width * TAU
-    // console.log(mouseX, u_camAngXZ)
-
-    // // Теперь найдём самую верхнюю и самую нижнюю серёдку блока в координатах камеры
-    // // для этого у каждого блока координаты цента (вектор) повёрнём на угол А, потом на угол Б.
-    // // будем трекать самый левый, самый правый, самый нижний и самый верхний точки. Это и будет вьюпорт.
-    // viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
-    // blocks.forEach(b => {
-    //     // console.log(Object.values(b.position))
-    //     let s = b.size.copy().mult(.5)
-    //     let vertices = [
-    //         createVector(s.x, s.y, s.z),
-    //         createVector(-s.x, s.y, s.z),
-    //         createVector(s.x, s.y, -s.z),
-    //         createVector(-s.x, s.y, -s.z),
-    //         createVector(s.x, -s.y, s.z),
-    //         createVector(-s.x, -s.y, s.z),
-    //         createVector(s.x, -s.y, -s.z),
-    //         createVector(-s.x, -s.y, -s.z),
-    //     ]
-    //     vertices.forEach(v => {
-    //         let pos = v.copy()
-    //         pos.add(b.position)
-    //         // pos.add(.5)
-    //         // pos.add(b.size.copy().mult(.5))
-    //         // console.log(pos)
-
-    //         // pos.z = -pos.z
-    //         let xz = rot([pos.x, pos.z], -u_camAngXZ)
-    //         pos.x = xz[0]
-    //         pos.z = xz[1]
-    //         let yz = rot([pos.y, pos.z], -u_camAngYZ) // z is mirrored
-    //         pos.y = yz[0]
-    //         pos.z = yz[1]
-    //         // console.log('after', pos)
-    //         if(pos.x<viewBox.left)viewBox.left=pos.x
-    //         if (pos.x > viewBox.right) viewBox.right = pos.x
-    //         if (pos.y < viewBox.bottom) viewBox.bottom = pos.y
-    //         if (pos.y > viewBox.top) viewBox.top = pos.y
-    //         if(b.color=='#00f')console.log(pos,viewBox)
-    //     })
-    // })
-    // // viewBox.left = -viewBox.right
-    // viewBox.width = viewBox.right - viewBox.left
-    // viewBox.height = viewBox.top - viewBox.bottom
-    // viewBox.scale = max(viewBox.width/1.8, viewBox.height/1.8, 1)
-    // viewBox.offset = { x: viewBox.left + viewBox.width / 2, y: viewBox.bottom + viewBox.height / 2 }
-    // // viewBox.offset = { x: 0, y: 0 }
-
 }
