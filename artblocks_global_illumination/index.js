@@ -13,8 +13,8 @@ let u_camAngYZ
 let u_camAngXZ
 
 function preload() {
-    s = loadShader('s.vert', 'ao.frag')
-    sP = loadShader('s.vert', 'ao.frag')
+    s = loadShader('s.vert', 's.frag')
+    sP = loadShader('s.vert', 's.frag')
 }
 
 function Block(size, position, color) {
