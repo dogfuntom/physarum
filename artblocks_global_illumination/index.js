@@ -1,27 +1,28 @@
 console.clear();
-let s
-let sP
+let s, sP
+let b, bP
 let time0 = new Date() / 1000
 let seed
-let b, bP
 let tmp
 let u_bgColor
 let u_camDir
 let viewBox
 let positions, sizes
-let u_camAngYZ
-let u_camAngXZ
+let u_camAngYZ, u_camAngXZ
+const typeBlock = 0, typeCyl = 1, typeBall = 2, typeBeak2x2 = 3
+const texNorm = 2, texAO = 3
 
 function preload() {
     s = loadShader('s.vert', 's.frag')
     sP = loadShader('s.vert', 's.frag')
 }
 
-function Block(size, position, color) {
+function Block(size, position, color = 'red', type = typeBlock) {
     this.size = size.copy();
     // this.rotation = rotation.copy();
     this.position = position.copy();
     this.color = color;
+    this.type = type;
 }
 
 let blocks = [];
@@ -39,9 +40,9 @@ let colors = [
     // ["#ff0000","#ff8700","#ffd300","#deff0a","#a1ff0a","#0aff99","#0aefff","#147df5","#580aff","#be0aff"], // acid
     // ["#d88c9a", "#f2d0a9", "#f1e3d3", "#99c1b9", "#8e7dbe"], // dusty candy
     // ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
-    ["#ff99c8", "#fcf6bd", "#d0f4de", "#a9def9", "#e4c1f9"], // candy pale
+    // ["#ff99c8", "#fcf6bd", "#d0f4de", "#a9def9", "#e4c1f9"], // candy pale
     // ["#2d3142", "#bfc0c0", "#ffffff", "#ef8354", "#4f5d75"], // gray white  orange
-    // ["#07c8f9", "#09a6f3", "#0a85ed", "#0c63e7", "#0d41e1"], // blue
+    ["#07c8f9", "#09a6f3", "#0a85ed", "#0c63e7", "#0d41e1"], // blue
     // ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
 ]
 
@@ -49,10 +50,10 @@ let colors = [
 
 
 function placeBlocks() {
-    // let blocksNum = 10
-    // let gs = 6
-    let blocksNum = 16
-    let gs = 10
+    let blocksNum = 10
+    let gs = 6
+    // let blocksNum = 16
+    // let gs = 10
     // let blocksNum = 40
     // let gs = 24
     // let blocksNum = 80
@@ -63,9 +64,10 @@ function placeBlocks() {
 
     gridSize = createVector(gs, gs, gs);
     blockSizes = [
-        createVector(1, 1, 1),
+        createVector(2, 1, 2),
+        createVector(1, 1, 2),
         createVector(1, 1, 4),
-        // createVector(1, 1, 8),
+        // // createVector(1, 1, 8),
         createVector(2, 1, 4),
         createVector(1, 1, 2),
         createVector(2, 1, 2),
@@ -89,16 +91,15 @@ function placeBlocks() {
         let maxHeight = -999 * strategy
         let blockPos
         let blockSize
-        let blockSizeTry = random(blockSizes).copy()
-        let tmp
-        let fitness, maxFitness=-Infinity
-        let rotation = floor(random(4))
-        if (rotation % 2 == 0) {
-            tmp = blockSizeTry.x
-            blockSizeTry.x = blockSizeTry.z
-            blockSizeTry.z = tmp
-        }
+        let fitness, maxFitness = -Infinity
         for (let try_ = 0; try_ < 50; try_++) {
+            let blockSizeTry = random(blockSizes).copy()
+            let rotation = floor(random(4))
+            if (rotation % 2 == 0) {
+                tmp = blockSizeTry.x
+                blockSizeTry.x = blockSizeTry.z
+                blockSizeTry.z = tmp
+            }
             let blockPosTry = createVector(
                 -gs / 2 + blockSizeTry.x / 2 + floor(random(gs + 1 - blockSizeTry.x)),
                 0,
@@ -149,7 +150,8 @@ function placeBlocks() {
         let block = new Block(
             blockSize,
             blockPos.copy(),//.add(blockSize.copy().mult(.5)),
-            blockColor
+            blockColor,
+            (blockSize.x * blockSize.z == 1) ? random([typeCyl, typeBall]) : (blockSize.x == 2 && blockSize.z == 2) ? typeBeak2x2 : typeBlock,
         );
         blocks.push(block);
     }
@@ -245,23 +247,32 @@ function setup() {
     bP.circle(0, 0, 100)
     b.noStroke()
     bP.noStroke()
-    positions = Array(300)
+    positions = Array(200)
         .fill()
         .map((d, i) => i < blocks.length ? [
             blocks[i].position.x,
             blocks[i].position.y,
             blocks[i].position.z] : [0, 0, 0]
         ).flat()
-    sizes = Array(300)
+    sizes = Array(200)
         .fill()
         .map((d, i) => i < blocks.length ? [
             blocks[i].size.x,
             blocks[i].size.y,
             blocks[i].size.z] : [0, 0, 0]
         ).flat()
-    colors = Array(300)
+    colors = Array(200)
         .fill()
         .map((d, i) => i < blocks.length ? color(blocks[i].color).levels.slice(0, 3) : [0, 0, 0]
+        )
+    // console.log(colors)
+    // colors = colors.map(d => random([[...d], [floor(random(2, 4)), 0, 0]]))
+    // console.log(colors)
+    colors = colors.flat()
+    console.log(colors)
+    types = Array(200)
+        .fill()
+        .map((d, i) => i < blocks.length ? blocks[i].type : 0
         ).flat()
 }
 
@@ -287,7 +298,7 @@ function setup() {
 function draw() {
     console.log(frameCount)
     b.shader(s)
-    s.setUniform('u_res', [width*pixelDensity(), height*pixelDensity()])
+    s.setUniform('u_res', [width * pixelDensity(), height * pixelDensity()])
     s.setUniform('t', new Date() / 1000 - time0)
     s.setUniform('tick', frameCount - 1)
     s.setUniform('backbuffer', bP)
@@ -295,6 +306,7 @@ function draw() {
     s.setUniform('positions', positions)
     s.setUniform('sizes', sizes)
     s.setUniform('colors', colors)
+    s.setUniform('types', types)
     s.setUniform('gridSize', gridSize.x)
     s.setUniform('bgColor', u_bgColor)
     s.setUniform('camScale', viewBox.scale / 1)
@@ -310,7 +322,7 @@ function draw() {
     s = sP
     sP = tmp
 
-    if (frameCount > 250) noLoop()
+    if (frameCount > 50) noLoop()
 }
 
 
