@@ -310,7 +310,7 @@ function draw() {
     s = sP
     sP = tmp
 
-    if (frameCount > 50) noLoop()
+    if (frameCount > 250) noLoop()
 }
 
 
