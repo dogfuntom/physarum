@@ -31,22 +31,18 @@ let blocksHeightMap;
 let gridSize;
 let bg;
 let colors = [
-    // ["#ffb703", "#fb8500", "#8ecae6", "#219ebc", "#023047",],
-    // ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"],
-    // ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"],
-    // ["#ff6b35", "#f7c59f", "#efefd0", "#004e89", "#1a659e"],
-    // ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"],
-    // ["#70d6ff", "#ff70a6", "#ff9770", "#ffd670", "#e9ff70"],
-    // ["#031d44", "#04395e", "#70a288", "#dab785", "#d5896f"],
+    // ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
+    // ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
+    // ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
+    // ["#70d6ff", "#ff70a6", "#ff9770", "#ffd670", "#e9ff70"], //candy bright
     // ["#26547c", "#ef476f", "#ffd166", "#06d6a0", "#fffcf9"],
-    // // ["#ff0000","#ff8700","#ffd300","#deff0a","#a1ff0a","#0aff99","#0aefff","#147df5","#580aff","#be0aff"],
-    // ["#d88c9a", "#f2d0a9", "#f1e3d3", "#99c1b9", "#8e7dbe"],
-    // ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"],
-    // ["#132a13", "#31572c", "#4f772d", "#90a955", "#ecf39e"],
-    // ["#ff99c8", "#fcf6bd", "#d0f4de", "#a9def9", "#e4c1f9"],
-    // ["#2d3142", "#bfc0c0", "#ffffff", "#ef8354", "#4f5d75"],
-    // ["#07c8f9", "#09a6f3", "#0a85ed", "#0c63e7", "#0d41e1"],
-    ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"],
+    // ["#ff0000","#ff8700","#ffd300","#deff0a","#a1ff0a","#0aff99","#0aefff","#147df5","#580aff","#be0aff"], // acid
+    // ["#d88c9a", "#f2d0a9", "#f1e3d3", "#99c1b9", "#8e7dbe"], // dusty candy
+    // ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
+    ["#ff99c8", "#fcf6bd", "#d0f4de", "#a9def9", "#e4c1f9"], // candy pale
+    // ["#2d3142", "#bfc0c0", "#ffffff", "#ef8354", "#4f5d75"], // gray white  orange
+    // ["#07c8f9", "#09a6f3", "#0a85ed", "#0c63e7", "#0d41e1"], // blue
+    // ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
 ]
 
 
@@ -55,28 +51,24 @@ let colors = [
 function placeBlocks() {
     // let blocksNum = 10
     // let gs = 6
-    let blocksNum = 20
-    let gs = 8
+    let blocksNum = 16
+    let gs = 10
     // let blocksNum = 40
-    // let gs = 12
+    // let gs = 24
     // let blocksNum = 80
     // let gs = 24
 
     groundBlock = new Block(createVector(gs, 1, gs), createVector(0, -.5, 0), random(colors));
-    blocks.push(groundBlock)
+    // blocks.push(groundBlock)
 
     gridSize = createVector(gs, gs, gs);
     blockSizes = [
         createVector(1, 1, 1),
-        // createVector(1, 1, 6),
-        // createVector(6, 1, 1),
-        // // createVector(1, 1, 10),
-        // // createVector(10, 1, 1),
-        // createVector(4, 1, 2),
+        createVector(1, 1, 4),
+        // createVector(1, 1, 8),
+        createVector(2, 1, 4),
         createVector(1, 1, 2),
-        createVector(2, 1, 1),
-        // createVector(2, 1, 4),
-        // createVector(2, 1, 2),
+        createVector(2, 1, 2),
     ];
 
     blocksHeightMap = Array(gridSize.x)
@@ -84,54 +76,79 @@ function placeBlocks() {
         .map(() => Array(gridSize.z).fill(0));
 
     // chose ramdom pos X, Z of new block
-    for (let n = 0; /*blocks.length < 10*/ n < blocksNum; n++) {
+
+
+    for (let n = 0; n < blocksNum; n++) {
         let blockColor = random(colors);
 
         const DENSE = -1
         const SPARSE = 1
 
-        let strategy = (n > blocksNum / 2) ? DENSE : SPARSE
+        let strategy = 1//(n > blocksNum / 2) ? DENSE : SPARSE
 
         let maxHeight = -999 * strategy
         let blockPos
         let blockSize
         let blockSizeTry = random(blockSizes).copy()
-        for (let try_ = 0; try_ < 30; try_++) {
-            let blockPosTry = createVector(floor(random(- blockSizeTry.x / 2, gs / 2 - blockSizeTry.x + 1)), 0, floor(random(-gs / 2, gs / 2 - blockSizeTry.z)));
-            console.log('trying', blockPosTry, blockSizeTry)
+        let tmp
+        let fitness, maxFitness=-Infinity
+        let rotation = floor(random(4))
+        if (rotation % 2 == 0) {
+            tmp = blockSizeTry.x
+            blockSizeTry.x = blockSizeTry.z
+            blockSizeTry.z = tmp
+        }
+        for (let try_ = 0; try_ < 50; try_++) {
+            let blockPosTry = createVector(
+                -gs / 2 + blockSizeTry.x / 2 + floor(random(gs + 1 - blockSizeTry.x)),
+                0,
+                -gs / 2 + blockSizeTry.z / 2 + floor(random(gs + 1 - blockSizeTry.z))
+            )
             // тут можно циклы выкинуть
             let studL = 0
             let studR = 0
-            for (let x = blockPosTry.x; x < blockPosTry.x + blockSizeTry.x; x++) {
-                for (let z = blockPosTry.z; z < blockPosTry.z + blockSizeTry.z; z++) {
+            let xx = Array(blockSizeTry.x).fill().map((d, i) => blockPosTry.x + i - (blockSizeTry.x - 1.) / 2)
+            let zz = Array(blockSizeTry.z).fill().map((d, i) => blockPosTry.z + i - (blockSizeTry.z - 1.) / 2)
+            for (let x of xx) {
+                for (let z of zz) {
                     if (x >= 0) studR++;
                     else studL++;
                 }
-            } console.log('l=', studL, 'r=', studR)
+            }
+
             if ((studL != 0 && studR != studL) || blockSizeTry.x > gs || blockSizeTry.z > gs) { try_--; console.log('l=', studL, 'r=', studR, 'not good!'); continue }
             let maxHeightTry = 0;
-            for (let x = blockPosTry.x; x < blockPosTry.x + blockSizeTry.x; x++) {
-                for (let z = blockPosTry.z; z < blockPosTry.z + blockSizeTry.z; z++) {
-                    maxHeightTry = max(maxHeightTry, blocksHeightMap[x + gs / 2][z + gs / 2]);
+            for (let x of xx) {
+                for (let z of zz) {
+                    maxHeightTry = max(maxHeightTry, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
                 }
             }
-            if (maxHeightTry * strategy > maxHeight * strategy) {
+
+            // fitness = -maxHeightTry // low
+            fitness = maxHeightTry // high, bn 16 gs 10
+            // fitness = -Math.hypot(blockPosTry.x,maxHeightTry-10,blockPosTry.z) // mashroom
+            // fitness = -abs(Math.hypot(blockPosTry.x,maxHeightTry-10,blockPosTry.z)-gs) // cage
+            // fitness = -abs(Math.hypot(blockPosTry.x,maxHeightTry*2,blockPosTry.z)-gs) // cage: blocksNum = 90, gs = 16
+
+
+            if (fitness > maxFitness) {
+                maxFitness = fitness
                 maxHeight = maxHeightTry
                 blockPos = blockPosTry
                 blockSize = blockSizeTry
-                console.log('good!')
             }
         }
-        blockPos.y = maxHeight;
-        console.log('Proceeding with ', blockPos, blockSize)
-        for (let x = blockPos.x; x < blockPos.x + blockSize.x; x++) {
-            for (let z = blockPos.z; z < blockPos.z + blockSize.z; z++) {
-                blocksHeightMap[x + gs / 2][z + gs / 2] = maxHeight + blockSize.y;
+        blockPos.y = maxHeight + blockSize.y / 2;
+        let xx = Array(blockSize.x).fill().map((d, i) => blockPos.x + i - (blockSize.x - 1.) / 2)
+        let zz = Array(blockSize.z).fill().map((d, i) => blockPos.z + i - (blockSize.z - 1.) / 2)
+        for (let x of xx) {
+            for (let z of zz) {
+                blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + blockSize.y
             }
         }
         let block = new Block(
             blockSize,
-            blockPos.copy().add(blockSize.copy().mult(.5)),
+            blockPos.copy(),//.add(blockSize.copy().mult(.5)),
             blockColor
         );
         blocks.push(block);
@@ -158,17 +175,17 @@ let rot = (vec, ang) => {
 
 function setup() {
     let c = createCanvas(500, 500, WEBGL)
+    pixelDensity(1)
     // randomSeed(110)
     colors = shuffle(random(colors))
 
-    u_camAngYZ = PI / 4
+    u_camAngYZ = .95532
     u_camAngXZ = PI / 4
     bg = colors.pop()
     placeBlocks();
 
     viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
     blocks.forEach(b => {
-        // console.log(Object.values(b.position))
         let s = b.size.copy().mult(.5)
         let vertices = [
             createVector(s.x, s.y, s.z),
@@ -220,7 +237,6 @@ function setup() {
     // viewBox.offset = { x: 0, y: 0 }
 
     u_bgColor = color(bg).levels.slice(0, 3)
-    pixelDensity(1)
     b = createGraphics(width, height, WEBGL)
     bP = createGraphics(width, height, WEBGL)
     b.background('red')
@@ -269,8 +285,9 @@ function setup() {
 
 
 function draw() {
+    console.log(frameCount)
     b.shader(s)
-    s.setUniform('u_res', [width, height])
+    s.setUniform('u_res', [width*pixelDensity(), height*pixelDensity()])
     s.setUniform('t', new Date() / 1000 - time0)
     s.setUniform('tick', frameCount - 1)
     s.setUniform('backbuffer', bP)
@@ -293,7 +310,7 @@ function draw() {
     s = sP
     sP = tmp
 
-    if (frameCount > 99) noLoop()
+    if (frameCount > 50) noLoop()
 }
 
 

@@ -38,13 +38,14 @@ vec4 dist(vec3 p) {
         vec3 pb = p;
         pb -= positions[i];
         float cornerR = .05;
-        // float box = (pb.x+pb.y+pb.z-cornerR)*0.57735027;// TODO заменить на бивел от Гази
+        // vec3 pbb = abs(pb) - clamp(abs(pb), -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR);
+        // float box = (pbb.x+pbb.y+pbb.z-cornerR)*0.57735027;// TODO заменить на бивел от Гази
         float box = length(pb - clamp(pb, -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR)) - cornerR*1.4;
         vec2 l = sizes[i].xz;
         pb.xz += (l - 1.) / 2.;
         pb.xz = pb.xz - clamp(floor(pb.xz + .5), vec2(0.), l - 1.);
         float h = .27;
-        float stud = max(length(pb.xz) - .28, abs(pb.y - sizes[i].y / 2. - h / 2.) - h / 2.);
+        float stud = max(abs(length(pb.xz) - .28+.05)-.05, abs(pb.y - sizes[i].y / 2. - h / 2.) - h / 2.);
         float res = min(stud, box);
 
         if(res < sp) {
@@ -72,7 +73,7 @@ void main() {
     float camDist = 400.;
     float focusDistance = camDist - 10.;
     float blurAmount = .0;//10.8;
-    vec2 uv_=uv+random2f()*2./u_res;
+    vec2 uv_=uv+random2f()*1.5/u_res;
     vec3 p, ro = vec3(uv_ * camScale + camOffset, 0);
     vec3 focus = ro + vec3(0, 0, focusDistance);
     ro.xy += blurAmount * normalize(random2f())*rnd(length(uv_)-t-.2);
