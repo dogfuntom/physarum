@@ -12,6 +12,24 @@ let u_camAngYZ, u_camAngXZ
 const typeBlock = 0, typeCyl = 1, typeBall = 2, typeBeak2x2 = 3
 const texNorm = 2, texAO = 3
 
+/*
+
+- Два цвета передавать.
+- Текстуры.
+- Рендеринг через канвас.
+- Загрузка шейдеров из строк.
+- Рандом от Питера
+- Пробовать менять строку шейдера из js через ${x}
+- Углы поворота камеры.
+
+- Запретные блоки сделать.
+
+*/
+
+let S,R,t,i
+S=Uint32Array.from([0,1,s=t=2,3].map(i=>parseInt(tokenData.hash.substr(i*8+2,8),16)));R=_=>(t=S[3],S[3]=S[2],S[2]=S[1],S[1]=s=S[0],t^=t<<11,S[0]^=(t^t>>>8)^(s>>>19),S[0]/2**32);'tx piter'
+
+
 function preload() {
     s = loadShader('s.vert', 's.frag')
     sP = loadShader('s.vert', 's.frag')
