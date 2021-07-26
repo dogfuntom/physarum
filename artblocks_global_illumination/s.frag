@@ -9,6 +9,7 @@ uniform vec3 sizes[BLOCKS_NUMBER_MAX];
 uniform ivec2 colors[BLOCKS_NUMBER_MAX];
 uniform vec3 palette[20];
 uniform int types[BLOCKS_NUMBER_MAX];
+uniform int textures[BLOCKS_NUMBER_MAX];
 // uniform vec2 m;
 uniform vec2 u_res;
 uniform sampler2D backbuffer;
@@ -25,6 +26,7 @@ float opSmoothIntersection(float d1, float d2, float k) {
 }
 
 vec3 col1, col2;
+int tex;
 
 vec2 random2f() {
     vec2 rn = vec2(rnd(length(uv) - t), rnd(length(uv) - t - .1));
@@ -40,10 +42,11 @@ vec2 random2f() {
 float dist(vec3 p) {
     col1 = bgColor;
     col2 = bgColor;
+    tex = 0;
     // return vec4(length(p)-4.,vec3(0));
 
     p.x = abs(p.x);
-    float res = p.y;
+    float res = p.y+.5;
     for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
         if(i >= blocksNumber)
             break;
@@ -51,11 +54,11 @@ float dist(vec3 p) {
         pb -= positions[i];
         pb.xz *= rot(rotations[i] * PI / 2.);
         float cornerR = .05;//.05;
-        // vec3 pbb = abs(pb) - clamp(abs(pb), -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR);
-        // float box = (pbb.x+pbb.y+pbb.z-cornerR)*0.57735027;// TODO заменить на бивел от Гази
         float box;
         if(types[i] == 0 || types[i] == 3 || types[i] == 4 || types[i] == 5 || types[i] == 6 || types[i] == 7) {
-            box = length(pb - clamp(pb, -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR)) - cornerR * 1.4;
+            vec3 pbb = abs(pb) - clamp(abs(pb), -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR);
+            box = (pbb.x+pbb.y+pbb.z-cornerR)*0.57735027;// TODO заменить на бивел от Гази
+            // box = length(pb - clamp(pb, -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR)) - cornerR * 1.4;
         } else if(types[i] == 1) {
             box = max(length(pb.xz) - .5, abs(pb.y) - .5);
         } else if(types[i] == 2) {
@@ -79,6 +82,7 @@ float dist(vec3 p) {
         }
         if(block < res) {
             res = block;
+            tex=textures[i];
             for(int j = 0; j < 20; j++) {
                 if(colors[i].x == j)
                     col1 = palette[j];
@@ -102,11 +106,10 @@ void main() {
     float camDist = 400.;
     vec2 uv_ = uv + random2f() * 1.5 / u_res;
     vec3 p, ro = vec3(uv_*camScale+camOffset, -camDist);
-    // ro.xy += (uv_,0);
     vec3 rd = vec3(0,0,.9+.1*rnd(length(uv_)));
 
     bool outline = false;
-    for(float i = 0.; i < 99.; i++) {
+    for(float i = 0.; i < 399.; i++) {
         j = i;
         p = d * rd + ro;
         p.z -= camDist;
@@ -129,7 +132,11 @@ void main() {
 
     // // col
     if(!outline) {
-        vec3 col = mix(col1, col2, sin(p.y*PI * 2.) * .5 + .5);
+        vec3 col = col1;
+        // layers
+        if(tex==1)col=mix(col1, col2, sin(p.y*PI * 4.) * .5 + .5);
+        // gyroid
+        if(tex==2)col=mix(col1, col2, (dot(sin(p),cos(p.zxy))));
         // gl_FragColor = vec4(col * vec3(10. / j) * (dot(norm(p), vec3(1, 1, -1)) * .8 + .2), 1.);
         gl_FragColor = vec4((vec3(10. / j) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5) * col, 1.);
         // gl_FragColor = vec4(vec3(10. / j) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5), 1.);

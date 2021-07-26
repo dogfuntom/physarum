@@ -9,17 +9,14 @@ let RL = (ar) => ar[ar.length * R()|0]
 /*
 
 Баги
-- Цвета реюзать.
-- Привязать цвет к форме
-- Сейчас у всех деталей есть одна и только одна ось симметрии. Но может быть и две!
-- зум в некоторые детали
 - Набор удачных пресетов
+- Пингвинчик!
+- рефакторнуть глсл
 - Кодгольфнуть жс
 - Кодгольфнуть глсл
 
-
-
-- Вращение не делаем!
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Сейчас у всех деталей есть одна и только одна ось симметрии. Но может быть и две!
 - сделать предварительную генерировалку рандомности. Достать список рандомностей и — вперёд
 */
 
@@ -29,9 +26,10 @@ let sf, sv
 let canvas
 let tmp
 let u_bgColor, u_palette, u_colors
-let positions, sizes
+let positions, sizes, textures
 let u_camAngYZ, u_camAngXZ
 const typeBlock = 0, typeCyl = 1, typeBall = 2, typeBeak2x2 = 3, typeBeak2x2Flipped = 4, typeArc = 5, typePillar = 6
+const texSolid = 0, texLayers = 1, texGyr = 2
 const texNorm = 2, texAO = 3
 const blocksNumMax = 100
 let draft = false
@@ -60,13 +58,14 @@ function preload() {
     sv = loadStrings('s.vert')
 }
 
-function Block(size, position, color, color2, rotation, type = typeBlock) {
+function Block(size, position, color, color2, texture, rotation, type = typeBlock) {
     this.size = [...size]
     this.rotation = rotation;
     this.position = [...position]
     this.color = color;
     this.color2 = color2;
     this.type = type;
+    this.texture = texture
 }
 
 let blocks = [];
@@ -74,17 +73,17 @@ let groundBlock;
 let blocksHeightMap;
 let palette = RL([
     ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
-    // ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
-    // ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
-    // ["#70d6ff", "#ff70a6", "#ff9770", "#ffd670", "#e9ff70"], //candy bright
-    // ["#26547c", "#ef476f", "#ffd166", "#06d6a0", "#fffcf9"],
-    // ["#ff0000", "#ff8700", "#ffd300", "#deff0a", "#a1ff0a", "#0aff99", "#0aefff", "#147df5", "#580aff", "#be0aff"], // acid
-    // ["#d88c9a", "#f2d0a9", "#f1e3d3", "#99c1b9", "#8e7dbe"], // dusty candy
-    // ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
-    // ["#ff99c8", "#fcf6bd", "#d0f4de", "#a9def9", "#e4c1f9"], // candy pale
-    // ["#2d3142", "#bfc0c0", "#ffffff", "#ef8354", "#4f5d75"], // gray white  orange
-    // // ["#07c8f9", "#09a6f3", "#0a85ed", "#0c63e7", "#0d41e1"], // blue
-    // // ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
+    ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
+    ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
+    ["#70d6ff", "#ff70a6", "#ff9770", "#ffd670", "#e9ff70"], //candy bright
+    ["#26547c", "#ef476f", "#ffd166", "#06d6a0", "#fffcf9"],
+    ["#ff0000", "#ff8700", "#ffd300", "#deff0a", "#a1ff0a", "#0aff99", "#0aefff", "#147df5", "#580aff", "#be0aff"], // acid
+    ["#d88c9a", "#f2d0a9", "#f1e3d3", "#99c1b9", "#8e7dbe"], // dusty candy
+    ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
+    ["#ff99c8", "#fcf6bd", "#d0f4de", "#a9def9", "#e4c1f9"], // candy pale
+    ["#2d3142", "#bfc0c0", "#ffffff", "#ef8354", "#4f5d75"], // gray white  orange
+    // ["#07c8f9", "#09a6f3", "#0a85ed", "#0c63e7", "#0d41e1"], // blue
+    // ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
 ])
 
 
@@ -210,6 +209,7 @@ function placeBlocks() {
             bvt = JSON.parse(JSON.stringify(bvtInitial))
             bvt.color = R()*palette.length|0
             bvt.color2 = R()*palette.length|0
+            bvt.texture = R()*3|0
             // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
             // надо или его копию делать, или ещё чего.
 
@@ -357,6 +357,7 @@ function placeBlocks() {
                     [...bv.pos],//.add(blockSize.copy().mult(.5)),
                     bv.color,
                     bv.color2,
+                    bv.texture,
                     bv.rot,
                     bv.type,//(blockSize.x * blockSize.z == 1) ? RL([typeCyl, typeBall]) : (blockSize.x == 2 && blockSize.z == 2) ? typeBeak2x2 : typeBlock,
                 );
@@ -502,6 +503,7 @@ function setup() {
     u_palette=palette.map(c=>color(c).levels.slice(0, 3)).flat().map(d=>d/255)
     u_colors = blocks.map(b => [b.color, b.color2]).flat()
     types = blocks.map(b => b.type)
+    textures = blocks.map(b => b.texture)
     rotates = blocks.map(b => b.rotation)
 }
 
@@ -535,12 +537,10 @@ function draw() {
     s.setUniform('positions', positions)
     s.setUniform('sizes', sizes)
     s.setUniform('rotations', rotates)
-    console.log('colors',u_colors)
     s.setUniform('colors', u_colors)
-    console.log('palette',u_palette)
     s.setUniform('palette', u_palette)
-    console.log('types',types)
     s.setUniform('types', types)
+    s.setUniform('textures', textures)
     s.setUniform('gridSize', gridSize.x)
     s.setUniform('bgColor', u_bgColor)
     s.setUniform('camScale', viewBox.scale / 1)
@@ -548,8 +548,8 @@ function draw() {
     s.setUniform('camAng', [u_camAngYZ, u_camAngXZ - (m[0] * 2 - 1) * TAU])
     rect(0, 0, width, height)
 
-    // if (tick++ > 50) 
-    // noLoop()
+    if (tick++ >1)
+    noLoop()
 }
 
 
