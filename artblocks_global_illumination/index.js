@@ -1,7 +1,7 @@
 console.clear();
 let S, ss, R, t
 S = Uint32Array.from([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
-let RL = (ar) => ar[floor(ar.length * R())]
+let RL = (ar) => ar[ar.length * R()|0]
 
 // Цикл иногда повисает без признаков жизни
 
@@ -28,7 +28,7 @@ let b, bP
 let sf, sv
 let canvas
 let tmp
-let u_bgColor
+let u_bgColor, u_palette, u_colors
 let positions, sizes
 let u_camAngYZ, u_camAngXZ
 const typeBlock = 0, typeCyl = 1, typeBall = 2, typeBeak2x2 = 3, typeBeak2x2Flipped = 4, typeArc = 5, typePillar = 6
@@ -42,13 +42,13 @@ let maxMaxTry = 30
 
 
 // The Great Randomizer
-let gs = 4 + R() * 10 | 0
+let gs = 8//4 + R() * 10 | 0
 console.log('gs', gs)
-let blocksNumber = Math.min(4 + gs * gs * R(), blocksNumMax)
+let blocksNumber = 6//Math.min(4 + gs * gs * R(), blocksNumMax)
 console.log('blocksNumber', blocksNumber)
-let fitnessFunctionNumber = R() * 5 | 0
+let fitnessFunctionNumber = 0//R() * 5 | 0
 console.log('fitnessFunctionNumber', fitnessFunctionNumber)
-let numberOfBlockTypes = 1 + (R() * 7 | 0)
+let numberOfBlockTypes = 3//1 + (R() * 7 | 0)
 console.log(numberOfBlockTypes)
 
 
@@ -65,27 +65,27 @@ function Block(size, position, color, color2, rotation, type = typeBlock) {
     this.rotation = rotation;
     this.position = [...position]
     this.color = color;
-    this.color2 = color;
+    this.color2 = color2;
     this.type = type;
 }
 
 let blocks = [];
 let groundBlock;
 let blocksHeightMap;
-let colors = [
+let palette = RL([
     ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
-    ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
-    ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
-    ["#70d6ff", "#ff70a6", "#ff9770", "#ffd670", "#e9ff70"], //candy bright
-    ["#26547c", "#ef476f", "#ffd166", "#06d6a0", "#fffcf9"],
-    ["#ff0000", "#ff8700", "#ffd300", "#deff0a", "#a1ff0a", "#0aff99", "#0aefff", "#147df5", "#580aff", "#be0aff"], // acid
-    ["#d88c9a", "#f2d0a9", "#f1e3d3", "#99c1b9", "#8e7dbe"], // dusty candy
-    ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
-    ["#ff99c8", "#fcf6bd", "#d0f4de", "#a9def9", "#e4c1f9"], // candy pale
-    ["#2d3142", "#bfc0c0", "#ffffff", "#ef8354", "#4f5d75"], // gray white  orange
-    // ["#07c8f9", "#09a6f3", "#0a85ed", "#0c63e7", "#0d41e1"], // blue
-    // ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
-]
+    // ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
+    // ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
+    // ["#70d6ff", "#ff70a6", "#ff9770", "#ffd670", "#e9ff70"], //candy bright
+    // ["#26547c", "#ef476f", "#ffd166", "#06d6a0", "#fffcf9"],
+    // ["#ff0000", "#ff8700", "#ffd300", "#deff0a", "#a1ff0a", "#0aff99", "#0aefff", "#147df5", "#580aff", "#be0aff"], // acid
+    // ["#d88c9a", "#f2d0a9", "#f1e3d3", "#99c1b9", "#8e7dbe"], // dusty candy
+    // ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
+    // ["#ff99c8", "#fcf6bd", "#d0f4de", "#a9def9", "#e4c1f9"], // candy pale
+    // ["#2d3142", "#bfc0c0", "#ffffff", "#ef8354", "#4f5d75"], // gray white  orange
+    // // ["#07c8f9", "#09a6f3", "#0a85ed", "#0c63e7", "#0d41e1"], // blue
+    // // ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
+])
 
 
 // let colors = [['#F4F4F4', '#FFFFFF', '#E9EEE6', '#D2D5E4', '#FFFD9D', '#FDDFB4', '#FFF787', '#CDADF8', '#FCABCB', '#CACFD0', '#FF9BBA', '#56F3E4', '#8BCAD9', '#5DC6EB', '#FFDA32', '#A5A4AA', '#A8D375', '#FFF400', '#FFD500', '#FFC303', '#959D99', '#29A5FA', '#91B264', '#E17E4F', '#8A6E99', '#90E600', '#FF8300', '#389EBC', '#A97953', '#FF442B', '#0085B2', '#696C7A', '#CC3C3B', '#0048C9', '#42764A', '#46515A', '#4D4C52', '#5B3C3E',]]
@@ -177,7 +177,7 @@ function placeBlocks() {
         // symX: true,
         // },
     ]).slice(0, numberOfBlockTypes)
-    console.log(blocksVariants)
+    // console.log(blocksVariants)
 
     // карта высот. В тех местах, где заплетная клетка, уходит в минус бесконечность. Чтобы точно было меньше, чем в запретной карте высот
     // обратим внимание, что икс снаружи, потом зет. Обычно наоборот, если что.
@@ -208,8 +208,8 @@ function placeBlocks() {
 
         for (let try_ = 0; try_ < maxTry; try_++) {
             bvt = JSON.parse(JSON.stringify(bvtInitial))
-            bvt.color = R()*colors.length|0
-            bvt.color2 = R()*colors.length|0
+            bvt.color = R()*palette.length|0
+            bvt.color2 = R()*palette.length|0
             // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
             // надо или его копию делать, или ещё чего.
 
@@ -220,7 +220,7 @@ function placeBlocks() {
             // Поворачиваем весь blockVariantTry на 90° несколько раз.
             // Далее ротейт будет использоваться только для передачи в юниформ.
             bvt.span = [...bvt.size]
-            console.log({ ...bvt }, 'before rot')
+            // console.log({ ...bvt }, 'before rot')
             for (let i = 0; i < bvt.rot; i++) {
                 // flipping sizes
                 // тут косяк. До этого мы деталь не крутили, только размеры подгоняли.
@@ -232,10 +232,10 @@ function placeBlocks() {
                 bvt.maskTop = rotArray(bvt.maskTop)
                 bvt.symX = !bvt.symX
             }
-            console.log({ ...bvt }, 'after rot')
+            // console.log({ ...bvt }, 'after rot')
             // интерраптинг, иф не влезло
             if (bvt.span[0] > gs / 2) {
-                console.log(bvt.span[0], 'is longer than ', gs)
+                // console.log(bvt.span[0], 'is longer than ', gs)
                 if (maxTry < maxMaxTry) maxTry++; continue // можно макс макс трай убрать, если макс трай не очень мелкий
             }
             ///////////////////////////////////////////////////////////////////////////////////////////
@@ -259,7 +259,7 @@ function placeBlocks() {
                 if (bvt.span[0] % 2 || bvt.symX) // если чётное число пупырок, надо чтобы ось симетрии совпадала
                     // хтя в будущем можно доработать. Ось симметрии должна поумнеть, тогда и на чётность мЖно буде твнимания не обращать
                     bvt.pos[0] = 0
-            console.log(bvt)
+            // console.log(bvt)
             // тут можно циклы выкинуть
             let studL = 0
             let studR = 0
@@ -298,20 +298,20 @@ function placeBlocks() {
                     bi++
                     maxHeightTryLikeWithoutBottomHoles = max(maxHeightTryLikeWithoutBottomHoles, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
                     maxDisallowedHeightTry = max(maxDisallowedHeightTry, disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
-                    console.log('bvt', bvt)
-                    console.log('bx, bz', bx, bz)
-                    console.log('xx, zz', xx, zz)
+                    // console.log('bvt', bvt)
+                    // console.log('bx, bz', bx, bz)
+                    // console.log('xx, zz', xx, zz)
                     if (bvt.maskBottom[bx][bz] == 1) {
                         maxHeightTry = max(maxHeightTry, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
                     }
                 }
             }
             if (maxHeightTry < maxDisallowedHeightTry) {
-                console.log('maxHeightTry < maxDisallowedHeightTry')
+                // console.log('maxHeightTry < maxDisallowedHeightTry')
                 if (maxTry < maxMaxTry) maxTry++; continue;
             }
             if (maxHeightTry > maxHeightTryLikeWithoutBottomHoles) {
-                console.log('maxHeightTry > maxHeightTryLikeWithoutBottomHoles')
+                // console.log('maxHeightTry > maxHeightTryLikeWithoutBottomHoles')
 
                 if (maxTry < maxMaxTry) maxTry++; continue;
             }
@@ -328,14 +328,14 @@ function placeBlocks() {
             fitness = fitnessFunctions[fitnessFunctionNumber]
 
             if (fitness > maxFitness || try_ == 0) {
-                console.log('try_', try_)
+                // console.log('try_', try_)
                 maxFitness = fitness // maxfitness не нужен, если  || try_==0
                 maxHeight = maxHeightTry
                 rotation = bvt.rot // он нужен вообще?
                 bv = bvt
             }
         }
-        console.log('finally bv = ', bv)
+        // console.log('finally bv = ', bv)
         if (bv) {
             bv.pos[1] = maxHeight + bv.size[1] / 2;
             if (bv.pos[1]) {
@@ -361,7 +361,7 @@ function placeBlocks() {
                     bv.type,//(blockSize.x * blockSize.z == 1) ? RL([typeCyl, typeBall]) : (blockSize.x == 2 && blockSize.z == 2) ? typeBeak2x2 : typeBlock,
                 );
                 blocks.push(block);
-                console.log(block, 'ADDED!')
+                // console.log(block, 'ADDED!')
             } else console.log('bv.pos.y is NaN')
         } else console.log('bv not defined')
     }
@@ -427,12 +427,13 @@ function setup() {
     s = createShader(sv, sf)
 
     pixelDensity(1)
-    colors[0] = shuffle(colors[0]).slice(0, 6);
-    colors = shuffle(RL(colors))
+    // colors[0] = shuffle(colors[0]).slice(0, 6);
+    console.log(palette,'palette')
+    // palette = shuffle(RL(palette))
+    bg = palette.pop()
 
     u_camAngYZ = .95532
     u_camAngXZ = PI / 4
-    bg = colors.pop()
     placeBlocks();
 
     viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
@@ -496,11 +497,10 @@ function setup() {
     b = createGraphics(width, height, WEBGL)
     b.clear()
     sizes = blocks.map(b => b.size).flat()
-    console.log(blocks)
+    // console.log(blocks)
     positions = blocks.map(b => b.position).flat()
-    palette=colors.map(c=>color(c).levels.slice(0, 3)).flat()
-    console.log(palette)
-    colors = blocks.map(b => [b.color, b.color2])
+    u_palette=palette.map(c=>color(c).levels.slice(0, 3)).flat().map(d=>d/255)
+    u_colors = blocks.map(b => [b.color, b.color2]).flat()
     types = blocks.map(b => b.type)
     rotates = blocks.map(b => b.rotation)
 }
@@ -534,11 +534,12 @@ function draw() {
     s.setUniform('blocksNumber', blocks.length)
     s.setUniform('positions', positions)
     s.setUniform('sizes', sizes)
-    s.setUniform('rotates', rotates)
-    console.log(colors)
-
-    s.setUniform('colors', colors)
-    s.setUniform('palette', palette)
+    s.setUniform('rotations', rotates)
+    console.log('colors',u_colors)
+    s.setUniform('colors', u_colors)
+    console.log('palette',u_palette)
+    s.setUniform('palette', u_palette)
+    console.log('types',types)
     s.setUniform('types', types)
     s.setUniform('gridSize', gridSize.x)
     s.setUniform('bgColor', u_bgColor)
@@ -547,7 +548,7 @@ function draw() {
     s.setUniform('camAng', [u_camAngYZ, u_camAngXZ - (m[0] * 2 - 1) * TAU])
     rect(0, 0, width, height)
 
-    if (tick++ > 5) noLoop()
+    if (tick++ > 1) noLoop()
 }
 
 
