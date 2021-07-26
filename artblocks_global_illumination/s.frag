@@ -43,8 +43,8 @@ float dist(vec3 p) {
     // return vec4(length(p)-4.,vec3(0));
 
     p.x = abs(p.x);
-    float sp = p.y + 1.;
-    for(int i = 0; i < 340; i++) {
+    float res = p.y;
+    for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
         if(i >= blocksNumber)
             break;
         vec3 pb = p;
@@ -69,16 +69,16 @@ float dist(vec3 p) {
         ps.xz = ps.xz - clamp(floor(ps.xz + .5), vec2(0.), l - 1.);
         float h = .26;
         float stud = max(abs(length(ps.xz) - .28 + .05) - .05, abs(ps.y - sizes[i].y / 2. - h / 2.) - h / 2.);
-        float res = min(stud, box);
+        float block = min(stud, box);
         if(types[i] == 3) {
             // box = length(pb - clamp(pb, -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR)) - cornerR * 1.4;
             pb.z += .6;
             pb.yz *= rot(-PI / 4.);
-            res = opSmoothIntersection(res, -pb.z, cornerR * 1.);
+            block = opSmoothIntersection(block, -pb.z, cornerR * 1.);
             // box = max(length(pb.xz) - 1., abs(pb.y) - .5); // cyl 2x2
         }
-        if(res < sp) {
-            sp = res;
+        if(block < res) {
+            res = block;
             for(int j = 0; j < 20; j++) {
                 if(colors[i].x == j)
                     col1 = palette[j];
@@ -87,7 +87,7 @@ float dist(vec3 p) {
             }
         }
     }
-    return sp;
+    return res;
 }
 
 vec3 norm(vec3 p) {
@@ -99,14 +99,11 @@ void main() {
     gl_FragColor = vec4(palette[0], 1);
     float d = 0., e = 1e9, j;
     float rm;
-    float camDist = 40.;
-    float focusDistance = camDist - 10.;
-    float blurAmount = .0;//10.8;
+    float camDist = 400.;
     vec2 uv_ = uv + random2f() * 1.5 / u_res;
-    vec3 p, ro = vec3(uv_ * camScale + camOffset, 0);
-    vec3 focus = ro + vec3(0, 0, focusDistance);
-    ro.xy += blurAmount * normalize(random2f()) * rnd(length(uv_) - t - .2);
-    vec3 rd = normalize(focus - ro) * (rnd(length(uv_ - t)) * .1 + .9);
+    vec3 p, ro = vec3(uv_*camScale+camOffset, -camDist);
+    // ro.xy += (uv_,0);
+    vec3 rd = vec3(0,0,1);
 
     bool outline = false;
     for(float i = 0.; i < 99.; i++) {
@@ -120,6 +117,7 @@ void main() {
             gl_FragColor.a = 1.;
             gl_FragColor.rgb = vec3(0);
             outline = true;
+            break;
             // return;
         }
         d += e = rm;

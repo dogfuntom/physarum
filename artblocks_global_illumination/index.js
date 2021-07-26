@@ -42,13 +42,13 @@ let maxMaxTry = 30
 
 
 // The Great Randomizer
-let gs = 8//4 + R() * 10 | 0
+let gs = 4 + R() * 10 | 0
 console.log('gs', gs)
-let blocksNumber = 6//Math.min(4 + gs * gs * R(), blocksNumMax)
+let blocksNumber = Math.min(4 + gs * gs * R(), blocksNumMax)
 console.log('blocksNumber', blocksNumber)
-let fitnessFunctionNumber = 0//R() * 5 | 0
+let fitnessFunctionNumber = R() * 5 | 0
 console.log('fitnessFunctionNumber', fitnessFunctionNumber)
-let numberOfBlockTypes = 3//1 + (R() * 7 | 0)
+let numberOfBlockTypes = 1 + (R() * 7 | 0)
 console.log(numberOfBlockTypes)
 
 
@@ -433,7 +433,7 @@ function setup() {
     bg = palette.pop()
 
     u_camAngYZ = .95532
-    u_camAngXZ = PI / 4
+    u_camAngXZ = (R()*4|0)*PI/4
     placeBlocks();
 
     viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
