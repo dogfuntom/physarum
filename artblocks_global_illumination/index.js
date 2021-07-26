@@ -493,7 +493,7 @@ function setup() {
     viewBox.offset = { x: viewBox.left + viewBox.width / 2, y: viewBox.bottom + viewBox.height / 2 }
     // viewBox.offset = { x: 0, y: 0 }
 
-    u_bgColor = color(bg).levels.slice(0, 3)
+    u_bgColor = color(bg).levels.slice(0, 3).map(d=>d/255)
     b = createGraphics(width, height, WEBGL)
     b.clear()
     sizes = blocks.map(b => b.size).flat()
@@ -548,7 +548,8 @@ function draw() {
     s.setUniform('camAng', [u_camAngYZ, u_camAngXZ - (m[0] * 2 - 1) * TAU])
     rect(0, 0, width, height)
 
-    if (tick++ > 50) noLoop()
+    // if (tick++ > 50) 
+    // noLoop()
 }
 
 
