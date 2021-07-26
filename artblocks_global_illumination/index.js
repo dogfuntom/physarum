@@ -1,133 +1,270 @@
 console.clear();
-let s, sP
-let b, bP
-let time0 = new Date() / 1000
-let seed
-let tmp
-let u_bgColor
-let u_camDir
-let viewBox
-let positions, sizes
-let u_camAngYZ, u_camAngXZ
-const typeBlock = 0, typeCyl = 1, typeBall = 2, typeBeak2x2 = 3
-const texNorm = 2, texAO = 3
+let S, ss, R, t
+S = Uint32Array.from([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
+let RL = (ar) => ar[floor(ar.length * R())]
+
+// Цикл иногда повисает без признаков жизни
+
 
 /*
 
-- Два цвета передавать.
-- Текстуры.
-- Рендеринг через канвас.
-- Загрузка шейдеров из строк.
-- Рандом от Питера
-- Пробовать менять строку шейдера из js через ${x}
-- Углы поворота камеры.
+Баги
+- Цвета реюзать.
+- Привязать цвет к форме
+- Сейчас у всех деталей есть одна и только одна ось симметрии. Но может быть и две!
+- зум в некоторые детали
+- Набор удачных пресетов
+- Кодгольфнуть жс
+- Кодгольфнуть глсл
 
-- Запретные блоки сделать.
 
+
+- Вращение не делаем!
+- сделать предварительную генерировалку рандомности. Достать список рандомностей и — вперёд
 */
 
-let S,R,t,i
-S=Uint32Array.from([0,1,s=t=2,3].map(i=>parseInt(tokenData.hash.substr(i*8+2,8),16)));R=_=>(t=S[3],S[3]=S[2],S[2]=S[1],S[1]=s=S[0],t^=t<<11,S[0]^=(t^t>>>8)^(s>>>19),S[0]/2**32);'tx piter'
+let s, sP
+let b, bP
+let sf, sv
+let canvas
+let tmp
+let u_bgColor
+let positions, sizes
+let u_camAngYZ, u_camAngXZ
+const typeBlock = 0, typeCyl = 1, typeBall = 2, typeBeak2x2 = 3, typeBeak2x2Flipped = 4, typeArc = 5, typePillar = 6
+const texNorm = 2, texAO = 3
+const blocksNumMax = 100
+let draft = false
+let tick = 0
+let m = [0, 0]
+let maxTry = 10
+let maxMaxTry = 30
 
+
+// The Great Randomizer
+let gs = 4 + R() * 10 | 0
+console.log('gs', gs)
+let blocksNumber = Math.min(4 + gs * gs * R(), blocksNumMax)
+console.log('blocksNumber', blocksNumber)
+let fitnessFunctionNumber = R() * 5 | 0
+console.log('fitnessFunctionNumber', fitnessFunctionNumber)
+let numberOfBlockTypes = 1 + (R() * 7 | 0)
+console.log(numberOfBlockTypes)
+
+
+
+rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
 
 function preload() {
-    s = loadShader('s.vert', 's.frag')
-    sP = loadShader('s.vert', 's.frag')
+    sf = loadStrings('s.frag')
+    sv = loadStrings('s.vert')
 }
 
-function Block(size, position, color = 'red', type = typeBlock) {
-    this.size = size.copy();
-    // this.rotation = rotation.copy();
-    this.position = position.copy();
+function Block(size, position, color, color2, rotation, type = typeBlock) {
+    this.size = [...size]
+    this.rotation = rotation;
+    this.position = [...position]
     this.color = color;
+    this.color2 = color;
     this.type = type;
 }
 
 let blocks = [];
 let groundBlock;
-let blockSizes;
 let blocksHeightMap;
-let gridSize;
-let bg;
 let colors = [
-    // ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
-    // ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
-    // ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
-    // ["#70d6ff", "#ff70a6", "#ff9770", "#ffd670", "#e9ff70"], //candy bright
-    // ["#26547c", "#ef476f", "#ffd166", "#06d6a0", "#fffcf9"],
-    // ["#ff0000","#ff8700","#ffd300","#deff0a","#a1ff0a","#0aff99","#0aefff","#147df5","#580aff","#be0aff"], // acid
-    // ["#d88c9a", "#f2d0a9", "#f1e3d3", "#99c1b9", "#8e7dbe"], // dusty candy
-    // ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
-    // ["#ff99c8", "#fcf6bd", "#d0f4de", "#a9def9", "#e4c1f9"], // candy pale
-    // ["#2d3142", "#bfc0c0", "#ffffff", "#ef8354", "#4f5d75"], // gray white  orange
-    ["#07c8f9", "#09a6f3", "#0a85ed", "#0c63e7", "#0d41e1"], // blue
+    ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
+    ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
+    ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
+    ["#70d6ff", "#ff70a6", "#ff9770", "#ffd670", "#e9ff70"], //candy bright
+    ["#26547c", "#ef476f", "#ffd166", "#06d6a0", "#fffcf9"],
+    ["#ff0000", "#ff8700", "#ffd300", "#deff0a", "#a1ff0a", "#0aff99", "#0aefff", "#147df5", "#580aff", "#be0aff"], // acid
+    ["#d88c9a", "#f2d0a9", "#f1e3d3", "#99c1b9", "#8e7dbe"], // dusty candy
+    ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
+    ["#ff99c8", "#fcf6bd", "#d0f4de", "#a9def9", "#e4c1f9"], // candy pale
+    ["#2d3142", "#bfc0c0", "#ffffff", "#ef8354", "#4f5d75"], // gray white  orange
+    // ["#07c8f9", "#09a6f3", "#0a85ed", "#0c63e7", "#0d41e1"], // blue
     // ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
 ]
 
 
+// let colors = [['#F4F4F4', '#FFFFFF', '#E9EEE6', '#D2D5E4', '#FFFD9D', '#FDDFB4', '#FFF787', '#CDADF8', '#FCABCB', '#CACFD0', '#FF9BBA', '#56F3E4', '#8BCAD9', '#5DC6EB', '#FFDA32', '#A5A4AA', '#A8D375', '#FFF400', '#FFD500', '#FFC303', '#959D99', '#29A5FA', '#91B264', '#E17E4F', '#8A6E99', '#90E600', '#FF8300', '#389EBC', '#A97953', '#FF442B', '#0085B2', '#696C7A', '#CC3C3B', '#0048C9', '#42764A', '#46515A', '#4D4C52', '#5B3C3E',]]
 
 
 function placeBlocks() {
-    let blocksNum = 10
-    let gs = 6
     // let blocksNum = 16
     // let gs = 10
     // let blocksNum = 40
-    // let gs = 24
+    // let gs = 10
     // let blocksNum = 80
     // let gs = 24
 
-    groundBlock = new Block(createVector(gs, 1, gs), createVector(0, -.5, 0), random(colors));
-    // blocks.push(groundBlock)
+    // groundBlock = 
+    // blocks.push(new Block(
+    //     size: { x: 2, y: 1, z: 2 },
+    //     maskTop: [[0, 1], [0, 1]],
+    //     maskBottom: [[1, 1], [1, 1]],
+    //     RL(colors)
+    // ))
 
-    gridSize = createVector(gs, gs, gs);
-    blockSizes = [
-        createVector(2, 1, 2),
-        createVector(1, 1, 2),
-        createVector(1, 1, 4),
-        // // createVector(1, 1, 8),
-        createVector(2, 1, 4),
-        createVector(1, 1, 2),
-        createVector(2, 1, 2),
-    ];
+    gridSize = createVector(gs, gs, gs)
+    blocksVariants = shuffle([
+        { // beak
+            size: [2, 1, 2],
+            maskTop: [[0, 1], [0, 1]],
+            maskBottom: [[1, 1], [1, 1]],
+            type: typeBeak2x2,
+        },
+        { // beak flipped
+            size: [2, 1, 2],
+            maskTop: [[1, 1], [1, 1]],
+            maskBottom: [[0, 1], [0, 1]],
+            type: typeBeak2x2Flipped,
+        },
+        { // 4x2
+            size: [2, 1, 4],
+            maskTop: [[1, 1, 1, 1,], [1, 1, 1, 1,]],
+            maskBottom: [[1, 1, 1, 1,], [1, 1, 1, 1,]],
+            type: typeBlock,
+        },
+        { // 6x1
+            size: [1, 1, 6],
+            maskTop: [[1, 1, 1, 1, 1, 1,]],
+            maskBottom: [[1, 1, 1, 1, 1, 1,]],
+            type: typeBlock,
+        },
+        { // arc
+            size: [1, 2, 3],
+            maskTop: [[1, 1, 1]],
+            maskBottom: [[1, 0, 1]],
+            type: typeArc,
+        },
+        { // line
+            size: [1, .5, 3],
+            maskTop: [[1, 1, 1]],
+            maskBottom: [[1, 1, 1]],
+            type: typeBlock,
+        },
+        { // block
+            size: [2, 1, 2],
+            maskTop: [[1, 1], [1, 1]],
+            maskBottom: [[1, 1], [1, 1]],
+            type: typeBlock,
+        },
+        { // 1x1
+            size: [1, 1, 1],
+            maskTop: [[1]],
+            maskBottom: [[1]],
+            type: typeBlock,
+        },
+        { // 1x1 but high
+            size: [1, 4, 1],
+            maskTop: [[1]],
+            maskBottom: [[1]],
+            type: typeBlock,
+        },
+        { // Pillar
+            size: [1, 8, 1],
+            maskTop: [[0]],
+            maskBottom: [[1]],
+            type: typePillar,
+        },
+        // { // ball
+        //     size: createVector(1, 1, 1),
+        //     maskTop: [[0]],
+        //     maskBottom: [[1]],
+        //     type: typeBall,
+        // symX: true,
+        // },
+    ]).slice(0, numberOfBlockTypes)
+    console.log(blocksVariants)
 
+    // карта высот. В тех местах, где заплетная клетка, уходит в минус бесконечность. Чтобы точно было меньше, чем в запретной карте высот
+    // обратим внимание, что икс снаружи, потом зет. Обычно наоборот, если что.
     blocksHeightMap = Array(gridSize.x)
         .fill()
-        .map(() => Array(gridSize.z).fill(0));
+        .map(() => Array(gridSize.z).fill(0))
+    // запретная карта высот. Ну, как запретная. Просто нельзя ставить деталь ножкой на
+    // на клетку, если карта высот в этой клетке меньше карты запрета.
+    disallowedHeightMap = Array(gridSize.x)
+        .fill()
+        .map(() => Array(gridSize.z).fill(0))
 
-    // chose ramdom pos X, Z of new block
+    // цикл гарантирует, что появится Н блоков 
+    for (let n = 0; n < blocksNumber; n++) {
+        let maxHeight = 0
+        let fitness, maxFitness = -9e9
+        let bv
+        let bvt
+        let bvtInitial = RL(blocksVariants)
 
+        // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
+        // тот, что лучше подходит под критерий.
+        // Открытый вопрос, что делать, если ничего не подошло. Варианты:
+        // - добиться редкости случаев, когда пазл не сложился.
+        //   И в этом случае тупо всё сначала начинать с новым сидом.
+        // - сперва кидать самые большие детали, чтобы не вышло, что я положил один штырь, и никто не может к нему прицепиться
+        // - засчитывать только те попытки, когда деталь не нарушает правил. Иначе упрёмся в безысходный максимум.
 
-    for (let n = 0; n < blocksNum; n++) {
-        let blockColor = random(colors);
+        for (let try_ = 0; try_ < maxTry; try_++) {
+            bvt = JSON.parse(JSON.stringify(bvtInitial))
+            bvt.color = R()*colors.length|0
+            bvt.color2 = R()*colors.length|0
+            // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
+            // надо или его копию делать, или ещё чего.
 
-        const DENSE = -1
-        const SPARSE = 1
+            // есть ли смысл тут сделать глубокую копию? Есть. И всё в ней хранить.
+            bvt.symX = true
+            bvt.rot = floor(R() * 4) // (blockSizeTry.x%2==0 && blockSizeTry.z%2==0)?floor(R(4)):floor(R(2))*2
 
-        let strategy = 1//(n > blocksNum / 2) ? DENSE : SPARSE
-
-        let maxHeight = -999 * strategy
-        let blockPos
-        let blockSize
-        let fitness, maxFitness = -Infinity
-        for (let try_ = 0; try_ < 50; try_++) {
-            let blockSizeTry = random(blockSizes).copy()
-            let rotation = floor(random(4))
-            if (rotation % 2 == 0) {
-                tmp = blockSizeTry.x
-                blockSizeTry.x = blockSizeTry.z
-                blockSizeTry.z = tmp
+            // Поворачиваем весь blockVariantTry на 90° несколько раз.
+            // Далее ротейт будет использоваться только для передачи в юниформ.
+            bvt.span = [...bvt.size]
+            console.log({ ...bvt }, 'before rot')
+            for (let i = 0; i < bvt.rot; i++) {
+                // flipping sizes
+                // тут косяк. До этого мы деталь не крутили, только размеры подгоняли.
+                // теперь надо крутить, но размеры оставлять тут правильными. А вот координаты углов можно 
+                // ставить с учётом повотора.
+                bvt.span.reverse()
+                //rotating matrices
+                bvt.maskBottom = rotArray(bvt.maskBottom)
+                bvt.maskTop = rotArray(bvt.maskTop)
+                bvt.symX = !bvt.symX
             }
-            let blockPosTry = createVector(
-                -gs / 2 + blockSizeTry.x / 2 + floor(random(gs + 1 - blockSizeTry.x)),
-                0,
-                -gs / 2 + blockSizeTry.z / 2 + floor(random(gs + 1 - blockSizeTry.z))
-            )
+            console.log({ ...bvt }, 'after rot')
+            // интерраптинг, иф не влезло
+            if (bvt.span[0] > gs / 2) {
+                console.log(bvt.span[0], 'is longer than ', gs)
+                if (maxTry < maxMaxTry) maxTry++; continue // можно макс макс трай убрать, если макс трай не очень мелкий
+            }
+            ///////////////////////////////////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////////////////////////
+            if (gs % 2 == 0)
+                bvt.pos = [
+                    bvt.span[0] / 2 + (R() * (gs / 2 + 1 - bvt.span[0]) | 0),
+                    0,
+                    - gs / 2 + bvt.span[2] / 2 + (R() * (gs + 1 - bvt.span[2]) | 0),
+                ]
+            else {
+                bvt.pos = [
+                    bvt.span[0] / 2 + (R() * ((gs - 1) / 2 + 1 - bvt.span[0]) | 0) + .5,
+                    0,
+                    // - (gs - 1) / 2 + bvt.span[2] / 2 + (R() * (gs - 1 + 1 + 1 - bvt.span[2]) | 0) + .5-1,
+                    - gs / 2 + bvt.span[2] / 2 + (R() * (gs + 1 - bvt.span[2]) | 0),
+                ]
+            }
+            if (bvt.span[0] % 2 == gs % 2 && R() < 1 / (gs - bvt.span[0]))
+                if (bvt.span[0] % 2 || bvt.symX) // если чётное число пупырок, надо чтобы ось симетрии совпадала
+                    // хтя в будущем можно доработать. Ось симметрии должна поумнеть, тогда и на чётность мЖно буде твнимания не обращать
+                    bvt.pos[0] = 0
+            console.log(bvt)
             // тут можно циклы выкинуть
             let studL = 0
             let studR = 0
-            let xx = Array(blockSizeTry.x).fill().map((d, i) => blockPosTry.x + i - (blockSizeTry.x - 1.) / 2)
-            let zz = Array(blockSizeTry.z).fill().map((d, i) => blockPosTry.z + i - (blockSizeTry.z - 1.) / 2)
+            let xx = [...Array(bvt.span[0])].map((d, i) => bvt.pos[0] + i - (bvt.span[0] - 1.) / 2)
+            let zz = [...Array(bvt.span[2])].map((d, i) => bvt.pos[2] + i - (bvt.span[2] - 1.) / 2)
             for (let x of xx) {
                 for (let z of zz) {
                     if (x >= 0) studR++;
@@ -135,45 +272,117 @@ function placeBlocks() {
                 }
             }
 
-            if ((studL != 0 && studR != studL) || blockSizeTry.x > gs || blockSizeTry.z > gs) { try_--; console.log('l=', studL, 'r=', studR, 'not good!'); continue }
+            // if (
+            //     // блок про симметрию симметрии
+            //     (
+            //         (studL == 0) || // деталь не попала на ось симметрии
+            //         (studR == studL && bvt.symX)
+            //     )
+            //     //  && // стоит ровно посередине, ось симметрии совпадает
+            //     // bvt.span[0] <= gs &&
+            //     // bvt.span[2] <= gs
+            // ) { }
+            // else {
+            //     if(maxTry<maxMaxTry)maxTry++;
+            //     continue
+            // }
+            // debugger
             let maxHeightTry = 0;
-            for (let x of xx) {
-                for (let z of zz) {
-                    maxHeightTry = max(maxHeightTry, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
+            let maxHeightTryLikeWithoutBottomHoles = 0;
+            let maxDisallowedHeightTry = 0;
+            let bi = 0
+            for (let z of zz) {
+                for (let x of xx) {
+                    let bx = bi % bvt.span[0]
+                    let bz = floor(bi / bvt.span[0])
+                    bi++
+                    maxHeightTryLikeWithoutBottomHoles = max(maxHeightTryLikeWithoutBottomHoles, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
+                    maxDisallowedHeightTry = max(maxDisallowedHeightTry, disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
+                    console.log('bvt', bvt)
+                    console.log('bx, bz', bx, bz)
+                    console.log('xx, zz', xx, zz)
+                    if (bvt.maskBottom[bx][bz] == 1) {
+                        maxHeightTry = max(maxHeightTry, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
+                    }
                 }
             }
+            if (maxHeightTry < maxDisallowedHeightTry) {
+                console.log('maxHeightTry < maxDisallowedHeightTry')
+                if (maxTry < maxMaxTry) maxTry++; continue;
+            }
+            if (maxHeightTry > maxHeightTryLikeWithoutBottomHoles) {
+                console.log('maxHeightTry > maxHeightTryLikeWithoutBottomHoles')
 
-            // fitness = -maxHeightTry // low
-            fitness = maxHeightTry // high, bn 16 gs 10
-            // fitness = -Math.hypot(blockPosTry.x,maxHeightTry-10,blockPosTry.z) // mashroom
-            // fitness = -abs(Math.hypot(blockPosTry.x,maxHeightTry-10,blockPosTry.z)-gs) // cage
-            // fitness = -abs(Math.hypot(blockPosTry.x,maxHeightTry*2,blockPosTry.z)-gs) // cage: blocksNum = 90, gs = 16
+                if (maxTry < maxMaxTry) maxTry++; continue;
+            }
+            // TODO possible endless lop here!
 
 
-            if (fitness > maxFitness) {
-                maxFitness = fitness
+            let fitnessFunctions = [
+                -maxHeightTry, // low
+                maxHeightTry, // high, bn 16 gs 10
+                -Math.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]), // mashroom
+                -abs(Math.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]) - gs), // cage
+                -abs(Math.hypot(bvt.pos[0], maxHeightTry * 2, bvt.pos[2]) - gs), // cage: blocksNum = 90, gs = 16
+            ]
+            fitness = fitnessFunctions[fitnessFunctionNumber]
+
+            if (fitness > maxFitness || try_ == 0) {
+                console.log('try_', try_)
+                maxFitness = fitness // maxfitness не нужен, если  || try_==0
                 maxHeight = maxHeightTry
-                blockPos = blockPosTry
-                blockSize = blockSizeTry
+                rotation = bvt.rot // он нужен вообще?
+                bv = bvt
             }
         }
-        blockPos.y = maxHeight + blockSize.y / 2;
-        let xx = Array(blockSize.x).fill().map((d, i) => blockPos.x + i - (blockSize.x - 1.) / 2)
-        let zz = Array(blockSize.z).fill().map((d, i) => blockPos.z + i - (blockSize.z - 1.) / 2)
-        for (let x of xx) {
-            for (let z of zz) {
-                blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + blockSize.y
-            }
-        }
-        let block = new Block(
-            blockSize,
-            blockPos.copy(),//.add(blockSize.copy().mult(.5)),
-            blockColor,
-            (blockSize.x * blockSize.z == 1) ? random([typeCyl, typeBall]) : (blockSize.x == 2 && blockSize.z == 2) ? typeBeak2x2 : typeBlock,
-        );
-        blocks.push(block);
+        console.log('finally bv = ', bv)
+        if (bv) {
+            bv.pos[1] = maxHeight + bv.size[1] / 2;
+            if (bv.pos[1]) {
+                let xx = Array(bv.span[0]).fill().map((d, i) => bv.pos[0] + i - (bv.span[0] - 1.) / 2)
+                let zz = Array(bv.span[2]).fill().map((d, i) => bv.pos[2] + i - (bv.span[2] - 1.) / 2)
+                let bi = 0
+                for (let z of zz) {
+                    for (let x of xx) {
+                        let bx = bi % bv.span[0]
+                        let bz = floor(bi / bv.span[0])
+                        bi++
+                        blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv.size[1]
+                        if (bv.maskTop[bx][bz] == 0) blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = -Infinity
+                        disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv.size[1]
+                    }
+                }
+                let block = new Block(
+                    bv.size,
+                    [...bv.pos],//.add(blockSize.copy().mult(.5)),
+                    bv.color,
+                    bv.color2,
+                    bv.rot,
+                    bv.type,//(blockSize.x * blockSize.z == 1) ? RL([typeCyl, typeBall]) : (blockSize.x == 2 && blockSize.z == 2) ? typeBeak2x2 : typeBlock,
+                );
+                blocks.push(block);
+                console.log(block, 'ADDED!')
+            } else console.log('bv.pos.y is NaN')
+        } else console.log('bv not defined')
     }
+    console.log('N BLOCKS', blocks.length, '\n==============================')
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -193,11 +402,33 @@ let rot = (vec, ang) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function setup() {
-    let c = createCanvas(500, 500, WEBGL)
+    canvas = createCanvas(500, 500, WEBGL)
+
+    sf = sf.join('\n')
+    sv = sv.join('\n')
+    s = createShader(sv, sf)
+
     pixelDensity(1)
-    // randomSeed(110)
-    colors = shuffle(random(colors))
+    colors[0] = shuffle(colors[0]).slice(0, 6);
+    colors = shuffle(RL(colors))
 
     u_camAngYZ = .95532
     u_camAngXZ = PI / 4
@@ -206,7 +437,8 @@ function setup() {
 
     viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
     blocks.forEach(b => {
-        let s = b.size.copy().mult(.5)
+
+        let s = { x: b.size[0] / 2, y: b.size[1] / 2, z: b.size[2] / 2, }
         let vertices = [
             createVector(s.x, s.y, s.z),
             createVector(-s.x, s.y, s.z),
@@ -219,7 +451,9 @@ function setup() {
         ]
         vertices.forEach(v => {
             let pos = v.copy()
-            pos.add(b.position)
+            pos.x += b.position[0]
+            pos.y += b.position[1]
+            pos.z += b.position[2]
 
             let xz = rot([pos.x, pos.z], -u_camAngXZ)
             pos.x = xz[0]
@@ -235,7 +469,9 @@ function setup() {
 
             // для отзеркаленного
             pos = v.copy()
-            pos.add(b.position)
+            pos.x += b.position[0]
+            pos.y += b.position[1]
+            pos.z += b.position[2]
             pos.x *= -1
             xz = rot([pos.x, pos.z], -u_camAngXZ)
             pos.x = xz[0]
@@ -258,40 +494,15 @@ function setup() {
 
     u_bgColor = color(bg).levels.slice(0, 3)
     b = createGraphics(width, height, WEBGL)
-    bP = createGraphics(width, height, WEBGL)
-    b.background('red')
-    b.circle(0, 0, 100)
-    bP.background('green')
-    bP.circle(0, 0, 100)
-    b.noStroke()
-    bP.noStroke()
-    positions = Array(200)
-        .fill()
-        .map((d, i) => i < blocks.length ? [
-            blocks[i].position.x,
-            blocks[i].position.y,
-            blocks[i].position.z] : [0, 0, 0]
-        ).flat()
-    sizes = Array(200)
-        .fill()
-        .map((d, i) => i < blocks.length ? [
-            blocks[i].size.x,
-            blocks[i].size.y,
-            blocks[i].size.z] : [0, 0, 0]
-        ).flat()
-    colors = Array(200)
-        .fill()
-        .map((d, i) => i < blocks.length ? color(blocks[i].color).levels.slice(0, 3) : [0, 0, 0]
-        )
-    // console.log(colors)
-    // colors = colors.map(d => random([[...d], [floor(random(2, 4)), 0, 0]]))
-    // console.log(colors)
-    colors = colors.flat()
-    console.log(colors)
-    types = Array(200)
-        .fill()
-        .map((d, i) => i < blocks.length ? blocks[i].type : 0
-        ).flat()
+    b.clear()
+    sizes = blocks.map(b => b.size).flat()
+    console.log(blocks)
+    positions = blocks.map(b => b.position).flat()
+    palette=colors.map(c=>color(c).levels.slice(0, 3)).flat()
+    console.log(palette)
+    colors = blocks.map(b => [b.color, b.color2])
+    types = blocks.map(b => b.type)
+    rotates = blocks.map(b => b.rotation)
 }
 
 
@@ -314,42 +525,36 @@ function setup() {
 
 
 function draw() {
-    console.log(frameCount)
-    b.shader(s)
+    b.image(canvas, width * -0.5, height * -0.5, width, height);
+    shader(s);
     s.setUniform('u_res', [width * pixelDensity(), height * pixelDensity()])
-    s.setUniform('t', new Date() / 1000 - time0)
-    s.setUniform('tick', frameCount - 1)
-    s.setUniform('backbuffer', bP)
+    console.log(frameCount)
+    s.setUniform('t', tick)
+    s.setUniform('backbuffer', b)
     s.setUniform('blocksNumber', blocks.length)
     s.setUniform('positions', positions)
     s.setUniform('sizes', sizes)
+    s.setUniform('rotates', rotates)
+    console.log(colors)
+
     s.setUniform('colors', colors)
+    s.setUniform('palette', palette)
     s.setUniform('types', types)
     s.setUniform('gridSize', gridSize.x)
     s.setUniform('bgColor', u_bgColor)
     s.setUniform('camScale', viewBox.scale / 1)
     s.setUniform('camOffset', [viewBox.offset.x, viewBox.offset.y])
-    s.setUniform('camAng', [u_camAngYZ, u_camAngXZ])
-    b.rect(0, 0, width, height)
-    image(b, -width / 2, -height / 2, width, height)
-    tmp = b
-    b = bP
-    bP = tmp
+    s.setUniform('camAng', [u_camAngYZ, u_camAngXZ - (m[0] * 2 - 1) * TAU])
+    rect(0, 0, width, height)
 
-    tmp = s
-    s = sP
-    sP = tmp
-
-    if (frameCount > 50) noLoop()
+    if (tick++ > 5) noLoop()
 }
 
 
 
 
-
-
-
-
-
-function mouseMoved() {
+function mouseDragged() {
+    tick = 0
+    m[0] = (mouseX / width * 32 | 0) / 32
+    loop()
 }

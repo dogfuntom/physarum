@@ -1,13 +1,15 @@
 precision highp float;
+#define BLOCKS_NUMBER_MAX 100
 varying vec2 uv;
 uniform float t;
 uniform float tick;
 uniform int blocksNumber;
-uniform vec3 positions[200];
+uniform vec3 positions[BLOCKS_NUMBER_MAX];
 uniform vec3 bgColor;
-uniform vec3 sizes[200];
-uniform vec3 colors[200];
-uniform int types[200];
+uniform vec3 sizes[BLOCKS_NUMBER_MAX];
+uniform ivec2 colors[BLOCKS_NUMBER_MAX];
+uniform vec3 palette[20];
+uniform int types[BLOCKS_NUMBER_MAX];
 // uniform vec2 m;
 uniform vec2 u_res;
 uniform sampler2D backbuffer;
@@ -17,7 +19,10 @@ uniform vec2 camAng;
 #define PI 3.1415
 #define rnd(x) fract(54321.987 * sin(987.12345 * x))
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
-float opSmoothIntersection(float d1, float d2, float k){float h = clamp( 0.5 - 0.5*(d2-d1)/k, 0.0, 1.0 );return mix( d2, d1, h ) + k*h*(1.0-h); }
+float opSmoothIntersection(float d1, float d2, float k) {
+    float h = clamp(0.5 - 0.5 * (d2 - d1) / k, 0.0, 1.0);
+    return mix(d2, d1, h) + k * h * (1.0 - h);
+}
 
 vec2 random2f() {
     vec2 rn = vec2(rnd(length(uv) - t), rnd(length(uv) - t - .1));
@@ -59,14 +64,16 @@ vec4 dist(vec3 p) {
         float res = min(stud, box);
         if(types[i] == 3) {
             // box = length(pb - clamp(pb, -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR)) - cornerR * 1.4;
-            pb.z+=.6;
-            pb.yz*=rot(-PI/4.);
-            res = opSmoothIntersection(res, -pb.z, cornerR*1.);
+            pb.z += .6;
+            pb.yz *= rot(-PI / 4.);
+            res = opSmoothIntersection(res, -pb.z, cornerR * 1.);
             // box = max(length(pb.xz) - 1., abs(pb.y) - .5); // cyl 2x2
         }
         if(res < sp) {
             sp = res;
-            col = colors[i];
+            for(int j = 0; j < 20; j++) {
+                if(colors[i].x==j)col = palette[j];
+            }
         }
     }
     return vec4(sp, col);
