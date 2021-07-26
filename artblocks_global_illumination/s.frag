@@ -37,10 +37,11 @@ vec2 random2f() {
     return rn * 2. - 1.;
 }
 
-vec4 dist(vec3 p) {
-    vec3 col = bgColor;
+float dist(vec3 p) {
+    col1 = bgColor;
+    col2 = bgColor;
     // return vec4(length(p)-4.,vec3(0));
-    
+
     p.x = abs(p.x);
     float sp = p.y + 1.;
     for(int i = 0; i < 340; i++) {
@@ -48,12 +49,12 @@ vec4 dist(vec3 p) {
             break;
         vec3 pb = p;
         pb -= positions[i];
-        pb.xz*=rot(rotations[i]*PI/2.);
+        pb.xz *= rot(rotations[i] * PI / 2.);
         float cornerR = .05;//.05;
         // vec3 pbb = abs(pb) - clamp(abs(pb), -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR);
         // float box = (pbb.x+pbb.y+pbb.z-cornerR)*0.57735027;// TODO заменить на бивел от Гази
         float box;
-        if(types[i] == 0 || types[i] == 3 || types[i]==4  || types[i]==5  || types[i]==6  || types[i]==7 ) {
+        if(types[i] == 0 || types[i] == 3 || types[i] == 4 || types[i] == 5 || types[i] == 6 || types[i] == 7) {
             box = length(pb - clamp(pb, -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR)) - cornerR * 1.4;
         } else if(types[i] == 1) {
             box = max(length(pb.xz) - .5, abs(pb.y) - .5);
@@ -86,18 +87,18 @@ vec4 dist(vec3 p) {
             }
         }
     }
-    return vec4(sp, col);
+    return sp;
 }
 
 vec3 norm(vec3 p) {
     vec2 e = vec2(.01, 0.);
-    return normalize(vec3(dist(p + e.xyy).x - dist(p - e.xyy).x, dist(p + e.yxy).x - dist(p - e.yxy).x, dist(p + e.yyx).x - dist(p - e.yyx).x));
+    return normalize(vec3(dist(p + e.xyy) - dist(p - e.xyy), dist(p + e.yxy) - dist(p - e.yxy), dist(p + e.yyx) - dist(p - e.yyx)));
 }
 
 void main() {
     gl_FragColor = vec4(palette[0], 1);
     float d = 0., e = 1e9, j;
-    vec4 rm;
+    float rm;
     float camDist = 40.;
     float focusDistance = camDist - 10.;
     float blurAmount = .0;//10.8;
@@ -114,26 +115,25 @@ void main() {
         p.z -= camDist;
         p.yz *= rot(camAng.x);
         p.xz *= rot(camAng.y);
-        rm = dist(p);
-        // if(e < rm.x && rm.x < .008) {
-        //     gl_FragColor.a = 1.;
-        //     gl_FragColor.rgb = vec3(0);
-        //     outline = true;
-        //     // return;
-        // };
-        d += e = rm.x;
+        rm=dist(p);
+        if(e < rm && rm < .008) {
+            gl_FragColor.a = 1.;
+            gl_FragColor.rgb = vec3(0);
+            outline = true;
+            // return;
+        }
+        d += e = rm;
         if(e < .001)
             break;
     }
     // gl_FragColor=vec4(vec3(fract(j/100.)),1);
     // gl_FragColor.rgb=fract(gl_FragColor.rgb);
 
-
     // // col
     if(!outline) {
-        vec3 ccc = mix(col1, col2, sin(p.y * 10.)*.5+.5);
-        // vec3 ccc = palette[0];
-        gl_FragColor = vec4((vec3(10. / j) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5) * ccc, 1.);
+        vec3 col = mix(col1, col2, sin(p.y * 10.) * .5 + .5);
+        gl_FragColor = vec4(col * (vec3(10. / j) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5), 1.);
+        gl_FragColor = clamp(gl_FragColor, 0., 1.);
     }
 
     // if(rm.y == 2.)
