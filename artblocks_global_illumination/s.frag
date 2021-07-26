@@ -130,7 +130,8 @@ void main() {
     // // col
     if(!outline) {
         vec3 col = mix(col1, col2, sin(p.y*PI * 2.) * .5 + .5);
-        gl_FragColor = vec4(col * vec3(10. / j) * (dot(norm(p), vec3(1, 1, -1)) * .8 + .2), 1.);
+        // gl_FragColor = vec4(col * vec3(10. / j) * (dot(norm(p), vec3(1, 1, -1)) * .8 + .2), 1.);
+        gl_FragColor = vec4((vec3(10. / j) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5) * col, 1.);
         // gl_FragColor = vec4(vec3(10. / j) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5), 1.);
         // gl_FragColor = fract(gl_FragColor);
         // gl_FragColor = vec4(vec3(j/100.)*col1, 1.);
