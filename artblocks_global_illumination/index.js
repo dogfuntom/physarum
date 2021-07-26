@@ -42,7 +42,7 @@ let maxMaxTry = 30
 // The Great Randomizer
 let gs = 4 + R() * 10 | 0
 console.log('gs', gs)
-let blocksNumber = Math.min(4 + gs * gs * R(), blocksNumMax)
+let blocksNumber = 4//Math.min(4 + gs * gs * R(), blocksNumMax)
 console.log('blocksNumber', blocksNumber)
 let fitnessFunctionNumber = R() * 5 | 0
 console.log('fitnessFunctionNumber', fitnessFunctionNumber)
@@ -540,6 +540,7 @@ function draw() {
     s.setUniform('colors', u_colors)
     s.setUniform('palette', u_palette)
     s.setUniform('types', types)
+    s.setUniform('mouse', [mouseX/width, -mouseY/height])
     s.setUniform('textures', textures)
     s.setUniform('gridSize', gridSize.x)
     s.setUniform('bgColor', u_bgColor)

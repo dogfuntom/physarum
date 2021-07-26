@@ -17,6 +17,7 @@ uniform float camScale;
 uniform float rotations[BLOCKS_NUMBER_MAX];
 uniform vec2 camOffset;
 uniform vec2 camAng;
+uniform vec2 mouse;
 #define PI 3.1415
 #define rnd(x) fract(54321.987 * sin(987.12345 * x))
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
@@ -42,11 +43,11 @@ vec2 random2f() {
 float dist(vec3 p) {
     col1 = bgColor;
     col2 = bgColor;
-    tex = 0;
+    tex = -1;
     // return vec4(length(p)-4.,vec3(0));
 
     p.x = abs(p.x);
-    float res = p.y+.5;
+    float res = p.y + 1.;
     for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
         if(i >= blocksNumber)
             break;
@@ -84,7 +85,7 @@ float dist(vec3 p) {
         }
         if(block < res) {
             res = block;
-            tex=textures[i];
+            tex = textures[i];
             for(int j = 0; j < 20; j++) {
                 if(colors[i].x == j)
                     col1 = palette[j];
@@ -107,8 +108,8 @@ void main() {
     float rm;
     float camDist = 400.;
     vec2 uv_ = uv + random2f() * 1.5 / u_res;
-    vec3 p, ro = vec3(uv_*camScale+camOffset, -camDist);
-    vec3 rd = vec3(0,0,.9+.1*rnd(length(uv_)));
+    vec3 p, ro = vec3(uv_ * camScale + camOffset, -camDist);
+    vec3 rd = vec3(0, 0, .9 + .1 * rnd(length(uv_)));
 
     bool outline = false;
     for(float i = 0.; i < 399.; i++) {
@@ -117,7 +118,7 @@ void main() {
         p.z -= camDist;
         p.yz *= rot(camAng.x);
         p.xz *= rot(camAng.y);
-        rm=dist(p);
+        rm = dist(p);
         if(e < rm && rm < .008) {
             gl_FragColor.a = 1.;
             gl_FragColor.rgb = vec3(0);
@@ -134,13 +135,15 @@ void main() {
 
     // // col
     if(!outline) {
-        vec3 col = col1;
-        // layers
-        if(tex==1)col=mix(col1, col2, sin(p.y*PI * 4.) * .5 + .5);
-        // gyroid
-        if(tex==2)col=mix(col1, col2, clamp(dot(sin(p),cos(p.zxy)),0.,1.));
+        vec3 col = vec3(1);//col1;
+        // // layers
+        // if(tex==1)col=mix(col1, col2, sin(p.y*PI * 4.) * .5 + .5);
+        // // gyroid
+        // if(tex==2)col=mix(col1, col2, clamp(dot(sin(p),cos(p.zxy)),0.,1.));
         // gl_FragColor = vec4(col * vec3(10. / j) * (dot(norm(p), vec3(1, 1, -1)) * .8 + .2), 1.);
-        gl_FragColor = vec4((vec3(10. / j) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5) * col, 1.);
+        gl_FragColor = vec4((vec3(11. / j) * dot(norm(p) * .9 + .1, normalize(vec3(vec2(0, -1) * rot(camAng.y), 1).xzy)) * .5 + .5) * col, 1.);
+        if(tex == -1)
+            gl_FragColor = vec4(vec3(5. / sqrt(j)) * col, 1.);
         // gl_FragColor = vec4(vec3(10. / j) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5), 1.);
         // gl_FragColor = fract(gl_FragColor);
         // gl_FragColor = vec4(vec3(j/100.)*col1, 1.);
