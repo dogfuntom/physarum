@@ -53,12 +53,14 @@ float dist(vec3 p) {
         vec3 pb = p;
         pb -= positions[i];
         pb.xz *= rot(rotations[i] * PI / 2.);
-        float cornerR = .05;//.05;
+        float cornerR = .025;//.05;
         float box;
+        float gap = .03;
         if(types[i] == 0 || types[i] == 3 || types[i] == 4 || types[i] == 5 || types[i] == 6 || types[i] == 7) {
-            vec3 pbb = abs(pb) - clamp(abs(pb), -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR);
-            box = (pbb.x+pbb.y+pbb.z-cornerR)*0.57735027;// TODO заменить на бивел от Гази
-            // box = length(pb - clamp(pb, -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR)) - cornerR * 1.4;
+            // vec3 pbb = abs(pb) - clamp(abs(pb), -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR);
+            // box = (pbb.x+pbb.y+pbb.z-cornerR)*0.57735027;// TODO заменить на бивел от Гази
+
+            box = length(pb - clamp(pb, -sizes[i] / 2. + cornerR + gap, sizes[i] / 2. - cornerR - gap)) - cornerR * 1.4;
         } else if(types[i] == 1) {
             box = max(length(pb.xz) - .5, abs(pb.y) - .5);
         } else if(types[i] == 2) {
@@ -136,7 +138,7 @@ void main() {
         // layers
         if(tex==1)col=mix(col1, col2, sin(p.y*PI * 4.) * .5 + .5);
         // gyroid
-        if(tex==2)col=mix(col1, col2, (dot(sin(p),cos(p.zxy))));
+        if(tex==2)col=mix(col1, col2, clamp(dot(sin(p),cos(p.zxy)),0.,1.));
         // gl_FragColor = vec4(col * vec3(10. / j) * (dot(norm(p), vec3(1, 1, -1)) * .8 + .2), 1.);
         gl_FragColor = vec4((vec3(10. / j) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5) * col, 1.);
         // gl_FragColor = vec4(vec3(10. / j) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5), 1.);
@@ -156,5 +158,5 @@ void main() {
     // // glow
     // // gl_FragColor = vec4((vec3(j/10.) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5) * rm.yzw / 255., 1.);
 
-    gl_FragColor = mix(texture2D(backbuffer, uv * vec2(1, -1) * .5 + .5), gl_FragColor, 1. / (t + 1.));
+    // gl_FragColor = mix(texture2D(backbuffer, uv * vec2(1, -1) * .5 + .5), gl_FragColor, 1. / (t + 1.));
 }
