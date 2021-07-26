@@ -2,7 +2,6 @@ precision highp float;
 #define BLOCKS_NUMBER_MAX 100
 varying vec2 uv;
 uniform float t;
-uniform float tick;
 uniform int blocksNumber;
 uniform vec3 positions[BLOCKS_NUMBER_MAX];
 uniform vec3 bgColor;
@@ -149,5 +148,5 @@ void main() {
     // // glow
     // // gl_FragColor = vec4((vec3(j/10.) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5) * rm.yzw / 255., 1.);
 
-    // // gl_FragColor = mix(texture2D(backbuffer, uv * vec2(1, -1) * .5 + .5), gl_FragColor, 1. / (tick + 1.));
+    gl_FragColor = mix(texture2D(backbuffer, uv * vec2(1, -1) * .5 + .5), gl_FragColor, 1. / (t + 1.));
 }
