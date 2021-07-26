@@ -103,7 +103,7 @@ void main() {
     vec2 uv_ = uv + random2f() * 1.5 / u_res;
     vec3 p, ro = vec3(uv_*camScale+camOffset, -camDist);
     // ro.xy += (uv_,0);
-    vec3 rd = vec3(0,0,1);
+    vec3 rd = vec3(0,0,.9+.1*rnd(length(uv_)));
 
     bool outline = false;
     for(float i = 0.; i < 99.; i++) {
