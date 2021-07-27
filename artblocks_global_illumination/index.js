@@ -50,8 +50,7 @@ let maxMaxTry = 30
 // console.log('fitnessFunctionNumber', fitnessFunctionNumber)
 // let numberOfBlockTypes = 1 + (R() * 7 | 0)
 // console.log(numberOfBlockTypes)
-
-let r_oneColor = R() * 2 | 0 // all blocks of the same color
+let r_oneColor = R()**8 * 2 | 0 // all blocks of the same color
 
 let presetId = R() * 2 | 0
 let presets = [
@@ -232,7 +231,7 @@ function placeBlocks() {
             bvt = JSON.parse(JSON.stringify(bvtInitial))
             bvt.color = R() * (palette.length - 1 | 0) + 1
             bvt.color2 = R() * (palette.length - 1 | 0) + 1
-            bvt.texture = R() * R() * 3 | 0
+            bvt.texture = R() * 3 | 0
             // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
             // надо или его копию делать, или ещё чего.
 
