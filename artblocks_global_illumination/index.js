@@ -10,6 +10,7 @@ let RL = (ar) => ar[ar.length * R() | 0]
 
 Баги
 - рефакторнуть глсл
+- bg переделать на что-то типа глов. Чтобы не было глючного засвета
 - Пингвинчик!
 - Кодгольфнуть глсл
 - Кодгольфнуть жс
@@ -97,15 +98,20 @@ let blocks = [];
 let groundBlock;
 let blocksHeightMap;
 let palette = RL([
-    ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
+    // // GOOD
+    // ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
     // ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
     // ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
+    // ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
+
+    // BAD
     // ["#70d6ff", "#ff70a6", "#ff9770", "#ffd670", "#e9ff70"], //candy bright
     // ["#26547c", "#ef476f", "#ffd166", "#06d6a0", "#fffcf9"],
     // ["#ff0000", "#ff8700", "#ffd300", "#deff0a", "#a1ff0a", "#0aff99", "#0aefff", "#147df5", "#580aff", "#be0aff"], // acid
     // ["#d88c9a", "#f2d0a9", "#f1e3d3", "#99c1b9", "#8e7dbe"], // dusty candy
-    // ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
-    // ["#ff99c8", "#fcf6bd", "#d0f4de", "#a9def9", "#e4c1f9"], // candy pale
+
+    // NOT tested
+    ["#ff99c8", "#fcf6bd", "#d0f4de", "#a9def9", "#e4c1f9"], // candy pale
     // ["#2d3142", "#bfc0c0", "#ef8354", "#4f5d75"], // gray white  orange
     // // ["#07c8f9", "#09a6f3", "#0a85ed", "#0c63e7", "#0d41e1"], // blue
     // // ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
@@ -468,8 +474,8 @@ function setup() {
     if (r_oneColor == 1) palette = palette.slice(0, 2)
     console.log(palette, 'palette')
 
-    // u_camAngYZ = .95532
-    u_camAngYZ = .95
+    u_camAngYZ = .95532
+    // u_camAngYZ = .95
     // u_camAngXZ = ((R() * 3 | 0) - 1) * PI / 4
     u_camAngXZ = ((R() * 2 | 0) - 1) * PI / 2 - PI / 4
     placeBlocks();
@@ -538,9 +544,9 @@ function setup() {
     // console.log(blocks)
     positions = blocks.map(b => b.position).flat()
     u_palette = palette.map(c => color(c).levels.slice(0, 3)).flat().map(d => d / 255)
-    u_colors = blocks.map(b => [b.color, b.color2]).flat()
+    u_colors = blocks.map(b => [b.color, b.color2, b.texture]).flat()
     types = blocks.map(b => b.type)
-    textures = blocks.map(b => b.texture)
+    // textures = blocks.map(b => b.texture)
     rotates = blocks.map(b => b.rotation)
 }
 
@@ -575,10 +581,11 @@ function draw() {
     s.setUniform('sizes', sizes)
     s.setUniform('rotations', rotates)
     s.setUniform('colors', u_colors)
+    console.log('colors', u_colors)
     s.setUniform('palette', u_palette)
     s.setUniform('types', types)
-    s.setUniform('mouse', [mouseX / width, -mouseY / height])
-    s.setUniform('textures', textures)
+    // s.setUniform('mouse', [mouseX / width, -mouseY / height])
+    // s.setUniform('textures', textures)
     s.setUniform('gridSize', gridSize.x)
     // s.setUniform('bgColor', u_bgColor)
     s.setUniform('camScale', viewBox.scale / 1)

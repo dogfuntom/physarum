@@ -5,19 +5,19 @@ uniform float t;
 uniform int blocksNumber;
 uniform vec3 positions[BLOCKS_NUMBER_MAX];
 uniform vec3 sizes[BLOCKS_NUMBER_MAX];
-uniform ivec2 colors[BLOCKS_NUMBER_MAX];
+uniform ivec3 colors[BLOCKS_NUMBER_MAX];
 uniform int types[BLOCKS_NUMBER_MAX];
-uniform int textures[BLOCKS_NUMBER_MAX];
+// uniform int textures[BLOCKS_NUMBER_MAX];
 uniform float rotations[BLOCKS_NUMBER_MAX];
 // uniform vec3 bgColor; // pallete[0] is always bg
 uniform vec3 palette[20];
 // uniform vec2 m;
+// uniform vec2 mouse;
 uniform vec2 u_res;
 uniform sampler2D backbuffer;
 uniform float camScale;
 uniform vec2 camOffset;
 uniform vec2 camAng;
-uniform vec2 mouse;
 #define PI 3.1415
 #define rnd(x) fract(54321.987 * sin(987.12345 * x))
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
@@ -86,11 +86,11 @@ float dist(vec3 p) {
         }
         if(block < res) {
             res = block;
-            tex = textures[i];
+            tex = colors[i][2];
             for(int j = 0; j < 20; j++) {
-                if(colors[i].x == j)
+                if(colors[i][0] == j)
                     col1 = palette[j];
-                if(colors[i].y == j)
+                if(colors[i][1] == j)
                     col2 = palette[j];
             }
         }
