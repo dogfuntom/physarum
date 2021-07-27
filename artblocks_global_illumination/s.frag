@@ -24,8 +24,7 @@ float opSmoothIntersection(float d1, float d2, float k) {
     return mix(d2, d1, h) + k * h * (1. - h);
 }
 
-ivec2 colIds;
-int tex;
+ivec3 colIds;
 
 vec2 random2f() {
     vec2 rn = vec2(rnd(length(uv) - t), rnd(length(uv) - t - .1));
@@ -39,8 +38,7 @@ vec2 random2f() {
 }
 
 float dist(vec3 p) {
-    colIds = ivec2(0);
-    tex = -1;
+    colIds = ivec3(0,0,-1);
     // return vec4(length(p)-4.,vec3(0));
 
     p.x = abs(p.x);
@@ -82,8 +80,7 @@ float dist(vec3 p) {
         }
         if(block < res) {
             res = block;
-            tex = colors[i][2];
-            colIds = colors[i].xy;
+            colIds = colors[i];
         }
     }
     return res;
@@ -111,7 +108,7 @@ void main() {
         p.yz *= rot(camAng.x);
         p.xz *= rot(camAng.y);
         rm = dist(p);
-        if(e < rm && rm < .008) {
+        if(e < rm && rm < .01) {
             gl_FragColor.a = 1.;
             gl_FragColor.rgb = vec3(0);
             outline = true;
@@ -122,10 +119,6 @@ void main() {
         if(e < .001)
             break;
     }
-    // gl_FragColor=vec4(vec3(fract(j/100.)),1);
-    // gl_FragColor.rgb=fract(gl_FragColor.rgb);
-
-    // // col
     if(!outline) {
         vec3 col1, col2;
         for(int j = 0; j < 20; j++) {
@@ -137,11 +130,11 @@ void main() {
 
         vec3 col = col1;
         // layers
-        // if(tex == 1)
+        // if(colIds.z == 1)
         //     col = mix(col1, col2, cos(p.y * PI * 4.) * .5 + .5);
         // // gyroid
-        // // if(tex==2)col=mix(col1, col2, dot(sin(p*PI),sin(p*PI))*.5+.5);
-        // if(tex == 2)
+        // // if(colIds.z==2)col=mix(col1, col2, dot(sin(p*PI),sin(p*PI))*.5+.5);
+        // if(colIds.z == 2)
         //     col = mix(col1, col2, smoothstep(.3, .4, dot(cos(p * PI * vec3(1, .1, 8)), cos(p * PI * vec3(1, .1, 8)))));
         // gl_FragColor = vec4((vec3(sqrt(smoothstep(80.,0.,j))) * dot(norm(p) * .9 + .1, (vec3(vec2(0, -1) * rot(camAng.y), 1).xzy)) * .5 + .5) * col, 1.);
         // gl_FragColor = vec4((vec3(10./j) * dot(norm(p) * .9 + .1, (vec3(vec2(0, -1) * rot(camAng.y), 1).xzy)) * .5 + .5) * col, 1.);
@@ -159,7 +152,7 @@ void main() {
         // else
         //     gl_FragColor = vec4(col, 1.);
         // gl_FragColor = vec4(smoothstep(20.,0.,sqrt(j)) * (dot(norm(p), vec3(-1, 1, -1)) * .1 + .9) * col, 1.);
-        if(tex == -1) {
+        if(colIds.z == -1) {
             float mult = sqrt(j / 20.);
             mult = mix(1., mult, step(0., sin(length(uv_) * 64.)) * .5);
             gl_FragColor = vec4(col * mult, 1.);
