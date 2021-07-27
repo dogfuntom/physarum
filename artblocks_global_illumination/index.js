@@ -84,37 +84,27 @@ function preload() {
     sv = loadStrings('s.vert')
 }
 
-function Block(size, position, color, color2, texture, rotation, type = typeBlock) {
-    this.size = [...size]
-    this.rotation = rotation;
-    this.position = [...position]
-    this.color = color;
-    this.color2 = color2;
-    this.type = type;
-    this.texture = texture
-}
-
 let blocks = [];
 let groundBlock;
 let blocksHeightMap;
 let palette = RL([
     // // GOOD
-    // ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
-    // ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
-    // ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
-    // ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
+    ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
+    ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
+    ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
+    ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
+    ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
 
     // BAD
     // ["#70d6ff", "#ff70a6", "#ff9770", "#ffd670", "#e9ff70"], //candy bright
     // ["#26547c", "#ef476f", "#ffd166", "#06d6a0", "#fffcf9"],
     // ["#ff0000", "#ff8700", "#ffd300", "#deff0a", "#a1ff0a", "#0aff99", "#0aefff", "#147df5", "#580aff", "#be0aff"], // acid
     // ["#d88c9a", "#f2d0a9", "#f1e3d3", "#99c1b9", "#8e7dbe"], // dusty candy
+    // ["#2d3142", "#bfc0c0", "#ef8354", "#4f5d75"], // gray white  orange
+    // ["#ff99c8", "#fcf6bd", "#d0f4de", "#a9def9", "#e4c1f9"], // candy pale
+    // ["#07c8f9", "#09a6f3", "#0a85ed", "#0c63e7", "#0d41e1"], // blue
 
     // NOT tested
-    ["#ff99c8", "#fcf6bd", "#d0f4de", "#a9def9", "#e4c1f9"], // candy pale
-    // ["#2d3142", "#bfc0c0", "#ef8354", "#4f5d75"], // gray white  orange
-    // // ["#07c8f9", "#09a6f3", "#0a85ed", "#0c63e7", "#0d41e1"], // blue
-    // // ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
 ])
 
 
@@ -392,33 +382,12 @@ function placeBlocks() {
                         disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv.size[1]
                     }
                 }
-                let block = new Block(
-                    bv.size,
-                    [...bv.pos],//.add(blockSize.copy().mult(.5)),
-                    bv.color,
-                    bv.color2,
-                    bv.texture,
-                    bv.rot,
-                    bv.type,//(blockSize.x * blockSize.z == 1) ? RL([typeCyl, typeBall]) : (blockSize.x == 2 && blockSize.z == 2) ? typeBeak2x2 : typeBlock,
-                );
-                blocks.push(block);
-                // console.log(block, 'ADDED!')
+                blocks.push(bv)
             } else console.log('bv.pos.y is NaN')
         } else console.log('bv not defined')
     }
     console.log('N BLOCKS', blocks.length, '\n==============================')
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -449,17 +418,6 @@ let rot = (vec, ang) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 function setup() {
     canvas = createCanvas(500, 500, WEBGL)
 
@@ -468,15 +426,12 @@ function setup() {
     s = createShader(sv, sf)
 
     pixelDensity(1)
-    // colors[0] = shuffle(colors[0]).slice(0, 6);
     palette = shuffle(palette)
-    // bg = palette.pop()
     if (r_oneColor == 1) palette = palette.slice(0, 2)
     console.log(palette, 'palette')
 
     u_camAngYZ = .95532
-    // u_camAngYZ = .95
-    // u_camAngXZ = ((R() * 3 | 0) - 1) * PI / 4
+    // u_camAngXZ = ((R() * 3 | 0) - 1) * PI / 4 // includes en-face
     u_camAngXZ = ((R() * 2 | 0) - 1) * PI / 2 - PI / 4
     placeBlocks();
 
@@ -496,9 +451,10 @@ function setup() {
         ]
         vertices.forEach(v => {
             let pos = v.copy()
-            pos.x += b.position[0]
-            pos.y += b.position[1]
-            pos.z += b.position[2]
+            console.log(b)
+            pos.x += b.pos[0]
+            pos.y += b.pos[1]
+            pos.z += b.pos[2]
 
             let xz = rot([pos.x, pos.z], -u_camAngXZ)
             pos.x = xz[0]
@@ -514,9 +470,9 @@ function setup() {
 
             // для отзеркаленного
             pos = v.copy()
-            pos.x += b.position[0]
-            pos.y += b.position[1]
-            pos.z += b.position[2]
+            pos.x += b.pos[0]
+            pos.y += b.pos[1]
+            pos.z += b.pos[2]
             pos.x *= -1
             xz = rot([pos.x, pos.z], -u_camAngXZ)
             pos.x = xz[0]
@@ -542,12 +498,12 @@ function setup() {
     b.clear()
     sizes = blocks.map(b => b.size).flat()
     // console.log(blocks)
-    positions = blocks.map(b => b.position).flat()
+    positions = blocks.map(b => b.pos).flat()
     u_palette = palette.map(c => color(c).levels.slice(0, 3)).flat().map(d => d / 255)
     u_colors = blocks.map(b => [b.color, b.color2, b.texture]).flat()
     types = blocks.map(b => b.type)
     // textures = blocks.map(b => b.texture)
-    rotates = blocks.map(b => b.rotation)
+    rotates = blocks.map(b => b.rot)
 }
 
 
