@@ -25,8 +25,8 @@ let RL = (ar) => ar[ar.length * R() | 0]
 ✓ Набор удачных пресетов
 */
 
-let s, sP
-let b, bP
+let s
+let b
 let sf, sv
 let canvas
 let tmp
@@ -506,7 +506,9 @@ function setup() {
 
 
 function draw() {
+    b.clear();
     b.image(canvas, width * -0.5, height * -0.5, width, height);
+    clear();
     shader(s);
     // console.log(frameCount)
     s.setUniform('u_res', [width * pixelDensity(), height * pixelDensity()])
