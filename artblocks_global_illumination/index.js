@@ -30,18 +30,16 @@ let b, bP
 let sf, sv
 let canvas
 let tmp
-let u_bgColor, u_palette, u_colors
-let positions, sizes, textures
+let u_bgColor, u_palette, u_colors, u_rotations, u_positions, u_sizes, u_types
 let u_camAngYZ, u_camAngXZ
 const typeBlock = 0, typeCyl = 1, typeBall = 2, typeBeak2x2 = 3, typeBeak2x2Flipped = 4, typeArc = 5, typePillar = 6
 const texSolid = 0, texLayers = 1, texGyr = 2
 const texNorm = 2, texAO = 3
 const blocksNumMax = 100
 let draft = false
-let tick = 0
+let u_tick = 0
 let m = [0, 0]
 let maxMaxTry = 30
-
 
 // // The Great Randomizer
 // let gs = 4 + R() * 10 | 0
@@ -106,10 +104,6 @@ let palette = RL([
 
     // NOT tested
 ])
-
-
-// let colors = [['#F4F4F4', '#FFFFFF', '#E9EEE6', '#D2D5E4', '#FFFD9D', '#FDDFB4', '#FFF787', '#CDADF8', '#FCABCB', '#CACFD0', '#FF9BBA', '#56F3E4', '#8BCAD9', '#5DC6EB', '#FFDA32', '#A5A4AA', '#A8D375', '#FFF400', '#FFD500', '#FFC303', '#959D99', '#29A5FA', '#91B264', '#E17E4F', '#8A6E99', '#90E600', '#FF8300', '#389EBC', '#A97953', '#FF442B', '#0085B2', '#696C7A', '#CC3C3B', '#0048C9', '#42764A', '#46515A', '#4D4C52', '#5B3C3E',]]
-
 
 function placeBlocks() {
     // let blocksNum = 16
@@ -249,7 +243,6 @@ function placeBlocks() {
             // Поворачиваем весь blockVariantTry на 90° несколько раз.
             // Далее ротейт будет использоваться только для передачи в юниформ.
             bvt.span = [...bvt.size]
-            // console.log({ ...bvt }, 'before rot')
             for (let i = 0; i < bvt.rot; i++) {
                 // flipping sizes
                 // тут косяк. До этого мы деталь не крутили, только размеры подгоняли.
@@ -261,7 +254,6 @@ function placeBlocks() {
                 bvt.maskTop = rotArray(bvt.maskTop)
                 bvt.symX = !bvt.symX
             }
-            // console.log({ ...bvt }, 'after rot')
             // интерраптинг, иф не влезло
             if (bvt.span[0] > gs / 2) {
                 // console.log(bvt.span[0], 'is longer than ', gs)
@@ -288,7 +280,6 @@ function placeBlocks() {
                 if (bvt.span[0] % 2 || bvt.symX) // если чётное число пупырок, надо чтобы ось симетрии совпадала
                     // хтя в будущем можно доработать. Ось симметрии должна поумнеть, тогда и на чётность мЖно буде твнимания не обращать
                     bvt.pos[0] = 0
-            // console.log(bvt)
             // тут можно циклы выкинуть
             let studL = 0
             let studR = 0
@@ -327,21 +318,15 @@ function placeBlocks() {
                     bi++
                     maxHeightTryLikeWithoutBottomHoles = max(maxHeightTryLikeWithoutBottomHoles, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
                     maxDisallowedHeightTry = max(maxDisallowedHeightTry, disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
-                    // console.log('bvt', bvt)
-                    // console.log('bx, bz', bx, bz)
-                    // console.log('xx, zz', xx, zz)
                     if (bvt.maskBottom[bx][bz] == 1) {
                         maxHeightTry = max(maxHeightTry, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
                     }
                 }
             }
             if (maxHeightTry < maxDisallowedHeightTry) {
-                // console.log('maxHeightTry < maxDisallowedHeightTry')
                 if (maxTry < maxMaxTry) maxTry++; continue;
             }
             if (maxHeightTry > maxHeightTryLikeWithoutBottomHoles) {
-                // console.log('maxHeightTry > maxHeightTryLikeWithoutBottomHoles')
-
                 if (maxTry < maxMaxTry) maxTry++; continue;
             }
             // TODO possible endless lop here!
@@ -358,14 +343,12 @@ function placeBlocks() {
             fitness = fitnessFunctions[fitnessFunctionNumber]
 
             if (fitness > maxFitness || try_ == 0) {
-                // console.log('try_', try_)
                 maxFitness = fitness // maxfitness не нужен, если  || try_==0
                 maxHeight = maxHeightTry
                 rotation = bvt.rot // он нужен вообще?
                 bv = bvt
             }
         }
-        // console.log('finally bv = ', bv)
         if (bv) {
             bv.pos[1] = maxHeight + bv.size[1] / 2;
             if (bv.pos[1]) {
@@ -493,17 +476,14 @@ function setup() {
     viewBox.offset = { x: viewBox.left + viewBox.width / 2, y: viewBox.bottom + viewBox.height / 2 }
     // viewBox.offset = { x: 0, y: 0 }
 
-    // u_bgColor = color(bg).levels.slice(0, 3).map(d => d / 255)
     b = createGraphics(width, height, WEBGL)
     b.clear()
-    sizes = blocks.map(b => b.size).flat()
-    // console.log(blocks)
-    positions = blocks.map(b => b.pos).flat()
+    u_sizes = blocks.map(b => b.size).flat()
+    u_positions = blocks.map(b => b.pos).flat()
     u_palette = palette.map(c => color(c).levels.slice(0, 3)).flat().map(d => d / 255)
     u_colors = blocks.map(b => [b.color, b.color2, b.texture]).flat()
-    types = blocks.map(b => b.type)
-    // textures = blocks.map(b => b.texture)
-    rotates = blocks.map(b => b.rot)
+    u_types = blocks.map(b => b.type)
+    u_rotations = blocks.map(b => b.rot)
 }
 
 
@@ -528,28 +508,25 @@ function setup() {
 function draw() {
     b.image(canvas, width * -0.5, height * -0.5, width, height);
     shader(s);
+    // console.log(frameCount)
     s.setUniform('u_res', [width * pixelDensity(), height * pixelDensity()])
-    console.log(frameCount)
-    s.setUniform('t', tick)
+    s.setUniform('t', u_tick)
     s.setUniform('backbuffer', b)
     s.setUniform('blocksNumber', blocks.length)
-    s.setUniform('positions', positions)
-    s.setUniform('sizes', sizes)
-    s.setUniform('rotations', rotates)
+    s.setUniform('positions', u_positions)
+    s.setUniform('sizes', u_sizes)
+    s.setUniform('rotations', u_rotations)
     s.setUniform('colors', u_colors)
-    console.log('colors', u_colors)
     s.setUniform('palette', u_palette)
-    s.setUniform('types', types)
-    // s.setUniform('mouse', [mouseX / width, -mouseY / height])
-    // s.setUniform('textures', textures)
+    s.setUniform('types', u_types)
     s.setUniform('gridSize', gridSize.x)
-    // s.setUniform('bgColor', u_bgColor)
     s.setUniform('camScale', viewBox.scale / 1)
     s.setUniform('camOffset', [viewBox.offset.x, viewBox.offset.y])
     s.setUniform('camAng', [u_camAngYZ, u_camAngXZ - (m[0] * 2 - 1) * TAU])
+    // s.setUniform('mouse', [mouseX / width, -mouseY / height])
     rect(0, 0, width, height)
 
-    if (tick++ > 5e1)
+    if (u_tick++ > 5e1)
         noLoop()
 }
 
@@ -557,7 +534,7 @@ function draw() {
 
 
 function mouseDragged() {
-    tick = 0
+    u_tick = 0
     // m[0] = (mouseX / width * 32 | 0) / 32
     m[0] = mouseX / width
     loop()
