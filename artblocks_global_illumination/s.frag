@@ -7,11 +7,8 @@ uniform vec3 positions[BLOCKS_NUMBER_MAX];
 uniform vec3 sizes[BLOCKS_NUMBER_MAX];
 uniform ivec3 colors[BLOCKS_NUMBER_MAX];
 uniform int types[BLOCKS_NUMBER_MAX];
-// uniform int textures[BLOCKS_NUMBER_MAX];
 uniform float rotations[BLOCKS_NUMBER_MAX];
-// uniform vec3 bgColor; // pallete[0] is always bg
 uniform vec3 palette[20];
-// uniform vec2 m;
 // uniform vec2 mouse;
 uniform vec2 u_res;
 uniform sampler2D backbuffer;
@@ -19,15 +16,15 @@ uniform float camScale;
 uniform vec2 camOffset;
 uniform vec2 camAng;
 #define PI 3.1415
-#define rnd(x) fract(54321.987 * sin(987.12345 * x))
+#define rnd(x) fract(54321.987 * sin(987.12345 * mod(x,12.34567)))
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
 #define STEPS 4e2
 float opSmoothIntersection(float d1, float d2, float k) {
-    float h = clamp(0.5 - 0.5 * (d2 - d1) / k, 0.0, 1.0);
-    return mix(d2, d1, h) + k * h * (1.0 - h);
+    float h = clamp(.5 - .5 * (d2 - d1) / k, .0, 1.);
+    return mix(d2, d1, h) + k * h * (1. - h);
 }
 
-vec3 col1, col2;
+ivec2 colIds;
 int tex;
 
 vec2 random2f() {
@@ -42,8 +39,7 @@ vec2 random2f() {
 }
 
 float dist(vec3 p) {
-    col1 = palette[0];
-    col2 = palette[0];
+    colIds = ivec2(0);
     tex = -1;
     // return vec4(length(p)-4.,vec3(0));
 
@@ -87,12 +83,7 @@ float dist(vec3 p) {
         if(block < res) {
             res = block;
             tex = colors[i][2];
-            for(int j = 0; j < 20; j++) {
-                if(colors[i][0] == j)
-                    col1 = palette[j];
-                if(colors[i][1] == j)
-                    col2 = palette[j];
-            }
+            colIds = colors[i].xy;
         }
     }
     return res;
@@ -136,6 +127,14 @@ void main() {
 
     // // col
     if(!outline) {
+        vec3 col1, col2;
+        for(int j = 0; j < 20; j++) {
+            if(colIds[0] == j)
+                col1 = palette[j];
+            if(colIds[1] == j)
+                col2 = palette[j];
+        }
+
         vec3 col = col1;
         // layers
         // if(tex == 1)
@@ -152,7 +151,7 @@ void main() {
             // if(gl_FragCoord.y / u_res.y < .5)
         // gl_FragColor = vec4(vec3(min(1., 10. / j) * .2 + .8) * (dot(norm(p), normalize(vec3(-1, 1, -1))) * .4 + .8) * col, 1.);
         gl_FragColor = vec4(vec3(min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(vec3(-1, 1, 0))) * .2 + .8) * col, 1.);
-        gl_FragColor += pow(dot(norm(p), normalize(vec3(-1, 3, 0))),40.);
+        gl_FragColor += pow(dot(norm(p), normalize(vec3(-1, 3, 0))), 40.);
         // gl_FragColor += pow(dot(norm(p), normalize(vec3(-1, 0, .5))),80.)*.3;
         // gl_FragColor += pow(dot(norm(p), normalize(vec3(-1, 0,0 ))),4000.);
         //     else;
