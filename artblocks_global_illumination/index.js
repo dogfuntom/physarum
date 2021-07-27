@@ -9,18 +9,19 @@ let RL = (ar) => ar[ar.length * R() | 0]
 /*
 
 Баги
-- Набор удачных пресетов
-- сделать 10 разных вариантов рендеринга, выбрать лучший.
-- Пингвинчик!
 - рефакторнуть глсл
-- Кодгольфнуть жс
+- Пингвинчик!
 - Кодгольфнуть глсл
-- Зум иногда ломается
+- Кодгольфнуть жс
 - Аватар фит (квадратные штуки слишком большие)
+// - Зум иногда ломается
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 - Сейчас у всех деталей есть одна и только одна ось симметрии. Но может быть и две!
 - сделать предварительную генерировалку рандомности. Достать список рандомностей и — вперёд
+
+✓ сделать 10 разных вариантов рендеринга, выбрать лучший.
+✓ Набор удачных пресетов
 */
 
 let s, sP
@@ -51,14 +52,25 @@ let maxMaxTry = 30
 // let numberOfBlockTypes = 1 + (R() * 7 | 0)
 // console.log(numberOfBlockTypes)
 
-let presetId = 0
+let r_oneColor = R() * 2 | 0 // all blocks of the same color
+
+let presetId = R() * 2 | 0
 let presets = [
     {
-        gs: 7+(R()|0),
+        gs: 7 + (R() | 0),
         blocksNumber: 14,
         fitnessFunctionNumber: 1,
         numberOfBlockTypes: 4,
         maxTry: 5,
+        extra: 0,
+    },
+    {
+        gs: 4 + (R() * 4 | 0),
+        blocksNumber: 14,
+        fitnessFunctionNumber: 2,
+        numberOfBlockTypes: 4,
+        maxTry: 10,
+        extra: 1,
     },
 ]
 
@@ -197,6 +209,8 @@ function placeBlocks() {
     ]).slice(0, numberOfBlockTypes)
     // console.log(blocksVariants)
 
+    let blocksVariantsExtra
+
     // карта высот. В тех местах, где заплетная клетка, уходит в минус бесконечность. Чтобы точно было меньше, чем в запретной карте высот
     // обратим внимание, что икс снаружи, потом зет. Обычно наоборот, если что.
     blocksHeightMap = Array(gridSize.x)
@@ -226,8 +240,8 @@ function placeBlocks() {
 
         for (let try_ = 0; try_ < maxTry; try_++) {
             bvt = JSON.parse(JSON.stringify(bvtInitial))
-            bvt.color = R() * palette.length | 0
-            bvt.color2 = R() * palette.length | 0
+            bvt.color = R() * (palette.length - 1 | 0) + 1
+            bvt.color2 = R() * (palette.length - 1 | 0) + 1
             bvt.texture = R() * R() * 3 | 0
             // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
             // надо или его копию делать, или ещё чего.
@@ -339,7 +353,7 @@ function placeBlocks() {
 
             let fitnessFunctions = [
                 0, // any
-                -Math.hypot(bvt.pos[0],bvt.pos[2]), // high, bn 16 gs 10
+                -Math.hypot(bvt.pos[0], bvt.pos[2]), // high, bn 16 gs 10
                 -maxHeightTry, // low
                 -Math.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]), // mashroom
                 -abs(Math.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]) - gs), // cage
@@ -449,13 +463,15 @@ function setup() {
 
     pixelDensity(1)
     // colors[0] = shuffle(colors[0]).slice(0, 6);
-    console.log(palette, 'palette')
     palette = shuffle(palette)
-    bg = palette.pop()
+    // bg = palette.pop()
+    if (r_oneColor == 1) palette = palette.slice(0, 2)
+    console.log(palette, 'palette')
 
-    u_camAngYZ = .95532
+    // u_camAngYZ = .95532
+    u_camAngYZ = .95
     // u_camAngXZ = ((R() * 3 | 0) - 1) * PI / 4
-    u_camAngXZ = ((R() * 2| 0) - 1) * PI / 2 -  PI / 4
+    u_camAngXZ = ((R() * 2 | 0) - 1) * PI / 2 - PI / 4
     placeBlocks();
 
     viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
@@ -515,7 +531,7 @@ function setup() {
     viewBox.offset = { x: viewBox.left + viewBox.width / 2, y: viewBox.bottom + viewBox.height / 2 }
     // viewBox.offset = { x: 0, y: 0 }
 
-    u_bgColor = color(bg).levels.slice(0, 3).map(d => d / 255)
+    // u_bgColor = color(bg).levels.slice(0, 3).map(d => d / 255)
     b = createGraphics(width, height, WEBGL)
     b.clear()
     sizes = blocks.map(b => b.size).flat()
@@ -564,7 +580,7 @@ function draw() {
     s.setUniform('mouse', [mouseX / width, -mouseY / height])
     s.setUniform('textures', textures)
     s.setUniform('gridSize', gridSize.x)
-    s.setUniform('bgColor', u_bgColor)
+    // s.setUniform('bgColor', u_bgColor)
     s.setUniform('camScale', viewBox.scale / 1)
     s.setUniform('camOffset', [viewBox.offset.x, viewBox.offset.y])
     s.setUniform('camAng', [u_camAngYZ, u_camAngXZ - (m[0] * 2 - 1) * TAU])

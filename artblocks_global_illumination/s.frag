@@ -4,24 +4,24 @@ varying vec2 uv;
 uniform float t;
 uniform int blocksNumber;
 uniform vec3 positions[BLOCKS_NUMBER_MAX];
-uniform vec3 bgColor;
 uniform vec3 sizes[BLOCKS_NUMBER_MAX];
 uniform ivec2 colors[BLOCKS_NUMBER_MAX];
-uniform vec3 palette[20];
 uniform int types[BLOCKS_NUMBER_MAX];
 uniform int textures[BLOCKS_NUMBER_MAX];
+uniform float rotations[BLOCKS_NUMBER_MAX];
+// uniform vec3 bgColor; // pallete[0] is always bg
+uniform vec3 palette[20];
 // uniform vec2 m;
 uniform vec2 u_res;
 uniform sampler2D backbuffer;
 uniform float camScale;
-uniform float rotations[BLOCKS_NUMBER_MAX];
 uniform vec2 camOffset;
 uniform vec2 camAng;
 uniform vec2 mouse;
 #define PI 3.1415
 #define rnd(x) fract(54321.987 * sin(987.12345 * x))
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
-#define STEPS 400.
+#define STEPS 4e2
 float opSmoothIntersection(float d1, float d2, float k) {
     float h = clamp(0.5 - 0.5 * (d2 - d1) / k, 0.0, 1.0);
     return mix(d2, d1, h) + k * h * (1.0 - h);
@@ -42,8 +42,8 @@ vec2 random2f() {
 }
 
 float dist(vec3 p) {
-    col1 = bgColor;
-    col2 = bgColor;
+    col1 = palette[0];
+    col2 = palette[0];
     tex = -1;
     // return vec4(length(p)-4.,vec3(0));
 
