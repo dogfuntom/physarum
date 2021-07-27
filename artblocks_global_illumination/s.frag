@@ -21,6 +21,7 @@ uniform vec2 mouse;
 #define PI 3.1415
 #define rnd(x) fract(54321.987 * sin(987.12345 * x))
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
+#define STEPS 400.
 float opSmoothIntersection(float d1, float d2, float k) {
     float h = clamp(0.5 - 0.5 * (d2 - d1) / k, 0.0, 1.0);
     return mix(d2, d1, h) + k * h * (1.0 - h);
@@ -54,9 +55,9 @@ float dist(vec3 p) {
         vec3 pb = p;
         pb -= positions[i];
         pb.xz *= rot(rotations[i] * PI / 2.);
-        float cornerR = .025;//.05;
+        float cornerR = .01;//.025;//.05;
         float box;
-        float gap = .03;
+        float gap = .01;
         if(types[i] == 0 || types[i] == 3 || types[i] == 4 || types[i] == 5 || types[i] == 6 || types[i] == 7) {
             // vec3 pbb = abs(pb) - clamp(abs(pb), -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR);
             // box = (pbb.x+pbb.y+pbb.z-cornerR)*0.57735027;// TODO заменить на бивел от Гази
@@ -108,11 +109,11 @@ void main() {
     float rm;
     float camDist = 400.;
     vec2 uv_ = uv + random2f() * 1.5 / u_res;
-    vec3 p, ro = vec3(uv_ * camScale + camOffset, -camDist);
+    vec3 p, pCam, ro = vec3(uv_ * camScale + camOffset, -camDist);
     vec3 rd = vec3(0, 0, .9 + .1 * rnd(length(uv_)));
 
     bool outline = false;
-    for(float i = 0.; i < 399.; i++) {
+    for(float i = 0.; i < STEPS; i++) {
         j = i;
         p = d * rd + ro;
         p.z -= camDist;
@@ -135,18 +136,35 @@ void main() {
 
     // // col
     if(!outline) {
-        vec3 col = vec3(1);//col1;
-        // // layers
-        // if(tex==1)col=mix(col1, col2, sin(p.y*PI * 4.) * .5 + .5);
+        vec3 col = col1;
+        // layers
+        // if(tex == 1)
+        //     col = mix(col1, col2, cos(p.y * PI * 4.) * .5 + .5);
         // // gyroid
-        // if(tex==2)col=mix(col1, col2, clamp(dot(sin(p),cos(p.zxy)),0.,1.));
-        // gl_FragColor = vec4(col * vec3(10. / j) * (dot(norm(p), vec3(1, 1, -1)) * .8 + .2), 1.);
-        gl_FragColor = vec4((vec3(11. / j) * dot(norm(p) * .9 + .1, normalize(vec3(vec2(0, -1) * rot(camAng.y), 1).xzy)) * .5 + .5) * col, 1.);
-        if(tex == -1)
-            gl_FragColor = vec4(vec3(5. / sqrt(j)) * col, 1.);
-        // gl_FragColor = vec4(vec3(10. / j) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5), 1.);
-        // gl_FragColor = fract(gl_FragColor);
-        // gl_FragColor = vec4(vec3(j/100.)*col1, 1.);
+        // // if(tex==2)col=mix(col1, col2, dot(sin(p*PI),sin(p*PI))*.5+.5);
+        // if(tex == 2)
+        //     col = mix(col1, col2, smoothstep(.3, .4, dot(cos(p * PI * vec3(1, .1, 8)), cos(p * PI * vec3(1, .1, 8)))));
+        // gl_FragColor = vec4((vec3(sqrt(smoothstep(80.,0.,j))) * dot(norm(p) * .9 + .1, (vec3(vec2(0, -1) * rot(camAng.y), 1).xzy)) * .5 + .5) * col, 1.);
+        // gl_FragColor = vec4((vec3(10./j) * dot(norm(p) * .9 + .1, (vec3(vec2(0, -1) * rot(camAng.y), 1).xzy)) * .5 + .5) * col, 1.);
+        // gl_FragColor = vec4(col * dot(norm(p), (vec3(vec2(0, -1) * rot(camAng.y), 1).xzy)) * .5 + .5, 1.);
+        // gl_FragColor = vec4(vec3(min(1.,4. / sqrt(j))) * min(1.,dot(norm(p), vec3(-1, .1, -1)) * .1 + .9) * col, 1.);
+        // if(gl_FragCoord.x / u_res.x < .5)
+            // if(gl_FragCoord.y / u_res.y < .5)
+        // gl_FragColor = vec4(vec3(min(1., 10. / j) * .2 + .8) * (dot(norm(p), normalize(vec3(-1, 1, -1))) * .4 + .8) * col, 1.);
+        gl_FragColor = vec4(vec3(min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(vec3(-1, 1, 0))) * .2 + .8) * col, 1.);
+        gl_FragColor += pow(dot(norm(p), normalize(vec3(-1, 3, 0))),40.);
+        // gl_FragColor += pow(dot(norm(p), normalize(vec3(-1, 0, .5))),80.)*.3;
+        // gl_FragColor += pow(dot(norm(p), normalize(vec3(-1, 0,0 ))),4000.);
+        //     else;
+        //         gl_FragColor = vec4(vec3(min(1., 10. / j) * .2 + .8) * col, 1.);
+        // else
+        //     gl_FragColor = vec4(col, 1.);
+        // gl_FragColor = vec4(smoothstep(20.,0.,sqrt(j)) * (dot(norm(p), vec3(-1, 1, -1)) * .1 + .9) * col, 1.);
+        if(tex == -1) {
+            float mult = sqrt(j / 20.);
+            mult = mix(1., mult, step(0., sin(length(uv_) * 64.)) * .5);
+            gl_FragColor = vec4(col * mult, 1.);
+        }
     }
 
     // if(rm.y == 2.)
@@ -161,5 +179,5 @@ void main() {
     // // glow
     // // gl_FragColor = vec4((vec3(j/10.) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5) * rm.yzw / 255., 1.);
 
-    // gl_FragColor = mix(texture2D(backbuffer, uv * vec2(1, -1) * .5 + .5), gl_FragColor, 1. / (t + 1.));
+    gl_FragColor = mix(texture2D(backbuffer, uv * vec2(1, -1) * .5 + .5), gl_FragColor, 1. / (t + 1.));
 }

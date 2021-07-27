@@ -1,7 +1,7 @@
 console.clear();
 let S, ss, R, t
 S = Uint32Array.from([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
-let RL = (ar) => ar[ar.length * R()|0]
+let RL = (ar) => ar[ar.length * R() | 0]
 
 // Цикл иногда повисает без признаков жизни
 
@@ -10,10 +10,13 @@ let RL = (ar) => ar[ar.length * R()|0]
 
 Баги
 - Набор удачных пресетов
+- сделать 10 разных вариантов рендеринга, выбрать лучший.
 - Пингвинчик!
 - рефакторнуть глсл
 - Кодгольфнуть жс
 - Кодгольфнуть глсл
+- Зум иногда ломается
+- Аватар фит (квадратные штуки слишком большие)
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 - Сейчас у всех деталей есть одна и только одна ось симметрии. Но может быть и две!
@@ -35,21 +38,31 @@ const blocksNumMax = 100
 let draft = false
 let tick = 0
 let m = [0, 0]
-let maxTry = 10
 let maxMaxTry = 30
 
 
-// The Great Randomizer
-let gs = 4 + R() * 10 | 0
-console.log('gs', gs)
-let blocksNumber = 4//Math.min(4 + gs * gs * R(), blocksNumMax)
-console.log('blocksNumber', blocksNumber)
-let fitnessFunctionNumber = R() * 5 | 0
-console.log('fitnessFunctionNumber', fitnessFunctionNumber)
-let numberOfBlockTypes = 1 + (R() * 7 | 0)
-console.log(numberOfBlockTypes)
+// // The Great Randomizer
+// let gs = 4 + R() * 10 | 0
+// console.log('gs', gs)
+// let blocksNumber = 4//Math.min(4 + gs * gs * R(), blocksNumMax)
+// console.log('blocksNumber', blocksNumber)
+// let fitnessFunctionNumber = R() * 5 | 0
+// console.log('fitnessFunctionNumber', fitnessFunctionNumber)
+// let numberOfBlockTypes = 1 + (R() * 7 | 0)
+// console.log(numberOfBlockTypes)
 
+let presetId = 0
+let presets = [
+    {
+        gs: 7+(R()|0),
+        blocksNumber: 14,
+        fitnessFunctionNumber: 1,
+        numberOfBlockTypes: 4,
+        maxTry: 5,
+    },
+]
 
+let { gs, blocksNumber, fitnessFunctionNumber, numberOfBlockTypes, maxTry, } = presets[presetId]
 
 rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
 
@@ -73,17 +86,17 @@ let groundBlock;
 let blocksHeightMap;
 let palette = RL([
     ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
-    ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
-    ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
-    ["#70d6ff", "#ff70a6", "#ff9770", "#ffd670", "#e9ff70"], //candy bright
-    ["#26547c", "#ef476f", "#ffd166", "#06d6a0", "#fffcf9"],
-    ["#ff0000", "#ff8700", "#ffd300", "#deff0a", "#a1ff0a", "#0aff99", "#0aefff", "#147df5", "#580aff", "#be0aff"], // acid
-    ["#d88c9a", "#f2d0a9", "#f1e3d3", "#99c1b9", "#8e7dbe"], // dusty candy
-    ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
-    ["#ff99c8", "#fcf6bd", "#d0f4de", "#a9def9", "#e4c1f9"], // candy pale
-    ["#2d3142", "#bfc0c0", "#ffffff", "#ef8354", "#4f5d75"], // gray white  orange
-    // ["#07c8f9", "#09a6f3", "#0a85ed", "#0c63e7", "#0d41e1"], // blue
-    // ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
+    // ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
+    // ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
+    // ["#70d6ff", "#ff70a6", "#ff9770", "#ffd670", "#e9ff70"], //candy bright
+    // ["#26547c", "#ef476f", "#ffd166", "#06d6a0", "#fffcf9"],
+    // ["#ff0000", "#ff8700", "#ffd300", "#deff0a", "#a1ff0a", "#0aff99", "#0aefff", "#147df5", "#580aff", "#be0aff"], // acid
+    // ["#d88c9a", "#f2d0a9", "#f1e3d3", "#99c1b9", "#8e7dbe"], // dusty candy
+    // ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
+    // ["#ff99c8", "#fcf6bd", "#d0f4de", "#a9def9", "#e4c1f9"], // candy pale
+    // ["#2d3142", "#bfc0c0", "#ef8354", "#4f5d75"], // gray white  orange
+    // // ["#07c8f9", "#09a6f3", "#0a85ed", "#0c63e7", "#0d41e1"], // blue
+    // // ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
 ])
 
 
@@ -126,6 +139,12 @@ function placeBlocks() {
             maskBottom: [[1, 1, 1, 1,], [1, 1, 1, 1,]],
             type: typeBlock,
         },
+        { // 3x2
+            size: [2, 1, 3],
+            maskTop: [[1, 1, 1,], [1, 1, 1,]],
+            maskBottom: [[1, 1, 1,], [1, 1, 1,]],
+            type: typeBlock,
+        },
         { // 6x1
             size: [1, 1, 6],
             maskTop: [[1, 1, 1, 1, 1, 1,]],
@@ -139,7 +158,7 @@ function placeBlocks() {
             type: typeArc,
         },
         { // line
-            size: [1, .5, 3],
+            size: [1, 1, 3],
             maskTop: [[1, 1, 1]],
             maskBottom: [[1, 1, 1]],
             type: typeBlock,
@@ -156,18 +175,18 @@ function placeBlocks() {
             maskBottom: [[1]],
             type: typeBlock,
         },
-        { // 1x1 but high
-            size: [1, 4, 1],
-            maskTop: [[1]],
-            maskBottom: [[1]],
-            type: typeBlock,
-        },
-        { // Pillar
-            size: [1, 8, 1],
-            maskTop: [[0]],
-            maskBottom: [[1]],
-            type: typePillar,
-        },
+        // { // 1x1 but high
+        //     size: [1, 4, 1],
+        //     maskTop: [[1]],
+        //     maskBottom: [[1]],
+        //     type: typeBlock,
+        // },
+        // { // Pillar
+        //     size: [1, 8, 1],
+        //     maskTop: [[0]],
+        //     maskBottom: [[1]],
+        //     type: typePillar,
+        // },
         // { // ball
         //     size: createVector(1, 1, 1),
         //     maskTop: [[0]],
@@ -207,9 +226,9 @@ function placeBlocks() {
 
         for (let try_ = 0; try_ < maxTry; try_++) {
             bvt = JSON.parse(JSON.stringify(bvtInitial))
-            bvt.color = R()*palette.length|0
-            bvt.color2 = R()*palette.length|0
-            bvt.texture = R()*3|0
+            bvt.color = R() * palette.length | 0
+            bvt.color2 = R() * palette.length | 0
+            bvt.texture = R() * R() * 3 | 0
             // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
             // надо или его копию делать, или ещё чего.
 
@@ -319,8 +338,9 @@ function placeBlocks() {
 
 
             let fitnessFunctions = [
+                0, // any
+                -Math.hypot(bvt.pos[0],bvt.pos[2]), // high, bn 16 gs 10
                 -maxHeightTry, // low
-                maxHeightTry, // high, bn 16 gs 10
                 -Math.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]), // mashroom
                 -abs(Math.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]) - gs), // cage
                 -abs(Math.hypot(bvt.pos[0], maxHeightTry * 2, bvt.pos[2]) - gs), // cage: blocksNum = 90, gs = 16
@@ -429,12 +449,13 @@ function setup() {
 
     pixelDensity(1)
     // colors[0] = shuffle(colors[0]).slice(0, 6);
-    console.log(palette,'palette')
-    // palette = shuffle(RL(palette))
+    console.log(palette, 'palette')
+    palette = shuffle(palette)
     bg = palette.pop()
 
     u_camAngYZ = .95532
-    u_camAngXZ = (R()*4|0)*PI/4
+    // u_camAngXZ = ((R() * 3 | 0) - 1) * PI / 4
+    u_camAngXZ = ((R() * 2| 0) - 1) * PI / 2 -  PI / 4
     placeBlocks();
 
     viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
@@ -494,13 +515,13 @@ function setup() {
     viewBox.offset = { x: viewBox.left + viewBox.width / 2, y: viewBox.bottom + viewBox.height / 2 }
     // viewBox.offset = { x: 0, y: 0 }
 
-    u_bgColor = color(bg).levels.slice(0, 3).map(d=>d/255)
+    u_bgColor = color(bg).levels.slice(0, 3).map(d => d / 255)
     b = createGraphics(width, height, WEBGL)
     b.clear()
     sizes = blocks.map(b => b.size).flat()
     // console.log(blocks)
     positions = blocks.map(b => b.position).flat()
-    u_palette=palette.map(c=>color(c).levels.slice(0, 3)).flat().map(d=>d/255)
+    u_palette = palette.map(c => color(c).levels.slice(0, 3)).flat().map(d => d / 255)
     u_colors = blocks.map(b => [b.color, b.color2]).flat()
     types = blocks.map(b => b.type)
     textures = blocks.map(b => b.texture)
@@ -540,7 +561,7 @@ function draw() {
     s.setUniform('colors', u_colors)
     s.setUniform('palette', u_palette)
     s.setUniform('types', types)
-    s.setUniform('mouse', [mouseX/width, -mouseY/height])
+    s.setUniform('mouse', [mouseX / width, -mouseY / height])
     s.setUniform('textures', textures)
     s.setUniform('gridSize', gridSize.x)
     s.setUniform('bgColor', u_bgColor)
@@ -549,8 +570,8 @@ function draw() {
     s.setUniform('camAng', [u_camAngYZ, u_camAngXZ - (m[0] * 2 - 1) * TAU])
     rect(0, 0, width, height)
 
-    if (tick++ >5e8)
-    noLoop()
+    if (tick++ > 5e1)
+        noLoop()
 }
 
 
@@ -558,6 +579,7 @@ function draw() {
 
 function mouseDragged() {
     tick = 0
-    m[0] = (mouseX / width * 32 | 0) / 32
+    // m[0] = (mouseX / width * 32 | 0) / 32
+    m[0] = mouseX / width
     loop()
 }
