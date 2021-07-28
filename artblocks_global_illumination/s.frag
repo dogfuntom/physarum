@@ -143,7 +143,7 @@ void main() {
         // if(colIds.z == 2)
         //     col = mix(col1, col2, smoothstep(.3, .4, dot(cos(p * PI * vec3(1, .1, 8)), cos(p * PI * vec3(1, .1, 8)))));
         if(colIds.z == 2)
-            if(cos((p.x + fract(positions[0].x - sizes[0].x/2.)) * PI * 2.) > -0.8)
+            if(cos((p.x + fract(positions[0].x - sizes[0].x/2.)) * PI * 2.) > -0.99)
                 col = col2;
         // gl_FragColor = vec4((vec3(sqrt(smoothstep(80.,0.,j))) * dot(norm(p) * .9 + .1, (vec3(vec2(0, -1) * rot(camAng.y), 1).xzy)) * .5 + .5) * col, 1.);
         // gl_FragColor = vec4((vec3(10./j) * dot(norm(p) * .9 + .1, (vec3(vec2(0, -1) * rot(camAng.y), 1).xzy)) * .5 + .5) * col, 1.);
