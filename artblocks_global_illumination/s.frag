@@ -86,7 +86,7 @@ float dist(vec3 p) {
             // pb.z *= -1.;
             pb.z += .55;
             pb.yz *= rot(PI * .26);
-            if(types[i] == 4)
+            if(types[i] == 3)
                 pb.yz *= rot(-PI / 2.);
             block = max(block, -pb.z);
         }
@@ -159,7 +159,7 @@ void main() {
         o += pow(dot(norm(p), normalize(vec3(-1, 3, 0))), 40.);
 
         if(colIds.z == -1) {
-            if(sin(dot(uv_, uv_) * 32.) > 0.)
+            if(sin(length(uv_*uv_) * 32.) > 0.)
                 o *= .98;
         }
     }

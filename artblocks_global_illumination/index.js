@@ -1,12 +1,12 @@
 console.clear();
 let S, ss, R, t
-// tokenData.hash='0x7fa9a6d17f1a5abadea68a24da6cd4eafb1ca360030ab308ae3130463ec4b576'
-// tokenData.hash='0x600000000000000000000000000000000000000000000000000000000000000'
+// tokenData.hash='0x82bd6bcfd30c03f4efb3de0741ab13353419d417d65ee2ad287bb96ec8d1594a'
+// tokenData.hash='0x580000000000000000000000000000000000000000000000000000000000000'
 console.log(tokenData.hash)
 S = Uint32Array.from([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
 let RL = (ar) => ar[ar.length * R() | 0]
 let SH = (ar) => {return ar.sort(() => R() - 0.5)}
-// Цикл иногда повисает без признаков жизни
+
 /*
 Баги
 - нижняя цеплялка не работает
@@ -14,13 +14,12 @@ let SH = (ar) => {return ar.sort(() => R() - 0.5)}
 - Кодгольфнуть глсл
 - Кодгольфнуть жс
 - Аватар фит (квадратные штуки слишком большие)
-- bg переделать на что-то типа глоу. Чтобы не было глючного засвета
-// - Зум иногда ломается
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 - Сейчас у всех деталей есть одна и только одна ось симметрии. Но может быть и две!
 - сделать предварительную генерировалку рандомности. Достать список рандомностей и — вперёд
 
+✓ bg переделать на что-то типа глоу. Чтобы не было глючного засвета
 ✓ рефакторнуть глсл main
 ✓ вернуть арку
 ✓ рефакторнуть глсл SDF
@@ -77,9 +76,10 @@ let presets = [
 ]
 
 let { gs, blocksNumber, fitnessFunctionNumber, numberOfBlockTypes, maxTry, } = presets[presetId]
-blocksNumber=2
+blocksNumber=8
 gs=6
 fitnessFunctionNumber=0
+maxTry=1
 
 rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
 
@@ -310,7 +310,9 @@ function placeBlocks() {
             //     if(maxTry<maxMaxTry)maxTry++;
             //     continue
             // }
-            // debugger
+
+            debugger
+
             let maxHeightTry = 0;
             let maxHeightTryLikeWithoutBottomHoles = 0;
             let maxDisallowedHeightTry = 0;
@@ -322,7 +324,7 @@ function placeBlocks() {
                     bi++
                     maxHeightTryLikeWithoutBottomHoles = max(maxHeightTryLikeWithoutBottomHoles, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
                     maxDisallowedHeightTry = max(maxDisallowedHeightTry, disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
-                    if (bvt.maskBottom[bx][bz] == 1) {
+                    if (bvt.maskBottom[bx][bz] == 1) { // если посчитать только те, что с 1 внизу, высота не должна отличаться от той, что считается для всех клеток
                         maxHeightTry = max(maxHeightTry, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
                     }
                 }
@@ -438,7 +440,7 @@ function setup() {
         ]
         vertices.forEach(v => {
             let pos = v.copy()
-            console.log(b)
+            // console.log(b)
             pos.x += b.pos[0]
             pos.y += b.pos[1]
             pos.z += b.pos[2]
