@@ -19,7 +19,8 @@ uniform vec2 camAng;
 #define rnd(x) fract(54321.987 * sin(987.12345 * mod(x,12.34567)))
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
 #define STEPS 4e2
-float opSmoothIntersection(float d1, float d2, float k) {
+#define EPS .001
+float smax(float d1, float d2, float k) {
     float h = clamp(.5 - .5 * (d2 - d1) / k, .0, 1.);
     return mix(d2, d1, h) + k * h * (1. - h);
 }
@@ -40,49 +41,51 @@ vec2 random2f() {
 
 float dist(vec3 p) {
     colIds = ivec3(0, 0, -1);
-    // return vec4(length(p)-4.,vec3(0));
-
     p.x = abs(p.x);
-    float res = p.y + 1.;
+    float res = p.y + 1.; // floor plane
     for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
         if(i >= blocksNumber)
             break;
         vec3 pb = p;
         pb -= positions[i];
         pb.xz *= rot(rotations[i] * PI / 2.);
+
+        // box
         float cornerR = .01;//.025;//.05;
-        float box;
         float gap = .01;
+        float block;
         if(types[i] == 0 || types[i] == 3 || types[i] == 4 || types[i] == 5 || types[i] == 6 || types[i] == 7) {
-            // vec3 pbb = abs(pb) - clamp(abs(pb), -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR);
-            // box = (pbb.x+pbb.y+pbb.z-cornerR)*0.57735027;// TODO заменить на бивел от Гази
-
-            box = length(pb - clamp(pb, -sizes[i] / 2. + cornerR + gap, sizes[i] / 2. - cornerR - gap)) - cornerR * 1.4;
-        } else if(types[i] == 1) {
-            box = max(length(pb.xz) - .5, abs(pb.y) - .5);
-        } else if(types[i] == 2) {
-            box = length(pb) - .52;
+            block = length(pb - clamp(pb, -sizes[i] / 2. + cornerR + gap, sizes[i] / 2. - cornerR - gap)) - cornerR * 1.4;
+        } else if(types[i] == 1) { // cyl
+            block = max(length(pb.xz) - .5, abs(pb.y) - .5);
+        } else if(types[i] == 2) { // ball
+            block = length(pb) - .52;
         }
-        // return vec4(box, vec3(0));
 
-        vec2 l = sizes[i].xz;
+        // studs
         vec3 ps = pb;
+        vec2 l = sizes[i].xz;
         ps.xz += (l - 1.) / 2.;
         ps.xz = ps.xz - clamp(floor(ps.xz + .5), vec2(0.), l - 1.);
-        float h = .26;
+        float h = .24;
         float stud = max(abs(length(ps.xz) - .28 + .05) - .05, abs(ps.y - sizes[i].y / 2. - h / 2.) - h / 2.);
-        float block = min(stud, box);
-        if(types[i] == 3) {
-            // box = length(pb - clamp(pb, -sizes[i] / 2. + cornerR, sizes[i] / 2. - cornerR)) - cornerR * 1.4;
-            pb.z += .6;
-            pb.yz *= rot(-PI / 4.);
-            block = opSmoothIntersection(block, -pb.z, cornerR * 1.);
-            // box = max(length(pb.xz) - 1., abs(pb.y) - .5); // cyl 2x2
+        block = min(stud, block);
+
+        if(types[i] == 3 || types[i] == 4) { // beak
+            pb.z *= -1.;
+            pb.z += .55;
+            pb.yz *= rot(PI * .26);
+            if(types[i] == 4)
+                pb.yz *= rot(-PI / 2.);
+            block = max(block, -pb.z);
         }
+
         if(block < res) {
             res = block;
             colIds = colors[i];
         }
+        if(res < EPS)
+            break;
     }
     return res;
 }
@@ -122,6 +125,8 @@ void main() {
             // gl +=  pow(.0001 / e, .4);
             if(e < .001)
                 break;
+        if(e < EPS)
+            break;
     }
     if(!outline) {
         vec3 col1, col2;
@@ -143,7 +148,8 @@ void main() {
         // if(colIds.z == 2)
         //     col = mix(col1, col2, smoothstep(.3, .4, dot(cos(p * PI * vec3(1, .1, 8)), cos(p * PI * vec3(1, .1, 8)))));
         if(colIds.z == 2)
-            if(cos((p.x + fract(positions[0].x - sizes[0].x/2.)) * PI * 2.) > -0.99)
+            // if(cos((p.x + fract(positions[0].x - sizes[0].x/2.)) * PI * 2.) > -0.99)
+            if(sin((p.x + fract(positions[0].x - sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
                 col = col2;
         // gl_FragColor = vec4((vec3(sqrt(smoothstep(80.,0.,j))) * dot(norm(p) * .9 + .1, (vec3(vec2(0, -1) * rot(camAng.y), 1).xzy)) * .5 + .5) * col, 1.);
         // gl_FragColor = vec4((vec3(10./j) * dot(norm(p) * .9 + .1, (vec3(vec2(0, -1) * rot(camAng.y), 1).xzy)) * .5 + .5) * col, 1.);

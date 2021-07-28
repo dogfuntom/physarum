@@ -1,11 +1,15 @@
 console.clear();
 let S, ss, R, t
+// tokenData.hash='0x7fa9a6d17f1a5abadea68a24da6cd4eafb1ca360030ab308ae3130463ec4b576'
+// tokenData.hash='0x600000000000000000000000000000000000000000000000000000000000000'
+console.log(tokenData.hash)
 S = Uint32Array.from([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
 let RL = (ar) => ar[ar.length * R() | 0]
-
+let SH = (ar) => {return ar.sort(() => R() - 0.5)}
 // Цикл иногда повисает без признаков жизни
 /*
 Баги
+- нижняя цеплялка не работает
 - рефакторнуть глсл
 - вернуть арку
 - Пингвинчик!
@@ -19,6 +23,7 @@ let RL = (ar) => ar[ar.length * R() | 0]
 - Сейчас у всех деталей есть одна и только одна ось симметрии. Но может быть и две!
 - сделать предварительную генерировалку рандомности. Достать список рандомностей и — вперёд
 
+✓ убрать шафлы
 ✓ сделать 10 разных вариантов рендеринга, выбрать лучший.
 ✓ Набор удачных пресетов
 */
@@ -48,7 +53,7 @@ let maxMaxTry = 30
 // console.log('fitnessFunctionNumber', fitnessFunctionNumber)
 // let numberOfBlockTypes = 1 + (R() * 7 | 0)
 // console.log(numberOfBlockTypes)
-let r_oneColor = R()**8 * 2 | 0 // all blocks of the same color
+let r_oneColor = R()**16 * 2 | 0 // all blocks of the same color
 
 let presetId = R() * 2 | 0
 let presets = [
@@ -71,6 +76,9 @@ let presets = [
 ]
 
 let { gs, blocksNumber, fitnessFunctionNumber, numberOfBlockTypes, maxTry, } = presets[presetId]
+blocksNumber=2
+gs=4
+fitnessFunctionNumber=0
 
 rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
 
@@ -119,7 +127,7 @@ function placeBlocks() {
     // ))
 
     gridSize = createVector(gs, gs, gs)
-    blocksVariants = shuffle([
+    blocksVariants = SH([
         { // beak
             size: [2, 1, 2],
             maskTop: [[0, 1], [0, 1]],
@@ -132,69 +140,68 @@ function placeBlocks() {
             maskBottom: [[0, 1], [0, 1]],
             type: typeBeak2x2Flipped,
         },
-        { // 4x2
-            size: [2, 1, 4],
-            maskTop: [[1, 1, 1, 1,], [1, 1, 1, 1,]],
-            maskBottom: [[1, 1, 1, 1,], [1, 1, 1, 1,]],
-            type: typeBlock,
-        },
-        { // 3x2
-            size: [2, 1, 3],
-            maskTop: [[1, 1, 1,], [1, 1, 1,]],
-            maskBottom: [[1, 1, 1,], [1, 1, 1,]],
-            type: typeBlock,
-        },
-        { // 6x1
-            size: [1, 1, 6],
-            maskTop: [[1, 1, 1, 1, 1, 1,]],
-            maskBottom: [[1, 1, 1, 1, 1, 1,]],
-            type: typeBlock,
-        },
-        { // arc
-            size: [1, 2, 3],
-            maskTop: [[1, 1, 1]],
-            maskBottom: [[1, 0, 1]],
-            type: typeArc,
-        },
-        { // line
-            size: [1, 1, 3],
-            maskTop: [[1, 1, 1]],
-            maskBottom: [[1, 1, 1]],
-            type: typeBlock,
-        },
-        { // block
-            size: [2, 1, 2],
-            maskTop: [[1, 1], [1, 1]],
-            maskBottom: [[1, 1], [1, 1]],
-            type: typeBlock,
-        },
-        { // 1x1
-            size: [1, 1, 1],
-            maskTop: [[1]],
-            maskBottom: [[1]],
-            type: typeBlock,
-        },
-        // { // 1x1 but high
-        //     size: [1, 4, 1],
+        // { // 4x2
+        //     size: [2, 1, 4],
+        //     maskTop: [[1, 1, 1, 1,], [1, 1, 1, 1,]],
+        //     maskBottom: [[1, 1, 1, 1,], [1, 1, 1, 1,]],
+        //     type: typeBlock,
+        // },
+        // { // 3x2
+        //     size: [2, 1, 3],
+        //     maskTop: [[1, 1, 1,], [1, 1, 1,]],
+        //     maskBottom: [[1, 1, 1,], [1, 1, 1,]],
+        //     type: typeBlock,
+        // },
+        // { // 6x1
+        //     size: [1, 1, 6],
+        //     maskTop: [[1, 1, 1, 1, 1, 1,]],
+        //     maskBottom: [[1, 1, 1, 1, 1, 1,]],
+        //     type: typeBlock,
+        // },
+        // { // arc
+        //     size: [1, 2, 3],
+        //     maskTop: [[1, 1, 1]],
+        //     maskBottom: [[1, 0, 1]],
+        //     type: typeArc,
+        // },
+        // { // line
+        //     size: [1, 1, 3],
+        //     maskTop: [[1, 1, 1]],
+        //     maskBottom: [[1, 1, 1]],
+        //     type: typeBlock,
+        // },
+        // { // block
+        //     size: [2, 1, 2],
+        //     maskTop: [[1, 1], [1, 1]],
+        //     maskBottom: [[1, 1], [1, 1]],
+        //     type: typeBlock,
+        // },
+        // { // 1x1
+        //     size: [1, 1, 1],
         //     maskTop: [[1]],
         //     maskBottom: [[1]],
         //     type: typeBlock,
         // },
-        // { // Pillar
-        //     size: [1, 8, 1],
-        //     maskTop: [[0]],
-        //     maskBottom: [[1]],
-        //     type: typePillar,
-        // },
-        // { // ball
-        //     size: createVector(1, 1, 1),
-        //     maskTop: [[0]],
-        //     maskBottom: [[1]],
-        //     type: typeBall,
-        // symX: true,
-        // },
+        // // { // 1x1 but high
+        // //     size: [1, 4, 1],
+        // //     maskTop: [[1]],
+        // //     maskBottom: [[1]],
+        // //     type: typeBlock,
+        // // },
+        // // { // Pillar
+        // //     size: [1, 8, 1],
+        // //     maskTop: [[0]],
+        // //     maskBottom: [[1]],
+        // //     type: typePillar,
+        // // },
+        // // { // ball
+        // //     size: createVector(1, 1, 1),
+        // //     maskTop: [[0]],
+        // //     maskBottom: [[1]],
+        // //     type: typeBall,
+        // // symX: true,
+        // // },
     ]).slice(0, numberOfBlockTypes)
-    // console.log(blocksVariants)
 
     let blocksVariantsExtra
 
@@ -229,7 +236,7 @@ function placeBlocks() {
             bvt = JSON.parse(JSON.stringify(bvtInitial))
             bvt.color = R() * (palette.length - 1 | 0) + 1
             bvt.color2 = R() * (palette.length - 1 | 0) + 1
-            bvt.texture = R() * 3 | 0
+            bvt.texture = R()**8 * 3 | 0
             // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
             // надо или его копию делать, или ещё чего.
 
@@ -406,7 +413,7 @@ function setup() {
     s = createShader(sv, sf)
 
     pixelDensity(1)
-    palette = shuffle(palette)
+    palette = SH(palette)
     if (r_oneColor == 1) palette = palette.slice(0, 2)
     console.log(palette, 'palette')
 
@@ -507,7 +514,6 @@ function draw() {
     b.image(canvas, width * -0.5, height * -0.5, width, height);
     clear();
     shader(s);
-    // console.log(frameCount)
     s.setUniform('u_res', [width * pixelDensity(), height * pixelDensity()])
     s.setUniform('t', u_tick)
     s.setUniform('backbuffer', b)
