@@ -73,14 +73,22 @@ float dist(vec3 p) {
             block = max(block, -hole);
         }
 
+        if(types[i] == 6) {
+            float cyl = length(pb.zx) - .2;
+            float sph = length(pb + vec3(0, sizes[i].y, 0) / 2.) - .45;
+            block = max(block, min(cyl, sph));
+        }
+
         // studs
-        vec3 ps = pb;
-        vec2 l = sizes[i].xz;
-        ps.xz += (l - 1.) / 2.;
-        ps.xz = ps.xz - clamp(floor(ps.xz + .5), vec2(0.), l - 1.);
-        float h = .24;
-        float stud = max(abs(length(ps.xz) - .28 + .05) - .05, abs(ps.y - sizes[i].y / 2. - h / 2.) - h / 2.);
-        block = min(stud, block);
+        if(types[i] != 6) {
+            vec3 ps = pb;
+            vec2 l = sizes[i].xz;
+            ps.xz += (l - 1.) / 2.;
+            ps.xz = ps.xz - clamp(floor(ps.xz + .5), vec2(0.), l - 1.);
+            float h = .24;
+            float stud = max(abs(length(ps.xz) - .28 + .05) - .05, abs(ps.y - sizes[i].y / 2. - h / 2.) - h / 2.);
+            block = min(stud, block);
+        }
 
         if(types[i] == 3 || types[i] == 4) { // beak
             // pb.z *= -1.;
@@ -159,8 +167,8 @@ void main() {
         o += pow(dot(norm(p), normalize(vec3(-1, 3, 0))), 40.);
 
         if(colIds.z == -1) {
-            if(sin(length(uv_*uv_) * 32.) > 0.)
-                o *= .98;
+            if(sin(length(uv_ * uv_ * uv_ * uv_) * 32.) > 0.)
+                o *= .95;
         }
     }
 

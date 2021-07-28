@@ -5,20 +5,20 @@ let S, ss, R, t
 console.log(tokenData.hash)
 S = Uint32Array.from([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
 let RL = (ar) => ar[ar.length * R() | 0]
-let SH = (ar) => {return ar.sort(() => R() - 0.5)}
+let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 
 /*
 Баги
-- нижняя цеплялка не работает
+- Аватар фит (квадратные штуки слишком большие)
 - Пингвинчик!
 - Кодгольфнуть глсл
 - Кодгольфнуть жс
-- Аватар фит (квадратные штуки слишком большие)
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 - Сейчас у всех деталей есть одна и только одна ось симметрии. Но может быть и две!
 - сделать предварительную генерировалку рандомности. Достать список рандомностей и — вперёд
 
+✓ нижняя цеплялка не работает
 ✓ bg переделать на что-то типа глоу. Чтобы не было глючного засвета
 ✓ рефакторнуть глсл main
 ✓ вернуть арку
@@ -53,7 +53,7 @@ let maxMaxTry = 30
 // console.log('fitnessFunctionNumber', fitnessFunctionNumber)
 // let numberOfBlockTypes = 1 + (R() * 7 | 0)
 // console.log(numberOfBlockTypes)
-let r_oneColor = R()**16 * 2 | 0 // all blocks of the same color
+let r_oneColor = R() ** 16 * 2 | 0 // all blocks of the same color
 
 let presetId = R() * 2 | 0
 let presets = [
@@ -76,10 +76,10 @@ let presets = [
 ]
 
 let { gs, blocksNumber, fitnessFunctionNumber, numberOfBlockTypes, maxTry, } = presets[presetId]
-blocksNumber=8
-gs=6
-fitnessFunctionNumber=0
-maxTry=1
+// blocksNumber = 8
+// gs = 6
+// fitnessFunctionNumber = 0
+// maxTry = 1
 
 rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
 
@@ -189,12 +189,6 @@ function placeBlocks() {
         // //     maskBottom: [[1]],
         // //     type: typeBlock,
         // // },
-        // // { // Pillar
-        // //     size: [1, 8, 1],
-        // //     maskTop: [[0]],
-        // //     maskBottom: [[1]],
-        // //     type: typePillar,
-        // // },
         // // { // ball
         // //     size: createVector(1, 1, 1),
         // //     maskTop: [[0]],
@@ -204,7 +198,14 @@ function placeBlocks() {
         // // },
     ]).slice(0, numberOfBlockTypes)
 
-    let blocksVariantsExtra
+    let blocksVariantsExtra = SH([
+        { // Pillar
+            size: [1, 8, 1],
+            maskTop: [[0]],
+            maskBottom: [[1]],
+            type: typePillar,
+        },
+    ])
 
     // карта высот. В тех местах, где заплетная клетка, уходит в минус бесконечность. Чтобы точно было меньше, чем в запретной карте высот
     // обратим внимание, что икс снаружи, потом зет. Обычно наоборот, если что.
@@ -224,6 +225,7 @@ function placeBlocks() {
         let bv
         let bvt
         let bvtInitial = RL(blocksVariants)
+        if (n == blocksNumber - 1) bvtInitial=RL(blocksVariantsExtra)
 
         // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
         // тот, что лучше подходит под критерий.
@@ -237,7 +239,7 @@ function placeBlocks() {
             bvt = JSON.parse(JSON.stringify(bvtInitial))
             bvt.color = R() * (palette.length - 1 | 0) + 1
             bvt.color2 = R() * (palette.length - 1 | 0) + 1
-            bvt.texture = R()**8 * 3 | 0
+            bvt.texture = R() ** 8 * 3 | 0
             // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
             // надо или его копию делать, или ещё чего.
 
