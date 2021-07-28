@@ -39,6 +39,10 @@ vec2 random2f() {
     return rn * 2. - 1.;
 }
 
+// vec2 random2f() {
+//     return fract(sin(vec2(dot(mod(uv + t, 12.3457), vec2(127.1, 311.7)), dot(mod(uv + t, 12.3457), vec2(269.5, 183.3)))) * 43758.5453);
+// }
+
 float dist(vec3 p) {
     colIds = ivec3(0, 0, -1);
     p.x = abs(p.x);
@@ -64,7 +68,7 @@ float dist(vec3 p) {
 
         if(types[i] == 5) {
             float cyl = length(pb.zy) - .5;
-            float box = max(abs(pb.z)-.5, abs(pb.y+sizes[i].y/2.)-1.);
+            float box = max(abs(pb.z) - .5, abs(pb.y + sizes[i].y / 2.) - 1.);
             float hole = min(cyl, box);
             block = max(block, -hole);
         }
@@ -103,15 +107,11 @@ vec3 norm(vec3 p) {
 }
 
 void main() {
-    gl_FragColor = vec4(palette[0], 1);
-    gl -= gl;
-    float d = 0., e = 1e9, j;
-    float rm;
+    gl = 0.;
+    float d = 0., e = 1e9, ep, j;
     float camDist = 400.;
     vec2 uv_ = uv + random2f() * 1.5 / u_res;
-    vec3 p, pCam, ro = vec3(uv_ * camScale + camOffset, -camDist);
-    vec3 rd = vec3(0, 0, .9 + .1 * rnd(length(uv_)));
-
+    vec3 p, ro = vec3(uv_ * camScale + camOffset, -camDist), rd = vec3(0, 0, .9 + .1 * rnd(length(uv_))), o;
     bool outline = false;
     for(float i = 0.; i < STEPS; i++) {
         j = i;
@@ -119,19 +119,16 @@ void main() {
         p.z -= camDist;
         p.yz *= rot(camAng.x);
         p.xz *= rot(camAng.y);
-        // pCam= p;
-        rm = dist(p);
-        if(e < rm && rm < .01) {
-            gl_FragColor.a = 1.;
-            gl_FragColor.rgb = vec3(0);
+        d += e = dist(p);
+        if(ep < e && e < .01) {
+            // gl_FragColor = vec4(0);
             outline = true;
             break;
         }
-        d += e = rm;
-        if(colIds.x > 0)
-            // gl +=  pow(.0001 / e, .4);
-            if(e < .001)
-                break;
+        ep = e;
+        if(colIds.x > 0) { // if not floor, glow!
+            // gl +=  pow(.0000001 * e, .4);
+        }
         if(e < EPS)
             break;
     }
@@ -145,57 +142,30 @@ void main() {
         }
 
         vec3 col = col1;
+
+        // Texturing
+        //
         // layers
         if(colIds.z == 1)
             if(sin(p.y * PI * 3.) > 0.)
                 col = col2;
-        // gyroid
-        // if(colIds.z==2)
-        //     col=mix(col, col2, pow(dot(sin(p*PI),cos(p*PI)),101.)*.8);
-        // if(colIds.z == 2)
-        //     col = mix(col1, col2, smoothstep(.3, .4, dot(cos(p * PI * vec3(1, .1, 8)), cos(p * PI * vec3(1, .1, 8)))));
         if(colIds.z == 2)
-            // if(cos((p.x + fract(positions[0].x - sizes[0].x/2.)) * PI * 2.) > -0.99)
             if(sin((p.x + fract(positions[0].x - sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
                 col = col2;
-        // gl_FragColor = vec4((vec3(sqrt(smoothstep(80.,0.,j))) * dot(norm(p) * .9 + .1, (vec3(vec2(0, -1) * rot(camAng.y), 1).xzy)) * .5 + .5) * col, 1.);
-        // gl_FragColor = vec4((vec3(10./j) * dot(norm(p) * .9 + .1, (vec3(vec2(0, -1) * rot(camAng.y), 1).xzy)) * .5 + .5) * col, 1.);
-        // gl_FragColor = vec4(col * dot(norm(p), (vec3(vec2(0, -1) * rot(camAng.y), 1).xzy)) * .5 + .5, 1.);
-        // gl_FragColor = vec4(vec3(min(1.,4. / sqrt(j))) * min(1.,dot(norm(p), vec3(-1, .1, -1)) * .1 + .9) * col, 1.);
-        // if(gl_FragCoord.x / u_res.x < .5)
-            // if(gl_FragCoord.y / u_res.y < .5)
-        // gl_FragColor = vec4(vec3(min(1., 10. / j) * .2 + .8) * (dot(norm(p), normalize(vec3(-1, 1, -1))) * .4 + .8) * col, 1.);
-        gl_FragColor = vec4(vec3(min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(vec3(-1, 1, 0))) * .2 + .8) * col, 1.);
-        gl_FragColor += pow(dot(norm(p), normalize(vec3(-1, 3, 0))), 40.);
-        // gl_FragColor += pow(dot(norm(p), normalize(vec3(-1, 0, .5))),80.)*.3;
-        // gl_FragColor += pow(dot(norm(p), normalize(vec3(-1, 0,0 ))),4000.);
-        //     else;
-        //         gl_FragColor = vec4(vec3(min(1., 10. / j) * .2 + .8) * col, 1.);
-        // else
-        //     gl_FragColor = vec4(col, 1.);
-        // gl_FragColor = vec4(smoothstep(20.,0.,sqrt(j)) * (dot(norm(p), vec3(-1, 1, -1)) * .1 + .9) * col, 1.);
-        if(colIds.z == -1) {
-            // float mult = sqrt(j / 20.);
-            // mult = mix(1., mult, step(0., sin(length(uv_) * 64.)) * .5);
-            // if(sin(length(uv_) * 64.)>0.)
-            gl_FragColor.rgb += gl;
-        // gl_FragColor = min(vec4(1.), gl_FragColor);
 
-            // gl_FragColor = vec4(col * mult, 1.);
+        // shading
+        o = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(vec3(-1, 1, 0))) * .2 + .8) * col;
+        // glare
+        o += pow(dot(norm(p), normalize(vec3(-1, 3, 0))), 40.);
+
+        if(colIds.z == -1) {
+            if(sin(dot(uv_, uv_) * 32.) > 0.)
+                o *= .98;
         }
     }
 
-    // if(rm.y == 2.)
-    //     gl_FragColor.rgb = 2. * (norm(p) * .5 + .5) * (vec3(10. / j));
+    // gazya
+    // o = (vec3(10. / j));
 
-    // if(rm.y == 3.)
-    //     gl_FragColor.rgb = (vec3(10. / j));
-    // // bw
-    // // gl_FragColor = vec4(vec3(10./j)*length(rm.yzw / 255.), 1.);
-    // // gl_FragColor = vec4(vec3(10. / j) * rm.yzw / 255., 1.);
-
-    // // glow
-    // // gl_FragColor = vec4((vec3(j/10.) * dot(norm(p) * .8 + .2, vec3(1, 1, 0)) * .5 + .5) * rm.yzw / 255., 1.);
-
-    gl_FragColor = mix(texture2D(backbuffer, uv * vec2(1, -1) * .5 + .5), gl_FragColor, 1. / (t + 1.));
+    gl_FragColor = mix(texture2D(backbuffer, uv * vec2(1, -1) * .5 + .5), vec4(o, 1), 1. / (t + 1.));
 }

@@ -10,8 +10,6 @@ let SH = (ar) => {return ar.sort(() => R() - 0.5)}
 /*
 Баги
 - нижняя цеплялка не работает
-- вернуть арку
-- рефакторнуть глсл main
 - Пингвинчик!
 - Кодгольфнуть глсл
 - Кодгольфнуть жс
@@ -23,6 +21,8 @@ let SH = (ar) => {return ar.sort(() => R() - 0.5)}
 - Сейчас у всех деталей есть одна и только одна ось симметрии. Но может быть и две!
 - сделать предварительную генерировалку рандомности. Достать список рандомностей и — вперёд
 
+✓ рефакторнуть глсл main
+✓ вернуть арку
 ✓ рефакторнуть глсл SDF
 ✓ убрать шафлы
 ✓ сделать 10 разных вариантов рендеринга, выбрать лучший.
@@ -135,12 +135,12 @@ function placeBlocks() {
         //     maskBottom: [[1, 1], [1, 1]],
         //     type: typeBeak2x2,
         // },
-        // { // beak flipped
-        //     size: [2, 1, 2],
-        //     maskTop: [[1, 1], [1, 1]],
-        //     maskBottom: [[0, 1], [0, 1]],
-        //     type: typeBeak2x2Flipped,
-        // },
+        { // beak flipped
+            size: [2, 1, 2],
+            maskTop: [[1, 1], [1, 1]],
+            maskBottom: [[0, 1], [0, 1]],
+            type: typeBeak2x2Flipped,
+        },
         // { // 4x2
         //     size: [2, 1, 4],
         //     maskTop: [[1, 1, 1, 1,], [1, 1, 1, 1,]],
@@ -283,7 +283,6 @@ function placeBlocks() {
             }
             if (bvt.span[0] % 2 == gs % 2 && R() < 1 / (gs - bvt.span[0]))
                 if (bvt.span[0] % 2 || bvt.symX) // если чётное число пупырок, надо чтобы ось симетрии совпадала
-                    // хтя в будущем можно доработать. Ось симметрии должна поумнеть, тогда и на чётность мЖно буде твнимания не обращать
                     bvt.pos[0] = 0
             // тут можно циклы выкинуть
             let studL = 0
@@ -413,7 +412,7 @@ function setup() {
     sv = sv.join('\n')
     s = createShader(sv, sf)
 
-    pixelDensity(1)
+    // pixelDensity(1)
     palette = SH(palette)
     if (r_oneColor == 1) palette = palette.slice(0, 2)
     console.log(palette, 'palette')
