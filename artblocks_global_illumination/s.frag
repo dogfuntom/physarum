@@ -62,6 +62,13 @@ float dist(vec3 p) {
             block = length(pb) - .52;
         }
 
+        if(types[i] == 5) {
+            float cyl = length(pb.zy) - .5;
+            float box = max(abs(pb.z)-.5, abs(pb.y+sizes[i].y/2.)-1.);
+            float hole = min(cyl, box);
+            block = max(block, -hole);
+        }
+
         // studs
         vec3 ps = pb;
         vec2 l = sizes[i].xz;
@@ -72,7 +79,7 @@ float dist(vec3 p) {
         block = min(stud, block);
 
         if(types[i] == 3 || types[i] == 4) { // beak
-            pb.z *= -1.;
+            // pb.z *= -1.;
             pb.z += .55;
             pb.yz *= rot(PI * .26);
             if(types[i] == 4)

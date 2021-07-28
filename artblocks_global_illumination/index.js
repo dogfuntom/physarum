@@ -10,8 +10,8 @@ let SH = (ar) => {return ar.sort(() => R() - 0.5)}
 /*
 Баги
 - нижняя цеплялка не работает
-- рефакторнуть глсл
 - вернуть арку
+- рефакторнуть глсл main
 - Пингвинчик!
 - Кодгольфнуть глсл
 - Кодгольфнуть жс
@@ -23,6 +23,7 @@ let SH = (ar) => {return ar.sort(() => R() - 0.5)}
 - Сейчас у всех деталей есть одна и только одна ось симметрии. Но может быть и две!
 - сделать предварительную генерировалку рандомности. Достать список рандомностей и — вперёд
 
+✓ рефакторнуть глсл SDF
 ✓ убрать шафлы
 ✓ сделать 10 разных вариантов рендеринга, выбрать лучший.
 ✓ Набор удачных пресетов
@@ -77,7 +78,7 @@ let presets = [
 
 let { gs, blocksNumber, fitnessFunctionNumber, numberOfBlockTypes, maxTry, } = presets[presetId]
 blocksNumber=2
-gs=4
+gs=6
 fitnessFunctionNumber=0
 
 rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
@@ -128,18 +129,18 @@ function placeBlocks() {
 
     gridSize = createVector(gs, gs, gs)
     blocksVariants = SH([
-        { // beak
-            size: [2, 1, 2],
-            maskTop: [[0, 1], [0, 1]],
-            maskBottom: [[1, 1], [1, 1]],
-            type: typeBeak2x2,
-        },
-        { // beak flipped
-            size: [2, 1, 2],
-            maskTop: [[1, 1], [1, 1]],
-            maskBottom: [[0, 1], [0, 1]],
-            type: typeBeak2x2Flipped,
-        },
+        // { // beak
+        //     size: [2, 1, 2],
+        //     maskTop: [[0, 1], [0, 1]],
+        //     maskBottom: [[1, 1], [1, 1]],
+        //     type: typeBeak2x2,
+        // },
+        // { // beak flipped
+        //     size: [2, 1, 2],
+        //     maskTop: [[1, 1], [1, 1]],
+        //     maskBottom: [[0, 1], [0, 1]],
+        //     type: typeBeak2x2Flipped,
+        // },
         // { // 4x2
         //     size: [2, 1, 4],
         //     maskTop: [[1, 1, 1, 1,], [1, 1, 1, 1,]],
@@ -158,12 +159,12 @@ function placeBlocks() {
         //     maskBottom: [[1, 1, 1, 1, 1, 1,]],
         //     type: typeBlock,
         // },
-        // { // arc
-        //     size: [1, 2, 3],
-        //     maskTop: [[1, 1, 1]],
-        //     maskBottom: [[1, 0, 1]],
-        //     type: typeArc,
-        // },
+        { // arc
+            size: [1, 2, 3],
+            maskTop: [[1, 1, 1]],
+            maskBottom: [[1, 0, 1]],
+            type: typeArc,
+        },
         // { // line
         //     size: [1, 1, 3],
         //     maskTop: [[1, 1, 1]],
