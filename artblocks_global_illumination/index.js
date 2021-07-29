@@ -9,6 +9,7 @@ let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 
 /*
 Баги
+- глаза!
 - Аватар фит (квадратные штуки слишком большие)
 - Пингвинчик!
 - Кодгольфнуть глсл
@@ -35,7 +36,8 @@ let canvas
 let tmp
 let u_bgColor, u_palette, u_colors, u_rotations, u_positions, u_sizes, u_types
 let u_camAngYZ, u_camAngXZ
-const typeBlock = 0, typeCyl = 1, typeBall = 2, typeBeak2x2 = 3, typeBeak2x2Flipped = 4, typeArc = 5, typePillar = 6
+const typeBlock = 0, typeCyl = 1, typeBall = 2, typeBeak2x2 = 3, typeBeak2x2Flipped = 4, 
+typeArc = 5, typePillar = 6, typeEye = 7
 const texSolid = 0, texLayers = 1, texGyr = 2
 const texNorm = 2, texAO = 3
 const blocksNumMax = 100
@@ -99,7 +101,10 @@ let palette = RL([
     // ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
     // ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
     // ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
-    ["#541388","#d90368","#f1e9da","#2e294e","#ffd400"],
+    // ["#541388","#d90368","#f1e9da","#2e294e","#ffd400"],
+    // ["#1f2041","#4b3f72","#ffc857","#119da4","#19647e"],
+    // ["#540d6e","#ee4266","#ffd23f","#f3fcf0","#1f271b"],
+    ["#e4572e","#29335c","#f3a712","#a8c686","#669bbc"],
 
 ])
 
@@ -191,11 +196,17 @@ function placeBlocks() {
     ]).slice(0, numberOfBlockTypes)
 
     let blocksVariantsExtra = SH([
-        { // Pillar
-            size: [1, 8, 1],
-            maskTop: [[0]],
-            maskBottom: [[1]],
-            type: typePillar,
+        // { // Pillar
+        //     size: [1, 8, 1],
+        //     maskTop: [[0]],
+        //     maskBottom: [[1]],
+        //     type: typePillar,
+        // },
+        { // eye
+            size: [1, 1, 2],
+            maskTop: [[0,1]],
+            maskBottom: [[0,1]],
+            type: typeEye,
         },
     ])
 
@@ -217,7 +228,8 @@ function placeBlocks() {
         let bv
         let bvt
         let bvtInitial = RL(blocksVariants)
-        if (n == blocksNumber - 1) bvtInitial=RL(blocksVariantsExtra)
+        if (n == blocksNumber - 1) 
+        bvtInitial=RL(blocksVariantsExtra)
 
         // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
         // тот, что лучше подходит под критерий.
@@ -420,7 +432,7 @@ function setup() {
 
     viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
     blocks.forEach(b => {
-        if(b.type==typePillar) return
+        // if(b.type==typePillar) return
 
         let s = { x: b.size[0] / 2, y: b.size[1] / 2, z: b.size[2] / 2, }
         let vertices = [

@@ -21,13 +21,25 @@ uniform vec2 camAng;
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
 #define STEPS 4e2
 #define EPS .001
-float smax(float d1, float d2, float k) {
-    float h = clamp(.5 - .5 * (d2 - d1) / k, .0, 1.);
-    return mix(d2, d1, h) + k * h * (1. - h);
-}
+#define box(p,s) (length(p - clamp(p, -(s)/2., (s)/2.)) - cornerR * 1.4)
+// float smax(float d1, float d2, float k) {
+//     float h = clamp(.5 - .5 * (d2 - d1) / k, .0, 1.);
+//     return mix(d2, d1, h) + k * h * (1. - h);
+// }
 
 ivec3 colIds;
 float gl;
+
+float cyl(vec3 p, vec3 s, float cornerR) {
+    // s.x — height
+    // s.y — thickness
+    // s.x — radius
+    p.y -= clamp(p.y, -s.x, s.x);
+    float len = length(p.xz) - s.z;
+    len -= clamp(len, -s.y, s.y);
+    float cyl = length(vec2(len, p.y)) - cornerR;
+    return cyl;
+}
 
 vec2 random2f() {
     vec2 rn = vec2(rnd(length(uv) - t), rnd(length(uv) - t - .1));
@@ -44,11 +56,14 @@ vec2 random2f() {
 //     return fract(sin(vec2(dot(mod(uv + t, 12.3457), vec2(127.1, 311.7)), dot(mod(uv + t, 12.3457), vec2(269.5, 183.3)))) * 43758.5453);
 // }
 
+int eye;
+
 float dist(vec3 p) {
     colIds = ivec3(0, 0, -1);
     p.x = abs(p.x);
     float res = p.y + 1.; // floor plane
     for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
+        eye = 0;
         if(i >= blocksNumber)
             break;
         vec3 pb = p;
@@ -60,7 +75,7 @@ float dist(vec3 p) {
         float gap = .01;
         float block;
         if(types[i] == 0 || types[i] == 3 || types[i] == 4 || types[i] == 5 || types[i] == 6 || types[i] == 7) {
-            block = length(pb - clamp(pb, -sizes[i] / 2. + cornerR + gap, sizes[i] / 2. - cornerR - gap)) - cornerR * 1.4;
+            block = box(pb, sizes[i] + 2. * (cornerR + gap));
         } else if(types[i] == 1) { // cyl
             block = max(length(pb.xz) - .5, abs(pb.y) - .5);
         } else if(types[i] == 2) { // ball
@@ -88,6 +103,7 @@ float dist(vec3 p) {
             ps.xz = ps.xz - clamp(floor(ps.xz + .5), vec2(0.), l - 1.);
             float h = .24;
             float stud = max(abs(length(ps.xz) - .28 + .05) - .05, abs(ps.y - sizes[i].y / 2. - h / 2.) - h / 2.);
+            // float stud = length(ps.xyz) - .8;
             block = min(stud, block);
         }
 
@@ -98,6 +114,17 @@ float dist(vec3 p) {
             if(types[i] == 3)
                 pb.yz *= rot(-PI / 2.);
             block = max(block, -pb.z);
+        }
+
+        if(types[i] == 7) { // eye
+            block = box(pb - vec3(0, 0, .5), vec3(1));
+            pb.z--;
+            pb.zy *= rot(PI / 2.);
+            float eye_ = cyl(pb, vec3(.9, .25, .2), cornerR);
+            block = min(eye_, block);
+            if(eye_ < EPS)
+                eye = 1;
+            // block = max(block, min(cyl, sph));
         }
 
         if(block < res) {
@@ -162,15 +189,19 @@ void main() {
             if(sin((p.x + fract(positions[0].x - sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
                 col = col2;
 
+        if(eye == 1) {
+            col = vec3(step(.5,length(fract(p.xy)-.5)));
+        }
         // shading
         o = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(vec3(-1, 1, 0))) * .2 + .8) * col;
         // glare
         o += pow(dot(norm(p), normalize(vec3(-1, 3, 0))), 40.);
 
         if(colIds.z == -1) {
-            if(sin(length(pow(uv_,vec2(u_bg_pow))) * 32.) > 0.)
+            if(sin(length(pow(uv_, vec2(u_bg_pow))) * 32.) > 0.)
                 o *= .95;
         }
+
     }
 
     // gazya
