@@ -8,6 +8,7 @@ uniform vec3 sizes[BLOCKS_NUMBER_MAX];
 uniform ivec3 colors[BLOCKS_NUMBER_MAX];
 uniform int types[BLOCKS_NUMBER_MAX];
 uniform float rotations[BLOCKS_NUMBER_MAX];
+uniform float u_bg_pow;
 uniform vec3 palette[20];
 // uniform vec2 mouse;
 uniform vec2 u_res;
@@ -73,8 +74,8 @@ float dist(vec3 p) {
             block = max(block, -hole);
         }
 
-        if(types[i] == 6) {
-            float cyl = length(pb.zx) - .2;
+        if(types[i] == 6) { // pillar
+            float cyl = length(pb.zx) - .1;
             float sph = length(pb + vec3(0, sizes[i].y, 0) / 2.) - .45;
             block = max(block, min(cyl, sph));
         }
@@ -167,7 +168,7 @@ void main() {
         o += pow(dot(norm(p), normalize(vec3(-1, 3, 0))), 40.);
 
         if(colIds.z == -1) {
-            if(sin(length(uv_ * uv_ * uv_ * uv_) * 32.) > 0.)
+            if(sin(length(pow(uv_,vec2(u_bg_pow))) * 32.) > 0.)
                 o *= .95;
         }
     }

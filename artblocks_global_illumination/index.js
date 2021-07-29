@@ -43,6 +43,7 @@ let draft = false
 let u_tick = 0
 let m = [0, 0]
 let maxMaxTry = 30
+let u_bg_pow = RL([.7,1,2,4,6])
 
 // // The Great Randomizer
 // let gs = 4 + R() * 10 | 0
@@ -93,22 +94,13 @@ let groundBlock;
 let blocksHeightMap;
 let palette = RL([
     // // GOOD
-    ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
-    ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
-    ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
-    ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
-    ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
+    // ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
+    // ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
+    // ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
+    // ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
+    // ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
+    ["#541388","#d90368","#f1e9da","#2e294e","#ffd400"],
 
-    // BAD
-    // ["#70d6ff", "#ff70a6", "#ff9770", "#ffd670", "#e9ff70"], //candy bright
-    // ["#26547c", "#ef476f", "#ffd166", "#06d6a0", "#fffcf9"],
-    // ["#ff0000", "#ff8700", "#ffd300", "#deff0a", "#a1ff0a", "#0aff99", "#0aefff", "#147df5", "#580aff", "#be0aff"], // acid
-    // ["#d88c9a", "#f2d0a9", "#f1e3d3", "#99c1b9", "#8e7dbe"], // dusty candy
-    // ["#2d3142", "#bfc0c0", "#ef8354", "#4f5d75"], // gray white  orange
-    // ["#ff99c8", "#fcf6bd", "#d0f4de", "#a9def9", "#e4c1f9"], // candy pale
-    // ["#07c8f9", "#09a6f3", "#0a85ed", "#0c63e7", "#0d41e1"], // blue
-
-    // NOT tested
 ])
 
 function placeBlocks() {
@@ -313,7 +305,7 @@ function placeBlocks() {
             //     continue
             // }
 
-            debugger
+            // debugger
 
             let maxHeightTry = 0;
             let maxHeightTryLikeWithoutBottomHoles = 0;
@@ -428,6 +420,7 @@ function setup() {
 
     viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
     blocks.forEach(b => {
+        if(b.type==typePillar) return
 
         let s = { x: b.size[0] / 2, y: b.size[1] / 2, z: b.size[2] / 2, }
         let vertices = [
@@ -532,6 +525,7 @@ function draw() {
     s.setUniform('camScale', viewBox.scale / 1)
     s.setUniform('camOffset', [viewBox.offset.x, viewBox.offset.y])
     s.setUniform('camAng', [u_camAngYZ, u_camAngXZ - (m[0] * 2 - 1) * TAU])
+    s.setUniform('u_bg_pow', u_bg_pow)
     // s.setUniform('mouse', [mouseX / width, -mouseY / height])
     rect(0, 0, width, height)
 
