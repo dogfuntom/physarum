@@ -119,11 +119,11 @@ float dist(vec3 p) {
         }
 
         if(types[i] == 7) { // eye
-            pb.z -= .5;
-            block = box(pb - vec3(0, 0, .5), vec3(1));
-            pb.zy *= rot(PI / 2.);
-            float eye_ = cyl(pb, vec3(.9, .25, .2), cornerR);
-            block = min(eye_, block);
+            // pb.z -= .5;
+            // block = box(pb - vec3(0, 0, .5), vec3(1));
+            // pb.zy *= rot(PI / 2.);
+            float eye_ = cyl(pb, vec3(.2, .25, .2), cornerR);
+            block = eye_;
             if(eye_ < EPS) {
                 // eye = int(step(.3, length(pb.xz) - length(pb.xz * 2. - vec2(2)) / 3.));
                 eye = 1;
@@ -202,7 +202,7 @@ void main() {
         if(eye == 1) {
             // col = vec3(step(.5,length(fract(p.xy+vec2( + fract(positions[0].x - sizes[0].x / 2.),0))-.5)));
             if(length(eyeTex) < 3.3) {
-                eyeTex.x *= sign(p.x);
+                eyeTex.y *= sign(p.x);
                 col = vec3(0);
                 // if(length(pb.xz + .2) < .2)
                 col += step(.3, length(eyeTex));

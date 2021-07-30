@@ -203,9 +203,9 @@ function placeBlocks() {
         //     type: typePillar,
         // },
         { // eye
-            size: [1, 1, 3],
-            maskTop: [[0,0,1]],
-            maskBottom: [[0,0,1]],
+            size: [1, 1, 1],
+            maskTop: [[0]],
+            maskBottom: [[1]],
             type: typeEye,
         },
     ])
