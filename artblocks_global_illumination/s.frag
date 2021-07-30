@@ -109,11 +109,12 @@ float dist(vec3 p) {
 
         if(types[i] == 3 || types[i] == 4) { // beak
             // pb.z *= -1.;
-            pb.z += .55;
-            pb.yz *= rot(PI * .26);
+            vec3 pe = pb;
+            pe.z += .55;
+            pe.yz *= rot(PI * .26);
             if(types[i] == 3)
-                pb.yz *= rot(-PI / 2.);
-            block = max(block, -pb.z);
+                pe.yz *= rot(-PI / 2.);
+            block = max(block, -pe.z);
         }
 
         if(types[i] == 7) { // eye
@@ -122,8 +123,16 @@ float dist(vec3 p) {
             pb.zy *= rot(PI / 2.);
             float eye_ = cyl(pb, vec3(.9, .25, .2), cornerR);
             block = min(eye_, block);
-            if(eye_ < EPS)
+            if(eye_ < EPS) {
+                // eye = int(step(.3, length(pb.xz) - length(pb.xz * 2. - vec2(2)) / 3.));
                 eye = 1;
+                if(length(pb.xz) < .3) {
+                    eye = 2;
+                    if(length(pb.xz + .2) < .2)
+                        eye = 1;
+                }
+                //-int(min(step(-.3,-),step(.3,)));
+            }
             // block = max(block, min(cyl, sph));
         }
 
@@ -190,7 +199,10 @@ void main() {
                 col = col2;
 
         if(eye == 1) {
-            col = vec3(step(.5,length(fract(p.xy)-.5)));
+            col = vec3(1);
+            // col = vec3(step(.5,length(fract(p.xy+vec2( + fract(positions[0].x - sizes[0].x / 2.),0))-.5)));
+        } else if(eye == 2) {
+            col = vec3(0);
         }
         // shading
         o = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(vec3(-1, 1, 0))) * .2 + .8) * col;
