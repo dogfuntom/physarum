@@ -76,7 +76,7 @@ float dist(vec3 p) {
         float gap = .01;
         float block;
         if(types[i] == 0 || types[i] == 3 || types[i] == 4 || types[i] == 5 || types[i] == 6 || types[i] == 7) {
-            block = box(pb, sizes[i] + 2. * (cornerR + gap));
+            block = box(pb, sizes[i] - 2. * (cornerR + gap));
         } else if(types[i] == 1) { // cyl
             block = max(length(pb.xz) - .5, abs(pb.y) - .5);
         } else if(types[i] == 2) { // ball
@@ -197,7 +197,7 @@ void main() {
                 col = col2;
 
         // rainbow
-        col = sin(p.y*.5 - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+        col = sin(p.y * .5 - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
 
         if(eye == 1) {
             // col = vec3(step(.5,length(fract(p.xy+vec2( + fract(positions[0].x - sizes[0].x / 2.),0))-.5)));
@@ -209,7 +209,6 @@ void main() {
                 col += step(-.1, -length(eyeTex + .1));
             }
         }
-
 
         // shading
         o = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(vec3(-1, 1, 0))) * .2 + .8) * col;
