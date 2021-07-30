@@ -1,6 +1,6 @@
 console.clear();
 let S, ss, R, t
-// tokenData.hash='0x82bd6bcfd30c03f4efb3de0741ab13353419d417d65ee2ad287bb96ec8d1594a'
+// tokenData.hash='0x3a2a23408eaa3d9a2c5bb65b1d4ed78da8d65c736e4e75a9bb9f8c1c9c280772'
 // tokenData.hash='0x580000000000000000000000000000000000000000000000000000000000000'
 console.log(tokenData.hash)
 S = Uint32Array.from([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
@@ -203,9 +203,9 @@ function placeBlocks() {
         //     type: typePillar,
         // },
         { // eye
-            size: [1, 1, 2],
-            maskTop: [[0,1]],
-            maskBottom: [[0,1]],
+            size: [1, 1, 3],
+            maskTop: [[0,0,1]],
+            maskBottom: [[0,0,1]],
             type: typeEye,
         },
     ])
@@ -243,14 +243,15 @@ function placeBlocks() {
             bvt = JSON.parse(JSON.stringify(bvtInitial))
             bvt.color = R() * (palette.length - 1 | 0) + 1
             bvt.color2 = R() * (palette.length - 1 | 0) + 1
-            bvt.texture = R() ** 8 * 3 | 0
+            bvt.texture = R() * 4 | 0
             // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
             // надо или его копию делать, или ещё чего.
 
             // есть ли смысл тут сделать глубокую копию? Есть. И всё в ней хранить.
             bvt.symX = true
             bvt.rot = floor(R() * 4) // (blockSizeTry.x%2==0 && blockSizeTry.z%2==0)?floor(R(4)):floor(R(2))*2
-
+            if (n == blocksNumber - 1) 
+            bvt.rot = 3//floor(R() * 2)*3
             // Поворачиваем весь blockVariantTry на 90° несколько раз.
             // Далее ротейт будет использоваться только для передачи в юниформ.
             bvt.span = [...bvt.size]

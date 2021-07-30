@@ -57,6 +57,7 @@ vec2 random2f() {
 // }
 
 int eye;
+vec2 eyeTex;
 
 float dist(vec3 p) {
     colIds = ivec3(0, 0, -1);
@@ -118,23 +119,20 @@ float dist(vec3 p) {
         }
 
         if(types[i] == 7) { // eye
+            pb.z -= .5;
             block = box(pb - vec3(0, 0, .5), vec3(1));
-            pb.z--;
             pb.zy *= rot(PI / 2.);
             float eye_ = cyl(pb, vec3(.9, .25, .2), cornerR);
             block = min(eye_, block);
             if(eye_ < EPS) {
                 // eye = int(step(.3, length(pb.xz) - length(pb.xz * 2. - vec2(2)) / 3.));
                 eye = 1;
-                if(length(pb.xz) < .3) {
-                    eye = 2;
-                    if(length(pb.xz + .2) < .2)
-                        eye = 1;
-                }
                 //-int(min(step(-.3,-),step(.3,)));
             }
             // block = max(block, min(cyl, sph));
         }
+
+        eyeTex = pb.xz;
 
         if(block < res) {
             res = block;
@@ -198,12 +196,21 @@ void main() {
             if(sin((p.x + fract(positions[0].x - sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
                 col = col2;
 
+        // rainbow
+        col = sin(p.y*.5 - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+
         if(eye == 1) {
-            col = vec3(1);
             // col = vec3(step(.5,length(fract(p.xy+vec2( + fract(positions[0].x - sizes[0].x / 2.),0))-.5)));
-        } else if(eye == 2) {
-            col = vec3(0);
+            if(length(eyeTex) < 3.3) {
+                eyeTex.x *= sign(p.x);
+                col = vec3(0);
+                // if(length(pb.xz + .2) < .2)
+                col += step(.3, length(eyeTex));
+                col += step(-.1, -length(eyeTex + .1));
+            }
         }
+
+
         // shading
         o = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(vec3(-1, 1, 0))) * .2 + .8) * col;
         // glare
