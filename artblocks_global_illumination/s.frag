@@ -16,6 +16,8 @@ uniform sampler2D backbuffer;
 uniform float camScale;
 uniform vec2 camOffset;
 uniform vec2 camAng;
+uniform int r_colorScheme;
+uniform int r_studShape;
 #define PI 3.1415
 #define rnd(x) fract(54321.987 * sin(987.12345 * mod(x,12.34567)))
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
@@ -103,8 +105,8 @@ float dist(vec3 p) {
             ps.xz += (l - 1.) / 2.;
             ps.xz = ps.xz - clamp(floor(ps.xz + .5), vec2(0.), l - 1.);
             float h = .24;
-            float stud = max(abs(length(ps.xz) - .28 + .05) - .05, abs(ps.y - sizes[i].y / 2. - h / 2.) - h / 2.);
-            // float stud = length(ps.xyz) - .8;
+            float stud = (r_studShape==1) ? abs(length(ps.xz) - .28 + .05) - .05 : length(ps.xz) - .28;
+            stud = max(stud, abs(ps.y - sizes[i].y / 2. - h / 2.) - h / 2.);
             block = min(stud, block);
         }
 
@@ -122,6 +124,7 @@ float dist(vec3 p) {
             // pb.z -= .5;
             // block = box(pb - vec3(0, 0, .5), vec3(1));
             // pb.zy *= rot(PI / 2.);
+            pb.y+=.25;
             float eye_ = cyl(pb, vec3(.2, .25, .2), cornerR);
             block = eye_;
             if(eye_ < EPS) {
@@ -196,8 +199,9 @@ void main() {
             if(sin((p.x + fract(positions[0].x - sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
                 col = col2;
 
-        // rainbow
-        col = sin(p.y * .5 - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+        // pride
+        if(r_colorScheme == 2)
+            col = sin(p.y * .5 - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
 
         if(eye == 1) {
             // col = vec3(step(.5,length(fract(p.xy+vec2( + fract(positions[0].x - sizes[0].x / 2.),0))-.5)));
@@ -223,7 +227,8 @@ void main() {
     }
 
     // gazya
-    // o = (vec3(10. / j));
+    if(r_colorScheme == 3)
+        o = (vec3(10. / j));
 
     gl_FragColor = mix(texture2D(backbuffer, uv * vec2(1, -1) * .5 + .5), vec4(o, 1), 1. / (t + 1.));
 }

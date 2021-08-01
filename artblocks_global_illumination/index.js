@@ -9,8 +9,6 @@ let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 
 /*
 Баги
-- глаза!
-- Аватар фит (квадратные штуки слишком большие)
 - Пингвинчик!
 - Кодгольфнуть глсл
 - Кодгольфнуть жс
@@ -19,6 +17,9 @@ let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 - Сейчас у всех деталей есть одна и только одна ось симметрии. Но может быть и две!
 - сделать предварительную генерировалку рандомности. Достать список рандомностей и — вперёд
 
+✓ Аватар фит (квадратные штуки слишком большие)
+✓ Студшейп
+✓ глаза!
 ✓ нижняя цеплялка не работает
 ✓ bg переделать на что-то типа глоу. Чтобы не было глючного засвета
 ✓ рефакторнуть глсл main
@@ -36,8 +37,8 @@ let canvas
 let tmp
 let u_bgColor, u_palette, u_colors, u_rotations, u_positions, u_sizes, u_types
 let u_camAngYZ, u_camAngXZ
-const typeBlock = 0, typeCyl = 1, typeBall = 2, typeBeak2x2 = 3, typeBeak2x2Flipped = 4, 
-typeArc = 5, typePillar = 6, typeEye = 7
+const typeBlock = 0, typeCyl = 1, typeBall = 2, typeBeak2x2 = 3, typeBeak2x2Flipped = 4,
+    typeArc = 5, typePillar = 6, typeEye = 7
 const texSolid = 0, texLayers = 1, texGyr = 2
 const texNorm = 2, texAO = 3
 const blocksNumMax = 100
@@ -45,7 +46,7 @@ let draft = false
 let u_tick = 0
 let m = [0, 0]
 let maxMaxTry = 30
-let u_bg_pow = RL([.7,1,2,4,6])
+let u_bg_pow = RL([.75, 1, 2, 4])
 
 // // The Great Randomizer
 // let gs = 4 + R() * 10 | 0
@@ -56,29 +57,34 @@ let u_bg_pow = RL([.7,1,2,4,6])
 // console.log('fitnessFunctionNumber', fitnessFunctionNumber)
 // let numberOfBlockTypes = 1 + (R() * 7 | 0)
 // console.log(numberOfBlockTypes)
-let r_oneColor = R() ** 16 * 2 | 0 // all blocks of the same color
+// let r_oneColor = R() ** 16 * 2 | 0 // all blocks of the same color
+
+// 0 — usual, 1 — all blocks of the same color, 2 — raibow, 3 — gazya
+let r_colorScheme = R() ** 16 * 4 | 0
+
+let r_studShape = R() ** 8 * 2 | 0
 
 let presetId = R() * 2 | 0
 let presets = [
     {
-        gs: 7 + (R() | 0),
-        blocksNumber: 14,
+        gs: 6,//7 + (R() | 0),
+        blocksNumber: 10,
         fitnessFunctionNumber: 1,
-        numberOfBlockTypes: 4,
-        maxTry: 5,
+        maxTry: 2,
         extra: 0,
     },
     {
-        gs: 4 + (R() * 4 | 0),
+        gs: 6,// + (R() * 4 | 0),
         blocksNumber: 14,
         fitnessFunctionNumber: 2,
-        numberOfBlockTypes: 4,
         maxTry: 10,
         extra: 1,
     },
 ]
 
 let { gs, blocksNumber, fitnessFunctionNumber, numberOfBlockTypes, maxTry, } = presets[presetId]
+numberOfBlockTypes = 2 + R() * 2 | 0
+
 // blocksNumber = 8
 // gs = 6
 // fitnessFunctionNumber = 0
@@ -104,7 +110,7 @@ let palette = RL([
     // ["#541388","#d90368","#f1e9da","#2e294e","#ffd400"],
     // ["#1f2041","#4b3f72","#ffc857","#119da4","#19647e"],
     // ["#540d6e","#ee4266","#ffd23f","#f3fcf0","#1f271b"],
-    ["#e4572e","#29335c","#f3a712","#a8c686","#669bbc"],
+    ["#e4572e", "#29335c", "#f3a712", "#a8c686", "#669bbc"],
 
 ])
 
@@ -126,73 +132,73 @@ function placeBlocks() {
 
     gridSize = createVector(gs, gs, gs)
     blocksVariants = SH([
-        // { // beak
-        //     size: [2, 1, 2],
-        //     maskTop: [[0, 1], [0, 1]],
-        //     maskBottom: [[1, 1], [1, 1]],
-        //     type: typeBeak2x2,
-        // },
+        { // beak
+            size: [2, 1, 2],
+            maskTop: [[0, 1], [0, 1]],
+            maskBottom: [[1, 1], [1, 1]],
+            type: typeBeak2x2,
+        },
         { // beak flipped
             size: [2, 1, 2],
             maskTop: [[1, 1], [1, 1]],
             maskBottom: [[0, 1], [0, 1]],
             type: typeBeak2x2Flipped,
         },
-        // { // 4x2
-        //     size: [2, 1, 4],
-        //     maskTop: [[1, 1, 1, 1,], [1, 1, 1, 1,]],
-        //     maskBottom: [[1, 1, 1, 1,], [1, 1, 1, 1,]],
-        //     type: typeBlock,
-        // },
-        // { // 3x2
-        //     size: [2, 1, 3],
-        //     maskTop: [[1, 1, 1,], [1, 1, 1,]],
-        //     maskBottom: [[1, 1, 1,], [1, 1, 1,]],
-        //     type: typeBlock,
-        // },
-        // { // 6x1
-        //     size: [1, 1, 6],
-        //     maskTop: [[1, 1, 1, 1, 1, 1,]],
-        //     maskBottom: [[1, 1, 1, 1, 1, 1,]],
-        //     type: typeBlock,
-        // },
+        { // 4x2
+            size: [2, 1, 4],
+            maskTop: [[1, 1, 1, 1,], [1, 1, 1, 1,]],
+            maskBottom: [[1, 1, 1, 1,], [1, 1, 1, 1,]],
+            type: typeBlock,
+        },
+        { // 3x2
+            size: [2, 1, 3],
+            maskTop: [[1, 1, 1,], [1, 1, 1,]],
+            maskBottom: [[1, 1, 1,], [1, 1, 1,]],
+            type: typeBlock,
+        },
+        { // 6x1
+            size: [1, 1, 6],
+            maskTop: [[1, 1, 1, 1, 1, 1,]],
+            maskBottom: [[1, 1, 1, 1, 1, 1,]],
+            type: typeBlock,
+        },
         { // arc
             size: [1, 2, 3],
             maskTop: [[1, 1, 1]],
             maskBottom: [[1, 0, 1]],
             type: typeArc,
         },
-        // { // line
-        //     size: [1, 1, 3],
-        //     maskTop: [[1, 1, 1]],
-        //     maskBottom: [[1, 1, 1]],
-        //     type: typeBlock,
-        // },
-        // { // block
-        //     size: [2, 1, 2],
-        //     maskTop: [[1, 1], [1, 1]],
-        //     maskBottom: [[1, 1], [1, 1]],
-        //     type: typeBlock,
-        // },
-        // { // 1x1
-        //     size: [1, 1, 1],
+        { // line
+            size: [1, 1, 3],
+            maskTop: [[1, 1, 1]],
+            maskBottom: [[1, 1, 1]],
+            type: typeBlock,
+        },
+        { // block
+            size: [2, 1, 2],
+            maskTop: [[1, 1], [1, 1]],
+            maskBottom: [[1, 1], [1, 1]],
+            type: typeBlock,
+        },
+        { // 1x1
+            size: [1, 1, 1],
+            maskTop: [[1]],
+            maskBottom: [[1]],
+            type: typeBlock,
+        },
+        // { // 1x1 but high
+        //     size: [1, 4, 1],
         //     maskTop: [[1]],
         //     maskBottom: [[1]],
         //     type: typeBlock,
         // },
-        // // { // 1x1 but high
-        // //     size: [1, 4, 1],
-        // //     maskTop: [[1]],
-        // //     maskBottom: [[1]],
-        // //     type: typeBlock,
-        // // },
-        // // { // ball
-        // //     size: createVector(1, 1, 1),
-        // //     maskTop: [[0]],
-        // //     maskBottom: [[1]],
-        // //     type: typeBall,
-        // // symX: true,
-        // // },
+        // { // ball
+        //     size: createVector(1, 1, 1),
+        //     maskTop: [[0]],
+        //     maskBottom: [[1]],
+        //     type: typeBall,
+        // symX: true,
+        // },
     ]).slice(0, numberOfBlockTypes)
 
     let blocksVariantsExtra = SH([
@@ -228,8 +234,8 @@ function placeBlocks() {
         let bv
         let bvt
         let bvtInitial = RL(blocksVariants)
-        if (n == blocksNumber - 1) 
-        bvtInitial=RL(blocksVariantsExtra)
+        if (n == blocksNumber - 1 && r_colorScheme != 3)
+            bvtInitial = RL(blocksVariantsExtra), fitnessFunctionNumber = 1
 
         // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
         // тот, что лучше подходит под критерий.
@@ -250,8 +256,8 @@ function placeBlocks() {
             // есть ли смысл тут сделать глубокую копию? Есть. И всё в ней хранить.
             bvt.symX = true
             bvt.rot = floor(R() * 4) // (blockSizeTry.x%2==0 && blockSizeTry.z%2==0)?floor(R(4)):floor(R(2))*2
-            if (n == blocksNumber - 1) 
-            bvt.rot = 3//floor(R() * 2)*3
+            if (n == blocksNumber - 1)
+                bvt.rot = 3//floor(R() * 2)*3
             // Поворачиваем весь blockVariantTry на 90° несколько раз.
             // Далее ротейт будет использоваться только для передачи в юниформ.
             bvt.span = [...bvt.size]
@@ -423,7 +429,7 @@ function setup() {
 
     // pixelDensity(1)
     palette = SH(palette)
-    if (r_oneColor == 1) palette = palette.slice(0, 2)
+    if (r_colorScheme == 1) palette = palette.slice(0, 2)
     console.log(palette, 'palette')
 
     u_camAngYZ = .95532
@@ -539,6 +545,8 @@ function draw() {
     s.setUniform('camOffset', [viewBox.offset.x, viewBox.offset.y])
     s.setUniform('camAng', [u_camAngYZ, u_camAngXZ - (m[0] * 2 - 1) * TAU])
     s.setUniform('u_bg_pow', u_bg_pow)
+    s.setUniform('r_colorScheme', r_colorScheme)
+    s.setUniform('r_studShape', r_studShape)
     // s.setUniform('mouse', [mouseX / width, -mouseY / height])
     rect(0, 0, width, height)
 
@@ -553,5 +561,6 @@ function mouseDragged() {
     u_tick = 0
     // m[0] = (mouseX / width * 32 | 0) / 32
     m[0] = mouseX / width
+    m[1] = mouseY / width
     loop()
 }
