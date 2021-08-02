@@ -10,6 +10,8 @@ let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 /*
 Баги
 - Пингвинчик!
+- Пофиксить глаза раскосые
+- На мобиле чтобы работало
 - Кодгольфнуть глсл
 - Кодгольфнуть жс
 
@@ -48,41 +50,37 @@ let m = [0, 0]
 let maxMaxTry = 30
 let u_bg_pow = RL([.75, 1, 2, 4])
 
-// // The Great Randomizer
-// let gs = 4 + R() * 10 | 0
-// console.log('gs', gs)
-// let blocksNumber = 4//Math.min(4 + gs * gs * R(), blocksNumMax)
-// console.log('blocksNumber', blocksNumber)
-// let fitnessFunctionNumber = R() * 5 | 0
-// console.log('fitnessFunctionNumber', fitnessFunctionNumber)
-// let numberOfBlockTypes = 1 + (R() * 7 | 0)
-// console.log(numberOfBlockTypes)
-// let r_oneColor = R() ** 16 * 2 | 0 // all blocks of the same color
-
 // 0 — usual, 1 — all blocks of the same color, 2 — raibow, 3 — gazya
 let r_colorScheme = (1-Math.sqrt(1-R()**16)) * 4 | 0
 
 let r_studShape = R() ** 8 * 2 | 0
 
-let presetId = R() * 2 | 0
+let presetId = (1-Math.sqrt(1-R()**2))*3 | 0
 let presets = [
     {
-        gs: 6,//7 + (R() | 0),
+        gs: 6 + (R() | 0),
         blocksNumber: 10,
         fitnessFunctionNumber: 1,
-        maxTry: 2,
-        extra: 0,
+        maxTry: 4,
+        extra: 1,
     },
     {
-        gs: 6,// + (R() * 4 | 0),
+        gs: 6 + (R() * 4 | 0),
         blocksNumber: 10+R() * 10 | 0,
         fitnessFunctionNumber: 2,
         maxTry: 10,
         extra: 1,
     },
+    {
+        gs: 10 + (R() * 4 | 0),
+        blocksNumber: 60,
+        fitnessFunctionNumber: 5,
+        maxTry: 8,
+        extra: 0,
+    },
 ]
 
-let { gs, blocksNumber, fitnessFunctionNumber, numberOfBlockTypes, maxTry, } = presets[presetId]
+let { gs, blocksNumber, fitnessFunctionNumber, numberOfBlockTypes, maxTry, extra,} = presets[presetId]
 numberOfBlockTypes = 2 + R() * 2 | 0
 
 // blocksNumber = 8
@@ -105,23 +103,17 @@ let palette = RL([
     ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
     ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
     ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
-    ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
-    ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
+    ["#495867", "#577399", "#bdd5ea", "#eee", "#fe5f55"], // red gray
     ["#541388","#d90368","#f1e9da","#2e294e","#ffd400"],
     ["#1f2041","#4b3f72","#ffc857","#119da4","#19647e"],
     ["#540d6e","#ee4266","#ffd23f","#f3fcf0","#1f271b"],
     ["#e4572e", "#29335c", "#f3a712", "#a8c686", "#669bbc"],
+    ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
+    ["#ddd", "#aaa", "#888", "#555", "#222"],
 
 ])
 
 function placeBlocks() {
-    // let blocksNum = 16
-    // let gs = 10
-    // let blocksNum = 40
-    // let gs = 10
-    // let blocksNum = 80
-    // let gs = 24
-
     // groundBlock = 
     // blocks.push(new Block(
     //     size: { x: 2, y: 1, z: 2 },
@@ -186,28 +178,22 @@ function placeBlocks() {
             maskBottom: [[1]],
             type: typeBlock,
         },
-        // { // 1x1 but high
-        //     size: [1, 4, 1],
-        //     maskTop: [[1]],
-        //     maskBottom: [[1]],
-        //     type: typeBlock,
-        // },
-        // { // ball
-        //     size: createVector(1, 1, 1),
-        //     maskTop: [[0]],
-        //     maskBottom: [[1]],
-        //     type: typeBall,
-        // symX: true,
-        // },
+        { // 1x1 but high
+            size: [1, 2, 1],
+            maskTop: [[1]],
+            maskBottom: [[1]],
+            type: typeBlock,
+        },
+
     ]).slice(0, numberOfBlockTypes)
 
     let blocksVariantsExtra = SH([
-        // { // Pillar
-        //     size: [1, 8, 1],
-        //     maskTop: [[0]],
-        //     maskBottom: [[1]],
-        //     type: typePillar,
-        // },
+        { // Pillar
+            size: [1, 4, 1],
+            maskTop: [[0]],
+            maskBottom: [[1]],
+            type: typePillar,
+        },
         { // eye
             size: [1, .5, 1],
             maskTop: [[0]],
@@ -227,16 +213,14 @@ function placeBlocks() {
         .fill()
         .map(() => Array(gridSize.z).fill(0))
 
-    // цикл гарантирует, что появится Н блоков 
     for (let n = 0; n < blocksNumber; n++) {
         let maxHeight = 0
         let fitness, maxFitness = -9e9
         let bv
         let bvt
         let bvtInitial = RL(blocksVariants)
-        if (n == blocksNumber - 1 && r_colorScheme != 3)
+        if (n >= blocksNumber - extra && r_colorScheme != 3 && R()<.66)
             bvtInitial = RL(blocksVariantsExtra), fitnessFunctionNumber = 6
-
         // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
         // тот, что лучше подходит под критерий.
         // Открытый вопрос, что делать, если ничего не подошло. Варианты:

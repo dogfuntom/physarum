@@ -93,9 +93,10 @@ float dist(vec3 p) {
         }
 
         if(types[i] == 6) { // pillar
-            float cyl = length(pb.zx) - .1;
-            float sph = length(pb + vec3(0, sizes[i].y, 0) / 2.) - .45;
-            block = max(block, min(cyl, sph));
+            float cyl_ = length(pb.zx) - .15;
+            float sph = cyl(pb + vec3(0, sizes[i].y-.5, 0) / 2., vec3(.2, .25, .2), cornerR);
+            // float sph = length(pb) - .45;
+            block = max(block, min(cyl_, sph));
         }
 
         // studs
