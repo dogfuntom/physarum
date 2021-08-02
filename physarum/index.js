@@ -9,9 +9,32 @@ const gl = twgl.getWebGLContext(canvas, {
   // premultipliedAlpha: false, 
   // alpha: false,
 })
+
+
+
+
+import * as Tone from 'tone'
+
+
+let micFFT, mic
+window.addEventListener("click", function (event) {
+  if (!mic) {
+    mic = new Tone.UserMedia();
+    micFFT = new Tone.FFT();
+    micFFT.set({
+      normalRange: true,
+      size: 64,
+    })
+    mic.connect(micFFT);
+    mic.open()
+    frame()
+  }
+})
+
+
 const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE }]
 
-const n = 1000
+const n = 512
 const m = n
 let size = 600
 let draw1 = twgl.createFramebufferInfo(gl, attachments, size, size)
@@ -74,18 +97,18 @@ var obj = {
       gifConfig.isRecording = false
       gif.render()
     }
-    else{
+    else {
       gifConfig.isRecording = true
     }
   },
-  randomize: function(){
+  randomize: function () {
     // obj.FRICTION = Math.random()
     // obj.STEP_SIZE = Math.random()*
-    gui.__controllers.forEach(c=>{
+    gui.__controllers.forEach(c => {
       console.log(c.property)
-      if(c.constructor.name != 'NumberControllerSlider') return
-      if(['LIGHTNESS','RESPAWN_P','REPULSION'].includes(c.property)) return
-      c.setValue(c.__min+Math.random()*(c.__max-c.__min))
+      if (c.constructor.name != 'NumberControllerSlider') return
+      if (['LIGHTNESS', 'RESPAWN_P', 'REPULSION'].includes(c.property)) return
+      c.setValue(c.__min + Math.random() * (c.__max - c.__min))
     })
   }
 }
@@ -103,17 +126,17 @@ gui.add(obj, 'DECAY').min(0).max(1).step(0.001)
 gui.add(obj, 'REPULSION').min(0).max(100000).step(.000001)
 // gui.add(obj, 'SENSE_ADD').min(-.0001).max(.0001).step(.0000001)
 gui.add(obj, 'RES').min(2).max(3000).step(1).onFinishChange(
-  function(){
+  function () {
     size = this.getValue()
     draw1 = twgl.createFramebufferInfo(gl, attachments, size, size)
     draw2 = twgl.createFramebufferInfo(gl, attachments, size, size)
   }
-  )
-  gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(5).step(1)
+)
+gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(5).step(1)
 gui.add(obj, 'RESPAWN_P').min(0).max(.1).step(.000001)
 // gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(10).step(1)
 gui.add(obj, 'LIGHTNESS').min(1).max(1000).step(1)
-gui.add(obj, 'record')
+// gui.add(obj, 'record')
 gui.add(obj, 'randomize')
 
 
@@ -200,9 +223,24 @@ let temp
 
 
 
+
+
+
+
+
+
+
+
+
+
 gl.enable(gl.BLEND)
-function draw(time) {
+function frame(time) {
   time = new Date() / 1000 - timeStart
+  let beat = Array(64).fill(0)
+  if (micFFT) {
+    beat = micFFT.getValue().map(d => (d * 1000))
+    console.log(beat)
+  }
 
   twgl.resizeCanvasToDisplaySize(gl.canvas)
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
@@ -217,6 +255,7 @@ function draw(time) {
       u_resolution: [size, size],
       DECAY: obj.DECAY,
       DIFFUSE_RADIUS: obj.DIFFUSE_RADIUS,
+      BEAT: beat,
     });
     twgl.bindFramebufferInfo(gl, draw1);
     twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
@@ -249,6 +288,7 @@ function draw(time) {
       RESPAWN_P: obj.RESPAWN_P,
       FRICTION: obj.FRICTION,
       REPULSION: obj.REPULSION,
+      BEAT: beat,
     });
     twgl.bindFramebufferInfo(gl, fb2)
     twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN)
@@ -266,7 +306,8 @@ function draw(time) {
       u_tex_fbo: fb2.attachments[0],
       u_time: time,
       u_resolution: [size, size],
-      DEPOSITE: obj.DEPOSITE*1e6/size/size,
+      DEPOSITE: obj.DEPOSITE * 1e6 / size / size,
+      BEAT: beat,
     });
     twgl.bindFramebufferInfo(gl, draw1)
     twgl.drawBufferInfo(gl, pointsBuffer, gl.POINTS)
@@ -303,7 +344,7 @@ gif.on('finished', function (blob) {
 });
 
 (function animate(now) {
-  draw()
+  frame()
   requestAnimationFrame(animate)
   if (gifConfig.isRecording) {
     console.log('tick', tick)

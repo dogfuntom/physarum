@@ -10,6 +10,7 @@ varying vec4 color;
 varying vec2 position;
 
 uniform float DEPOSITE;
+uniform float BEAT[16];
 
 #pragma glslify: snoise2d = require(../modules/math/glsl-noise/simplex/2d.glsl)
 #pragma glslify: random = require(glsl-random)
@@ -45,7 +46,7 @@ void main() {
   float velCol = smoothstep(.0,.01,length(vel)*.1);
   color.rgb = vec3(pow(velCol,.1), pow(velCol,.6), pow(velCol,.2))*.0001; // instagram magents color
   // color.rgb = vec3(v_mass,0,1.-v_mass)*.0001;
-  color.a = DEPOSITE;
+  color.a = DEPOSITE + DEPOSITE * BEAT[0];
   // color.a = DEPOSITE * pow(sin((u_time-length(pos))*10.)*.1+.9, 8.);
 
   position = pos;

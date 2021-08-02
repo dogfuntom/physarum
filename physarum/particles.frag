@@ -37,6 +37,7 @@ uniform float RESPAWN_P;
 uniform float FRICTION;
 uniform float REPULSION;
 uniform float ANGLE_SPREAD;
+uniform float BEAT[16];
 
 vec2 turn(vec2 pos, vec2 vel, float mass) {
 

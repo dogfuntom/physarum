@@ -5,6 +5,7 @@ uniform vec2 u_resolution;
 uniform float DECAY;
 uniform float DIFFUSE_RADIUS;
 uniform float u_time;
+uniform float BEAT[16];
 #define DIFFUSE_RADIUS_MAX  10
 
 #define K (.06)
@@ -55,6 +56,11 @@ void main() {
     delta.x = Da * d.x - v.x * v.y * v.y + F * (1. - v.x);
     delta.y = Db * d.y + v.x * v.y * v.y - (K + F) * v.y;
     gl_FragColor = vec4(1,1,v + delta);
+
+    // for(int i=0;i<64;i++){
+    //     if(i == int(gl_FragCoord.x/u_resolution.x*64.))
+    //     gl_FragColor.r = BEAT[i];
+    // }
 
     // gl_FragColor *= smoothstep(1., .9, length((gl_FragCoord.xy * 2. - u_resolution) / u_resolution));
 }
