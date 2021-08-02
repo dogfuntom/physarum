@@ -60,7 +60,7 @@ let u_bg_pow = RL([.75, 1, 2, 4])
 // let r_oneColor = R() ** 16 * 2 | 0 // all blocks of the same color
 
 // 0 — usual, 1 — all blocks of the same color, 2 — raibow, 3 — gazya
-let r_colorScheme = R() ** 16 * 4 | 0
+let r_colorScheme = (1-Math.sqrt(1-R()**16)) * 4 | 0
 
 let r_studShape = R() ** 8 * 2 | 0
 
@@ -75,7 +75,7 @@ let presets = [
     },
     {
         gs: 6,// + (R() * 4 | 0),
-        blocksNumber: 14,
+        blocksNumber: 10+R() * 10 | 0,
         fitnessFunctionNumber: 2,
         maxTry: 10,
         extra: 1,
@@ -102,14 +102,14 @@ let groundBlock;
 let blocksHeightMap;
 let palette = RL([
     // // GOOD
-    // ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
-    // ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
-    // ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
-    // ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
-    // ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
-    // ["#541388","#d90368","#f1e9da","#2e294e","#ffd400"],
-    // ["#1f2041","#4b3f72","#ffc857","#119da4","#19647e"],
-    // ["#540d6e","#ee4266","#ffd23f","#f3fcf0","#1f271b"],
+    ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
+    ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
+    ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
+    ["#495867", "#577399", "#bdd5ea", "#f7f7ff", "#fe5f55"], // red gray
+    ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
+    ["#541388","#d90368","#f1e9da","#2e294e","#ffd400"],
+    ["#1f2041","#4b3f72","#ffc857","#119da4","#19647e"],
+    ["#540d6e","#ee4266","#ffd23f","#f3fcf0","#1f271b"],
     ["#e4572e", "#29335c", "#f3a712", "#a8c686", "#669bbc"],
 
 ])
@@ -209,7 +209,7 @@ function placeBlocks() {
         //     type: typePillar,
         // },
         { // eye
-            size: [1, 1, 1],
+            size: [1, .5, 1],
             maskTop: [[0]],
             maskBottom: [[1]],
             type: typeEye,
@@ -235,7 +235,7 @@ function placeBlocks() {
         let bvt
         let bvtInitial = RL(blocksVariants)
         if (n == blocksNumber - 1 && r_colorScheme != 3)
-            bvtInitial = RL(blocksVariantsExtra), fitnessFunctionNumber = 1
+            bvtInitial = RL(blocksVariantsExtra), fitnessFunctionNumber = 6
 
         // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
         // тот, что лучше подходит под критерий.
@@ -255,9 +255,9 @@ function placeBlocks() {
 
             // есть ли смысл тут сделать глубокую копию? Есть. И всё в ней хранить.
             bvt.symX = true
-            bvt.rot = floor(R() * 4) // (blockSizeTry.x%2==0 && blockSizeTry.z%2==0)?floor(R(4)):floor(R(2))*2
-            if (n == blocksNumber - 1)
-                bvt.rot = 3//floor(R() * 2)*3
+            bvt.rot = R() * 4|0 // (blockSizeTry.x%2==0 && blockSizeTry.z%2==0)?floor(R(4)):floor(R(2))*2
+            // if (n == blocksNumber - 1)
+            //     bvt.rot = 3//floor(R() * 2)*3
             // Поворачиваем весь blockVariantTry на 90° несколько раз.
             // Далее ротейт будет использоваться только для передачи в юниформ.
             bvt.span = [...bvt.size]
@@ -358,6 +358,7 @@ function placeBlocks() {
                 -Math.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]), // mashroom
                 -abs(Math.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]) - gs), // cage
                 -abs(Math.hypot(bvt.pos[0], maxHeightTry * 2, bvt.pos[2]) - gs), // cage: blocksNum = 90, gs = 16
+                maxHeightTry+bvt.pos[2], // eyes
             ]
             fitness = fitnessFunctions[fitnessFunctionNumber]
 
@@ -435,6 +436,7 @@ function setup() {
     u_camAngYZ = .95532
     // u_camAngXZ = ((R() * 3 | 0) - 1) * PI / 4 // includes en-face
     u_camAngXZ = ((R() * 2 | 0) - 1) * PI / 2 - PI / 4
+    // uphy_camAngXZ = PI / 4
     placeBlocks();
 
     viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }

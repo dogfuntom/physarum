@@ -124,7 +124,7 @@ float dist(vec3 p) {
             // pb.z -= .5;
             // block = box(pb - vec3(0, 0, .5), vec3(1));
             // pb.zy *= rot(PI / 2.);
-            pb.y+=.25;
+            // pb.y+=.25;
             float eye_ = cyl(pb, vec3(.2, .25, .2), cornerR);
             block = eye_;
             if(eye_ < EPS) {
