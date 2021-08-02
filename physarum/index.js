@@ -19,6 +19,7 @@ const gl = twgl.getWebGLContext(canvas, {
 
 window.addEventListener("click", function (event) {
   if (!mic) {
+    console.log('mic…')
     mic = new Tone.UserMedia();
     micFFT = new Tone.FFT();
     micFFT.set({
@@ -203,7 +204,7 @@ function frame(time) {
   let beat = Array(64).fill(0)
   if (micFFT) {
     beat = micFFT.getValue().map(d => (d * 1000))
-    console.log(beat)
+    // console.log(beat[0])
   }
 
   twgl.resizeCanvasToDisplaySize(gl.canvas)

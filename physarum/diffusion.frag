@@ -19,47 +19,59 @@ float rnd(float x) {
 }
 
 void main() {
-    vec4 val = vec4(0);
+    vec4 val;
+    gl_FragColor = texture2D(u_tex_draw, gl_FragCoord.xy / u_resolution) * DECAY;
 
-//     vec2 R = vec2(0, 1);
-//     val += texture2D(u_tex_draw, gl_FragCoord.xy / u_resolution);
-//     val += texture2D(u_tex_draw, fract((gl_FragCoord.xy + R.xy) / u_resolution)) / 2.;
-//     val += texture2D(u_tex_draw, fract((gl_FragCoord.xy + R.yx) / u_resolution)) / 2.;
-//     val += texture2D(u_tex_draw, fract((gl_FragCoord.xy - R.xy) / u_resolution)) / 2.;
-//     val += texture2D(u_tex_draw, fract((gl_FragCoord.xy - R.yx) / u_resolution)) / 2.;
-//     val /= 3.;
-//    gl_FragColor = val * DECAY;
+// //     vec2 R = vec2(0, 1);
+// //     val += texture2D(u_tex_draw, gl_FragCoord.xy / u_resolution);
+// //     val += texture2D(u_tex_draw, fract((gl_FragCoord.xy + R.xy) / u_resolution)) / 2.;
+// //     val += texture2D(u_tex_draw, fract((gl_FragCoord.xy + R.yx) / u_resolution)) / 2.;
+// //     val += texture2D(u_tex_draw, fract((gl_FragCoord.xy - R.xy) / u_resolution)) / 2.;
+// //     val += texture2D(u_tex_draw, fract((gl_FragCoord.xy - R.yx) / u_resolution)) / 2.;
+// //     val /= 3.;
+// //    gl_FragColor = val * DECAY;
 
-    float k_sum = 0.;
-    for(int i = -DIFFUSE_RADIUS_MAX; i <= DIFFUSE_RADIUS_MAX; i++) {
-        if(abs(float(i)) > DIFFUSE_RADIUS)
-            continue;
-        for(int j = -DIFFUSE_RADIUS_MAX; j <= DIFFUSE_RADIUS_MAX; j++) {
-            if(abs(float(j)) > DIFFUSE_RADIUS)
-                continue;
-            vec2 ij = vec2(i, j);
-            // float k = 1./(length(ij)+1.);
-            float k = 1.;//(length(ij)+1.);
-            val += k * texture2D(u_tex_draw, fract((gl_FragCoord.xy - ij) / u_resolution));
-            k_sum += k;
-        }
-    }
-    gl_FragColor = val / k_sum * DECAY;
+//     float k_sum = 0.;
+//     for(int i = -DIFFUSE_RADIUS_MAX; i <= DIFFUSE_RADIUS_MAX; i++) {
+//         if(abs(float(i)) > DIFFUSE_RADIUS)
+//             continue;
+//         for(int j = -DIFFUSE_RADIUS_MAX; j <= DIFFUSE_RADIUS_MAX; j++) {
+//             if(abs(float(j)) > DIFFUSE_RADIUS)
+//                 continue;
+//             vec2 ij = vec2(i, j);
+//             // float k = 1./(length(ij)+1.);
+//             float k = 1.;//(length(ij)+1.);
+//             val += k * texture2D(u_tex_draw, fract((gl_FragCoord.xy - ij) / u_resolution));
+//             k_sum += k;
+//         }
+//     }
+//     gl_FragColor = val / k_sum * DECAY;
 
-    #define t(uv_) texture2D(u_tex_draw, fract(uv_)).ba
-    vec2 uv = gl_FragCoord.xy / u_resolution, _, px = 1. / u_resolution, v = gl_FragColor.ba, dx, dy, d, delta;
-    float R = 5.*random(uv+u_time);
-    _ = vec2(R + R * rnd(uv.x + .01 * uv.y + u_time), 0.);
-    dx = (-v + (t(uv + px * _) + t(uv + px * -_)) / 2.) / 2.;
-    dy = (-v + (t(uv + px * _.yx) + t(uv + px * -_.yx)) / 2.) / 2.;
-    d = (dx + dy) / 2.;
-    delta.x = Da * d.x - v.x * v.y * v.y + F * (1. - v.x);
-    delta.y = Db * d.y + v.x * v.y * v.y - (K + F) * v.y;
-    gl_FragColor = vec4(1,1,v + delta);
+    // gl_FragColor.rgb-;
+    // gl_FragColor=vec4(0,1,.5,1);
 
+    // // REACTION DIFFUSION
+
+    // #define t(uv_) texture2D(u_tex_draw, fract(uv_)).ba
+    // vec2 uv = gl_FragCoord.xy / u_resolution;
+    // vec2 _;
+    // vec2 px = 1. / u_resolution;
+    // vec2 v = gl_FragColor.ba;
+    // vec2 dx, dy, d, delta;
+
+    // float R = 5.*random(uv+u_time);
+    // _ = vec2(R + R * rnd(uv.x + .01 * uv.y + u_time), 0.);
+    // dx = (-v + (t(uv + px * _) + t(uv + px * -_)) / 2.) / 2.;
+    // dy = (-v + (t(uv + px * _.yx) + t(uv + px * -_.yx)) / 2.) / 2.;
+    // d = (dx + dy) / 2.;
+    // delta.x = Da * d.x - v.x * v.y * v.y + F * (1. - v.x);
+    // delta.y = Db * d.y + v.x * v.y * v.y - (K + F) * v.y;
+    // gl_FragColor = vec4(1,1,v + delta);
+
+    // // BEATS viz
     // for(int i=0;i<64;i++){
     //     if(i == int(gl_FragCoord.x/u_resolution.x*64.))
-    //     gl_FragColor.r = BEAT[i];
+    //     gl_FragColor.b = BEAT[i];
     // }
 
     // gl_FragColor *= smoothstep(1., .9, length((gl_FragCoord.xy * 2. - u_resolution) / u_resolution));
