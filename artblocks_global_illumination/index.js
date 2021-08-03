@@ -12,6 +12,10 @@ let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 - Пингвинчик!
 - Пофиксить глаза раскосые
 - На мобиле чтобы работало
+- Прелудер
+- Скачивалку в большом размере
+- Скачивалку JSON файла
+- Убрать мышиную крутилку
 - Кодгольфнуть глсл
 - Кодгольфнуть жс
 
@@ -43,7 +47,7 @@ const typeBlock = 0, typeCyl = 1, typeBall = 2, typeBeak2x2 = 3, typeBeak2x2Flip
     typeArc = 5, typePillar = 6, typeEye = 7
 const texSolid = 0, texLayers = 1, texGyr = 2
 const texNorm = 2, texAO = 3
-const blocksNumMax = 100
+const blocksNumMax = 60
 let draft = false
 let u_tick = 0
 let m = [0, 0]
@@ -73,7 +77,7 @@ let presets = [
     },
     {
         gs: 10 + (R() * 4 | 0),
-        blocksNumber: 60,
+        blocksNumber: 59,
         fitnessFunctionNumber: 5,
         maxTry: 8,
         extra: 0,
@@ -543,10 +547,10 @@ function draw() {
 
 
 
-function mouseDragged() {
-    u_tick = 0
-    // m[0] = (mouseX / width * 32 | 0) / 32
-    m[0] = mouseX / width
-    m[1] = mouseY / width
-    loop()
-}
+// function mouseDragged() {
+    // u_tick = 0
+    // // m[0] = (mouseX / width * 32 | 0) / 32
+    // m[0] = mouseX / width
+    // m[1] = mouseY / width
+    // loop()
+// }

@@ -1,5 +1,5 @@
 precision highp float;
-#define BLOCKS_NUMBER_MAX 100
+#define BLOCKS_NUMBER_MAX 60
 varying vec2 uv;
 uniform float t;
 uniform int blocksNumber;
