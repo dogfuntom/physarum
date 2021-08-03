@@ -4,7 +4,7 @@ let S, ss, R, t
 // tokenData.hash='0x580000000000000000000000000000000000000000000000000000000000000'
 console.log(tokenData.hash)
 S = Uint32Array.from([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
-let RL = (ar) => ar[ar.length * R() | 0]
+let RL = (ar,p) => ar[ar.length * R()**(p || 1) | 0]
 let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 
 /*
@@ -53,26 +53,26 @@ let draft = false
 let u_tick = 0
 let m = [0, 0]
 let maxMaxTry = 30
-let u_bg_pow = RL([.75, 1, 2, 4])
+let u_bg_pow = RL([4,2,.75,1],.5)
 
 // 0 — usual, 1 — all blocks of the same color, 2 — raibow, 3 — gazya
 let r_colorScheme = (1-Math.sqrt(1-R()**16)) * 4 | 0
 
 let r_studShape = R() ** 8 * 2 | 0
 
-let presetId = Math.sqrt(R())*3 | 0
+let presetId = Math.pow(R(),.3)*3 | 0
 let presets = [
     {
         gs: 8 + R() * 2 | 0,
         blocksNumber: 30,
-        fitnessFunctionNumber: 5,
+        fitnessFunctionNumber: 5, // cage
         maxTry: 8,
         extra: 0,
     },
     {
         gs: 8 + R() * 2 | 0,
         blocksNumber: 30,
-        fitnessFunctionNumber: 3,
+        fitnessFunctionNumber: 3, // shroom
         maxTry: 8,
         extra: R()**4*8,
     },
@@ -81,14 +81,14 @@ let presets = [
         blocksNumber: 10+R() * 10 | 0,
         fitnessFunctionNumber: 2,
         maxTry: 10,
-        extra: 1,
+        extra: R()**4*2,
     },
     {
         gs: 6 + (R() | 0),
         blocksNumber: 10,
         fitnessFunctionNumber: 1,
         maxTry: 4,
-        extra: 1,
+        extra: R()**4*2,
     },
 ]
 
@@ -108,6 +108,8 @@ let groundBlock;
 let blocksHeightMap;
 let palette = RL([
     // // GOOD
+    ["#ddd", "#aaa", "#888", "#555", "#222"],
+    ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
     ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
     ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
     ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
@@ -115,10 +117,8 @@ let palette = RL([
     ["#1f2041","#4b3f72","#ffc857","#119da4","#19647e"],
     ["#540d6e","#ee4266","#ffd23f","#f3fcf0","#1f271b"],
     ["#e4572e", "#29335c", "#f3a712", "#a8c686", "#669bbc"],
-    ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
-    ["#ddd", "#aaa", "#888", "#555", "#222"],
 
-])
+],.8)
 
 function placeBlocks() {
     // groundBlock = 
@@ -227,7 +227,7 @@ function placeBlocks() {
         let bvt
         let bvtInitial = RL(blocksVariants)
         if (n >= blocksNumber - extra && r_colorScheme != 3)
-            bvtInitial = RL(blocksVariantsExtra), fitnessFunctionNumber = 6
+            bvtInitial = RL(blocksVariantsExtra,.7), fitnessFunctionNumber = 6
         // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
         // тот, что лучше подходит под критерий.
         // Открытый вопрос, что делать, если ничего не подошло. Варианты:
