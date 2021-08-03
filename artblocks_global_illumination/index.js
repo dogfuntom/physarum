@@ -4,16 +4,17 @@ let S, ss, R, t
 // tokenData.hash='0x580000000000000000000000000000000000000000000000000000000000000'
 console.log(tokenData.hash)
 S = Uint32Array.from([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
-let RL = (ar,p) => ar[ar.length * R()**(p || 1) | 0]
+let RL = (ar, p) => ar[ar.length * R() ** (p || 1) | 0]
 let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 
 /*
 Баги
+- В цветовые схемы добавить 7 цветов. Можно на бумажке ещё раз записать, какие буду схемы и фичи
 - Пингвинчик!
 - Прелоудер
-- Радуга чтобы ресайзилась под размер модельки
 - На айфоне чтобы работало
-- Правильный подсчёт блоков
+- Попробовать запретить текстуры для больших
+- Решить, текстуры будут меняться в зависимости от цветовой схемы? Например, будет ли цветовая схема «без»
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 - Скачивалку в большом размере
 - Скачивалку JSON файла
@@ -21,6 +22,8 @@ let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 - Кодгольфнуть жс
 
 
+✓ Правильный подсчёт блоков
+✓ Радуга чтобы ресайзилась под размер модельки
 ✓ Убрать мышиную крутилку
 ✓ На мобиле чтобы работало
 ✓ Пофиксить глаза раскосые
@@ -53,14 +56,22 @@ let draft = false
 let u_tick = 0
 let m = [0, 0]
 let maxMaxTry = 30
-let u_bg_pow = RL([4,2,.75,1],.5)
+// let u_bg_pow = RL([4,2,.75,1],.5)
+let u_bg_pow = RL([2, 1], .5)
+let features = { symmetry: 0, studs: 0, colors: 0, height: 0 }
+let height_
+let correctBlocksNumber = 0
 
 // 0 — usual, 1 — all blocks of the same color, 2 — raibow, 3 — gazya
-let r_colorScheme = (1-Math.sqrt(1-R()**16)) * 4 | 0
+let r_colorScheme = (1 - R() ** .5) * 4 | 0
 
 let r_studShape = R() ** 8 * 2 | 0
+u_camAngYZ = .95532
+// u_camAngXZ = ((R() * 3 | 0) - 1) * PI / 4 // includes en-face
+// u_camAngXZ = ((R() * 2 | 0) - 1) * PI / 2 - PI / 4
+u_camAngXZ = ((R() * 2 | 0) - .5) * 3.1415 / 2 - 3.1415
 
-let presetId = Math.pow(R(),.3)*3 | 0
+let presetId = R() ** .3 * 3 | 0
 let presets = [
     {
         gs: 8 + R() * 2 | 0,
@@ -74,25 +85,25 @@ let presets = [
         blocksNumber: 30,
         fitnessFunctionNumber: 3, // shroom
         maxTry: 8,
-        extra: R()**4*8,
+        extra: R() ** 4 * 8,
     },
     {
         gs: 6 + R() * 4 | 0,
-        blocksNumber: 10+R() * 10 | 0,
+        blocksNumber: 10 + R() * 10 | 0,
         fitnessFunctionNumber: 2,
         maxTry: 10,
-        extra: R()**4*2,
+        extra: R() ** 2 * 2,
     },
     {
         gs: 6 + (R() | 0),
         blocksNumber: 10,
         fitnessFunctionNumber: 1,
         maxTry: 4,
-        extra: R()**4*2,
+        extra: R() ** 2 * 2,
     },
 ]
 
-let { gs, blocksNumber, fitnessFunctionNumber, numberOfBlockTypes, maxTry, extra,} = presets[presetId]
+let { gs, blocksNumber, fitnessFunctionNumber, numberOfBlockTypes, maxTry, extra, } = presets[presetId]
 numberOfBlockTypes = 2 + R() * 2 | 0
 
 
@@ -113,12 +124,12 @@ let palette = RL([
     ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
     ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
     ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
-    ["#541388","#d90368","#f1e9da","#2e294e","#ffd400"],
-    ["#1f2041","#4b3f72","#ffc857","#119da4","#19647e"],
-    ["#540d6e","#ee4266","#ffd23f","#f3fcf0","#1f271b"],
+    ["#541388", "#d90368", "#f1e9da", "#2e294e", "#ffd400"],
+    ["#1f2041", "#4b3f72", "#ffc857", "#119da4", "#19647e"],
+    ["#540d6e", "#ee4266", "#ffd23f", "#f3fcf0", "#1f271b"],
     ["#e4572e", "#29335c", "#f3a712", "#a8c686", "#669bbc"],
 
-],.8)
+], .5)
 
 function placeBlocks() {
     // groundBlock = 
@@ -227,7 +238,7 @@ function placeBlocks() {
         let bvt
         let bvtInitial = RL(blocksVariants)
         if (n >= blocksNumber - extra && r_colorScheme != 3)
-            bvtInitial = RL(blocksVariantsExtra,.7), fitnessFunctionNumber = 6
+            bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6
         // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
         // тот, что лучше подходит под критерий.
         // Открытый вопрос, что делать, если ничего не подошло. Варианты:
@@ -246,8 +257,8 @@ function placeBlocks() {
 
             // есть ли смысл тут сделать глубокую копию? Есть. И всё в ней хранить.
             bvt.symX = true
-            bvt.rot = R() * 4|0 // (blockSizeTry.x%2==0 && blockSizeTry.z%2==0)?floor(R(4)):floor(R(2))*2
-            if(bvt.type==typeEye) bvt.rot = 0
+            bvt.rot = R() * 4 | 0 // (blockSizeTry.x%2==0 && blockSizeTry.z%2==0)?floor(R(4)):floor(R(2))*2
+            if (bvt.type == typeEye) bvt.rot = 0
             // if (n == blocksNumber - 1)
             //     bvt.rot = 3//floor(R() * 2)*3
             // Поворачиваем весь blockVariantTry на 90° несколько раз.
@@ -350,7 +361,7 @@ function placeBlocks() {
                 -Math.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]), // mashroom
                 -abs(Math.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]) - gs), // cage
                 -abs(Math.hypot(bvt.pos[0], maxHeightTry * 2, bvt.pos[2]) - gs), // cage: blocksNum = 90, gs = 16
-                maxHeightTry+bvt.pos[2], // eyes
+                maxHeightTry + bvt.pos[2], // eyes
             ]
             fitness = fitnessFunctions[fitnessFunctionNumber]
 
@@ -378,11 +389,17 @@ function placeBlocks() {
                     }
                 }
                 blocks.push(bv)
+                correctBlocksNumber ++
+                if (bv.pos[0] > 0)
+                    correctBlocksNumber++
             } else console.log('bv.pos.y is NaN')
         } else console.log('bv not defined')
     }
     console.log('N BLOCKS', blocks.length, '\n==============================')
     console.log(blocks[0])
+    height_ = Math.max(...disallowedHeightMap.flat())
+    console.log('height_', height_)
+    console.log('correctBlocksNumber', correctBlocksNumber)
 }
 
 
@@ -426,10 +443,6 @@ function setup() {
     if (r_colorScheme == 1) palette = palette.slice(0, 2)
     console.log(palette, 'palette')
 
-    u_camAngYZ = .95532
-    // u_camAngXZ = ((R() * 3 | 0) - 1) * PI / 4 // includes en-face
-    // u_camAngXZ = ((R() * 2 | 0) - 1) * PI / 2 - PI / 4
-    u_camAngXZ = ((R()*2|0)-.5)*PI / 2-PI
     placeBlocks();
 
     viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
@@ -543,6 +556,7 @@ function draw() {
     s.setUniform('r_colorScheme', r_colorScheme)
     s.setUniform('r_studShape', r_studShape)
     s.setUniform('gs', gs)
+    s.setUniform('height', height_)
     // s.setUniform('mouse', [mouseX / width, -mouseY / height])
     rect(0, 0, width, height)
 

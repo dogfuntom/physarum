@@ -18,6 +18,7 @@ uniform vec2 camOffset;
 uniform vec2 camAng;
 uniform int r_colorScheme;
 uniform float gs;
+uniform float height;
 uniform int r_studShape;
 #define PI 3.1415
 #define rnd(x) fract(54321.987 * sin(987.12345 * mod(x,12.34567)))
@@ -200,7 +201,10 @@ void main() {
 
         // pride
         if(r_colorScheme == 2)
-            col = sin(p.y * .5 - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+            // col = sin(p.y*6.28/height+palette[0].r*6.28 - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .4 + .6;
+            col = sin(length(p)/max(gs,height)*6.28*2.  - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+            // p*=.3;
+            // col = sin(8.*dot(sin(p), cos(p.zxy))  - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
 
         if(eye == 1) {
             col = vec3(0);
@@ -211,14 +215,17 @@ void main() {
         }
 
         if(colIds.z == -1) {
-            o=palette[0];
+            o = palette[0];
+            if(r_colorScheme == 2)
+                // o = vec3(o.r*.5);
+                o = vec3(.2);
             if(sin(length(pow(uv_, vec2(u_bg_pow))) * 32.) > 0.)
                 o *= .95;
         } else {
             // shading
-            o = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(vec3(-1, 1, 0))) * .2 + .8) * col;
+            o = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(vec3(0, 1, 1))) * .2 + .8) * col;
             // glare
-            o += pow(dot(norm(p), normalize(vec3(-1, 3, 0))), 40.);
+            o += pow(dot(norm(p), normalize(vec3(0, 3, 1))), 40.);
         }
     }
 
