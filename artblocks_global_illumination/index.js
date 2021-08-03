@@ -63,7 +63,7 @@ let height_
 let correctBlocksNumber = 0
 
 // 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
-let r_colorScheme = (1 - R() ** .5) * 5 | 0
+let r_colorScheme = (1 - R() ** .45) * 5 | 0
 
 let r_studShape = R() ** 8 * 2 | 0
 u_camAngYZ = .95532
@@ -564,8 +564,11 @@ function draw() {
     // s.setUniform('mouse', [mouseX / width, -mouseY / height])
     rect(0, 0, width, height)
 
-    if (u_tick++ > 5e1)
+    if (u_tick++ > 5e1){
         noLoop()
+        // save("power.png")
+        // setTimeout(()=>location.reload(false), 2000)
+    }
 }
 
 
