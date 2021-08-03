@@ -9,6 +9,7 @@ uniform ivec3 colors[BLOCKS_NUMBER_MAX];
 uniform int types[BLOCKS_NUMBER_MAX];
 uniform float rotations[BLOCKS_NUMBER_MAX];
 uniform float u_bg_pow;
+uniform vec2 u_bg_pos;
 uniform vec3 palette[20];
 // uniform vec2 mouse;
 uniform vec2 u_res;
@@ -200,9 +201,9 @@ void main() {
                 col = col2;
 
         // pride
-        if(r_colorScheme == 2)
+        if(r_colorScheme == 3)
             // col = sin(p.y*6.28/height+palette[0].r*6.28 - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .4 + .6;
-            col = sin(length(p)/max(gs,height)*6.28*2.  - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+            col = sin(length(p) / max(gs, height) * 6.28 * 2. - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
             // p*=.3;
             // col = sin(8.*dot(sin(p), cos(p.zxy))  - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
 
@@ -216,7 +217,9 @@ void main() {
 
         if(colIds.z == -1) {
             o = palette[0];
-            if(r_colorScheme == 2)
+            if(length(o) > .4)
+                o *= smoothstep(5., 0., length(uv_ + u_bg_pos));
+            if(r_colorScheme == 3)
                 // o = vec3(o.r*.5);
                 o = vec3(.2);
             if(sin(length(pow(uv_, vec2(u_bg_pow))) * 32.) > 0.)
@@ -230,7 +233,7 @@ void main() {
     }
 
     // gazya
-    if(r_colorScheme == 3)
+    if(r_colorScheme == 4)
         o = (vec3(10. / j));
 
     gl_FragColor = mix(texture2D(backbuffer, uv * vec2(1, -1) * .5 + .5), vec4(o, 1), 1. / (t + 1.));

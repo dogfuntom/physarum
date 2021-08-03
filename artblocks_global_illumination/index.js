@@ -13,8 +13,6 @@ let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 - Пингвинчик!
 - Прелоудер
 - На айфоне чтобы работало
-- Попробовать запретить текстуры для больших
-- Решить, текстуры будут меняться в зависимости от цветовой схемы? Например, будет ли цветовая схема «без»
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 - Скачивалку в большом размере
 - Скачивалку JSON файла
@@ -22,6 +20,8 @@ let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 - Кодгольфнуть жс
 
 
+✓ Попробовать запретить текстуры для больших
+✓ Решить, текстуры будут меняться в зависимости от цветовой схемы? Например, будет ли цветовая схема «без»
 ✓ Правильный подсчёт блоков
 ✓ Радуга чтобы ресайзилась под размер модельки
 ✓ Убрать мышиную крутилку
@@ -62,14 +62,16 @@ let features = { symmetry: 0, studs: 0, colors: 0, height: 0 }
 let height_
 let correctBlocksNumber = 0
 
-// 0 — usual, 1 — all blocks of the same color, 2 — raibow, 3 — gazya
-let r_colorScheme = (1 - R() ** .5) * 4 | 0
+// 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
+let r_colorScheme = (1 - R() ** .5) * 5 | 0
 
 let r_studShape = R() ** 8 * 2 | 0
 u_camAngYZ = .95532
 // u_camAngXZ = ((R() * 3 | 0) - 1) * PI / 4 // includes en-face
 // u_camAngXZ = ((R() * 2 | 0) - 1) * PI / 2 - PI / 4
 u_camAngXZ = ((R() * 2 | 0) - .5) * 3.1415 / 2 - 3.1415
+
+let u_bg_pos=[R()*3-1,-1]
 
 let presetId = R() ** .3 * 3 | 0
 let presets = [
@@ -237,7 +239,7 @@ function placeBlocks() {
         let bv
         let bvt
         let bvtInitial = RL(blocksVariants)
-        if (n >= blocksNumber - extra && r_colorScheme != 3)
+        if (n >= blocksNumber - extra && r_colorScheme != 4)
             bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6
         // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
         // тот, что лучше подходит под критерий.
@@ -252,6 +254,7 @@ function placeBlocks() {
             bvt.color = R() * (palette.length - 1 | 0) + 1
             bvt.color2 = R() * (palette.length - 1 | 0) + 1
             bvt.texture = R() * 4 | 0
+            if(r_colorScheme==1)bvt.texture=0
             // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
             // надо или его копию делать, или ещё чего.
 
@@ -440,7 +443,7 @@ function setup() {
 
     // pixelDensity(1)
     palette = SH(palette)
-    if (r_colorScheme == 1) palette = palette.slice(0, 2)
+    if (r_colorScheme == 2) palette = palette.slice(0, 2)
     console.log(palette, 'palette')
 
     placeBlocks();
@@ -553,6 +556,7 @@ function draw() {
     s.setUniform('camOffset', [viewBox.offset.x, viewBox.offset.y])
     s.setUniform('camAng', [u_camAngYZ, u_camAngXZ - (m[0] * 2 - 1) * TAU])
     s.setUniform('u_bg_pow', u_bg_pow)
+    s.setUniform('u_bg_pos', u_bg_pos)
     s.setUniform('r_colorScheme', r_colorScheme)
     s.setUniform('r_studShape', r_studShape)
     s.setUniform('gs', gs)
