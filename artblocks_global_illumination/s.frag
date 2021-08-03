@@ -222,7 +222,7 @@ void main() {
             if(r_colorScheme == 3)
                 // o = vec3(o.r*.5);
                 o = vec3(.2);
-            if(sin(length(pow(uv_, vec2(u_bg_pow))) * 32.) > 0.)
+            if(sin(length(pow(abs(uv_), vec2(u_bg_pow))) * 32.) > 0.)
                 o *= .95;
         } else {
             // shading
