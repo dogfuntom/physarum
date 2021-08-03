@@ -94,7 +94,7 @@ float dist(vec3 p) {
 
         if(types[i] == 6) { // pillar
             float cyl_ = length(pb.zx) - .15;
-            float sph = cyl(pb + vec3(0, sizes[i].y-.5, 0) / 2., vec3(.2, .25, .2), cornerR);
+            float sph = cyl(pb + vec3(0, sizes[i].y - .5, 0) / 2., vec3(.2, .25, .2), cornerR);
             // float sph = length(pb) - .45;
             block = max(block, min(cyl_, sph));
         }
@@ -106,7 +106,7 @@ float dist(vec3 p) {
             ps.xz += (l - 1.) / 2.;
             ps.xz = ps.xz - clamp(floor(ps.xz + .5), vec2(0.), l - 1.);
             float h = .24;
-            float stud = (r_studShape==1) ? abs(length(ps.xz) - .28 + .05) - .05 : length(ps.xz) - .28;
+            float stud = (r_studShape == 1) ? abs(length(ps.xz) - .28 + .05) - .05 : length(ps.xz) - .28;
             stud = max(stud, abs(ps.y - sizes[i].y / 2. - h / 2.) - h / 2.);
             block = min(stud, block);
         }
@@ -135,7 +135,6 @@ float dist(vec3 p) {
             }
             // block = max(block, min(cyl, sph));
         }
-
 
         if(block < res) {
             res = block;
@@ -204,23 +203,23 @@ void main() {
             col = sin(p.y * .5 - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
 
         if(eye == 1) {
-                col = vec3(0);
-                vec3 pe = p+fract(gs/2.);
-                pe=fract(pe)-.5;
-                col += step(.3, length(pe.xz));
-                col += step(-.1, -length(pe.xz + .1));
+            col = vec3(0);
+            vec3 pe = p + fract(gs / 2.);
+            pe = fract(pe) - .5;
+            col += step(.3, length(pe.xz));
+            col += step(-.1, -length(pe.xz + .1));
         }
-
-        // shading
-        o = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(vec3(-1, 1, 0))) * .2 + .8) * col;
-        // glare
-        o += pow(dot(norm(p), normalize(vec3(-1, 3, 0))), 40.);
 
         if(colIds.z == -1) {
+            o=palette[0];
             if(sin(length(pow(uv_, vec2(u_bg_pow))) * 32.) > 0.)
                 o *= .95;
+        } else {
+            // shading
+            o = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(vec3(-1, 1, 0))) * .2 + .8) * col;
+            // glare
+            o += pow(dot(norm(p), normalize(vec3(-1, 3, 0))), 40.);
         }
-
     }
 
     // gazya
