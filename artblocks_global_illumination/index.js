@@ -10,19 +10,19 @@ let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 /*
 Баги
 - Пингвинчик!
-- Пофиксить глаза раскосые
-- На мобиле чтобы работало
-- Прелудер
+- Прелоудер
+- На айфоне чтобы работало
+- Правильный подсчёт блоков
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 - Скачивалку в большом размере
 - Скачивалку JSON файла
-- Убрать мышиную крутилку
 - Кодгольфнуть глсл
 - Кодгольфнуть жс
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-- Сейчас у всех деталей есть одна и только одна ось симметрии. Но может быть и две!
-- сделать предварительную генерировалку рандомности. Достать список рандомностей и — вперёд
 
+✓ Убрать мышиную крутилку
+✓ На мобиле чтобы работало
+✓ Пофиксить глаза раскосые
 ✓ Аватар фит (квадратные штуки слишком большие)
 ✓ Студшейп
 ✓ глаза!
@@ -59,28 +59,35 @@ let r_colorScheme = (1-Math.sqrt(1-R()**16)) * 4 | 0
 
 let r_studShape = R() ** 8 * 2 | 0
 
-let presetId = (1-Math.sqrt(1-R()**2))*3 | 0
+let presetId = 2//Math.sqrt(1-R())*3 | 0
 let presets = [
     {
-        gs: 6 + (R() | 0),
-        blocksNumber: 10,
-        fitnessFunctionNumber: 1,
-        maxTry: 4,
-        extra: 1,
+        gs: 8 + R() * 2 | 0,
+        blocksNumber: 30,
+        fitnessFunctionNumber: 5,
+        maxTry: 8,
+        extra: 0,
     },
     {
-        gs: 6 + (R() * 4 | 0),
+        gs: 8 + R() * 2 | 0,
+        blocksNumber: 30,
+        fitnessFunctionNumber: 3,
+        maxTry: 8,
+        extra: R()**4*8,
+    },
+    {
+        gs: 6 + R() * 4 | 0,
         blocksNumber: 10+R() * 10 | 0,
         fitnessFunctionNumber: 2,
         maxTry: 10,
         extra: 1,
     },
     {
-        gs: 10 + (R() * 4 | 0),
-        blocksNumber: 59,
-        fitnessFunctionNumber: 5,
-        maxTry: 8,
-        extra: 0,
+        gs: 6 + (R() | 0),
+        blocksNumber: 10,
+        fitnessFunctionNumber: 1,
+        maxTry: 4,
+        extra: 1,
     },
 ]
 
@@ -223,7 +230,7 @@ function placeBlocks() {
         let bv
         let bvt
         let bvtInitial = RL(blocksVariants)
-        if (n >= blocksNumber - extra && r_colorScheme != 3 && R()<.66)
+        if (n >= blocksNumber - extra && r_colorScheme != 3)
             bvtInitial = RL(blocksVariantsExtra), fitnessFunctionNumber = 6
         // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
         // тот, что лучше подходит под критерий.
@@ -244,6 +251,7 @@ function placeBlocks() {
             // есть ли смысл тут сделать глубокую копию? Есть. И всё в ней хранить.
             bvt.symX = true
             bvt.rot = R() * 4|0 // (blockSizeTry.x%2==0 && blockSizeTry.z%2==0)?floor(R(4)):floor(R(2))*2
+            if(bvt.type==typeEye) bvt.rot = 0
             // if (n == blocksNumber - 1)
             //     bvt.rot = 3//floor(R() * 2)*3
             // Поворачиваем весь blockVariantTry на 90° несколько раз.
@@ -378,6 +386,7 @@ function placeBlocks() {
         } else console.log('bv not defined')
     }
     console.log('N BLOCKS', blocks.length, '\n==============================')
+    console.log(blocks[0])
 }
 
 
@@ -537,6 +546,7 @@ function draw() {
     s.setUniform('u_bg_pow', u_bg_pow)
     s.setUniform('r_colorScheme', r_colorScheme)
     s.setUniform('r_studShape', r_studShape)
+    s.setUniform('gs', gs)
     // s.setUniform('mouse', [mouseX / width, -mouseY / height])
     rect(0, 0, width, height)
 

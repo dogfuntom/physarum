@@ -17,6 +17,7 @@ uniform float camScale;
 uniform vec2 camOffset;
 uniform vec2 camAng;
 uniform int r_colorScheme;
+uniform float gs;
 uniform int r_studShape;
 #define PI 3.1415
 #define rnd(x) fract(54321.987 * sin(987.12345 * mod(x,12.34567)))
@@ -59,7 +60,6 @@ vec2 random2f() {
 // }
 
 int eye;
-vec2 eyeTex;
 
 float dist(vec3 p) {
     colIds = ivec3(0, 0, -1);
@@ -136,7 +136,6 @@ float dist(vec3 p) {
             // block = max(block, min(cyl, sph));
         }
 
-        eyeTex = pb.xz;
 
         if(block < res) {
             res = block;
@@ -205,14 +204,11 @@ void main() {
             col = sin(p.y * .5 - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
 
         if(eye == 1) {
-            // col = vec3(step(.5,length(fract(p.xy+vec2( + fract(positions[0].x - sizes[0].x / 2.),0))-.5)));
-            if(length(eyeTex) < 3.3) {
-                eyeTex.y *= sign(p.x);
                 col = vec3(0);
-                // if(length(pb.xz + .2) < .2)
-                col += step(.3, length(eyeTex));
-                col += step(-.1, -length(eyeTex + .1));
-            }
+                vec3 pe = p+fract(gs/2.);
+                pe=fract(pe)-.5;
+                col += step(.3, length(pe.xz));
+                col += step(-.1, -length(pe.xz + .1));
         }
 
         // shading
