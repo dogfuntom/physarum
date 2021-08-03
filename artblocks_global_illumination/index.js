@@ -11,6 +11,7 @@ let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 Баги
 - Пингвинчик!
 - Прелоудер
+- Радуга чтобы ресайзилась под размер модельки
 - На айфоне чтобы работало
 - Правильный подсчёт блоков
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -59,7 +60,7 @@ let r_colorScheme = (1-Math.sqrt(1-R()**16)) * 4 | 0
 
 let r_studShape = R() ** 8 * 2 | 0
 
-let presetId = 2//Math.sqrt(1-R())*3 | 0
+let presetId = Math.sqrt(R())*3 | 0
 let presets = [
     {
         gs: 8 + R() * 2 | 0,
@@ -94,10 +95,6 @@ let presets = [
 let { gs, blocksNumber, fitnessFunctionNumber, numberOfBlockTypes, maxTry, extra,} = presets[presetId]
 numberOfBlockTypes = 2 + R() * 2 | 0
 
-// blocksNumber = 8
-// gs = 6
-// fitnessFunctionNumber = 0
-// maxTry = 1
 
 rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
 
@@ -114,7 +111,6 @@ let palette = RL([
     ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
     ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
     ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
-    ["#495867", "#577399", "#bdd5ea", "#eee", "#fe5f55"], // red gray
     ["#541388","#d90368","#f1e9da","#2e294e","#ffd400"],
     ["#1f2041","#4b3f72","#ffc857","#119da4","#19647e"],
     ["#540d6e","#ee4266","#ffd23f","#f3fcf0","#1f271b"],
@@ -432,8 +428,8 @@ function setup() {
 
     u_camAngYZ = .95532
     // u_camAngXZ = ((R() * 3 | 0) - 1) * PI / 4 // includes en-face
-    u_camAngXZ = ((R() * 2 | 0) - 1) * PI / 2 - PI / 4
-    // uphy_camAngXZ = PI / 4
+    // u_camAngXZ = ((R() * 2 | 0) - 1) * PI / 2 - PI / 4
+    u_camAngXZ = ((R()*2|0)-.5)*PI / 2-PI
     placeBlocks();
 
     viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
