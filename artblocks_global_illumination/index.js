@@ -71,7 +71,7 @@ u_camAngYZ = .95532
 // u_camAngXZ = ((R() * 2 | 0) - 1) * PI / 2 - PI / 4
 u_camAngXZ = ((R() * 2 | 0) - .5) * 3.1415 / 2 - 3.1415
 
-let u_bg_pos=[R()*3-1,-1]
+let u_bg_pos = [R() * 3 - 1, -1]
 
 let presetId = R() ** .3 * 3 | 0
 let presets = [
@@ -254,7 +254,7 @@ function placeBlocks() {
             bvt.color = R() * (palette.length - 1 | 0) + 1
             bvt.color2 = R() * (palette.length - 1 | 0) + 1
             bvt.texture = R() * 4 | 0
-            if(r_colorScheme==1)bvt.texture=0
+            if (r_colorScheme == 1) bvt.texture = 0
             // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
             // надо или его копию делать, или ещё чего.
 
@@ -392,7 +392,7 @@ function placeBlocks() {
                     }
                 }
                 blocks.push(bv)
-                correctBlocksNumber ++
+                correctBlocksNumber++
                 if (bv.pos[0] > 0)
                     correctBlocksNumber++
             } else console.log('bv.pos.y is NaN')
@@ -432,10 +432,15 @@ let rot = (vec, ang) => {
 
 
 
+// function windowResized() {
+//     resized=true
+//     loop()
+// }
 
 
 function setup() {
-    canvas = createCanvas(500, 500, WEBGL)
+    let size=min(windowHeight, windowWidth)
+    canvas = createCanvas(size, size, WEBGL)
 
     sf = sf.join('\n')
     sv = sv.join('\n')
@@ -537,6 +542,15 @@ function setup() {
 
 
 function draw() {
+
+    // if (resized) {
+    //     resizeCanvas(windowWidth, windowHeight)
+    //     b = createGraphics(width, height, WEBGL)
+    //     u_tick = 0
+    //     resized=false
+    // }
+
+
     b.clear();
     b.image(canvas, width * -0.5, height * -0.5, width, height);
     clear();
@@ -564,7 +578,7 @@ function draw() {
     // s.setUniform('mouse', [mouseX / width, -mouseY / height])
     rect(0, 0, width, height)
 
-    if (u_tick++ > 5e1){
+    if (u_tick++ > 5e1) {
         noLoop()
         // save("power.png")
         // setTimeout(()=>location.reload(false), 2000)

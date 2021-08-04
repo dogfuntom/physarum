@@ -157,7 +157,7 @@ void main() {
     gl = 0.;
     float d = 0., e = 1e9, ep, j;
     float camDist = 400.;
-    vec2 uv_ = uv + random2f() * 1.5 / u_res;
+    vec2 uv_ = (uv*u_res/min(u_res.x,u_res.y)) + random2f() * 1.5 / u_res;
     vec3 p, ro = vec3(uv_ * camScale + camOffset, -camDist), rd = vec3(0, 0, .9 + .1 * rnd(length(uv_))), o;
     bool outline = false;
     for(float i = 0.; i < STEPS; i++) {
