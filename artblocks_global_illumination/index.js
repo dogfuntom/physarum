@@ -9,7 +9,7 @@ let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 
 /*
 Баги
-- В цветовые схемы добавить 7 цветов. Можно на бумажке ещё раз записать, какие буду схемы и фичи
+- beak пофиксить: точно резать + пипки не обрезать.
 - Пингвинчик!
 - Прелоудер
 - На айфоне чтобы работало
@@ -20,6 +20,7 @@ let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 - Кодгольфнуть жс
 
 
+✓ В цветовые схемы добавить 7 цветов. Можно на бумажке ещё раз записать, какие буду схемы и фичи
 ✓ Попробовать запретить текстуры для больших
 ✓ Решить, текстуры будут меняться в зависимости от цветовой схемы? Например, будет ли цветовая схема «без»
 ✓ Правильный подсчёт блоков
@@ -44,6 +45,7 @@ let s
 let b
 let sf, sv
 let canvas
+let vertices = []
 let tmp
 let u_bgColor, u_palette, u_colors, u_rotations, u_positions, u_sizes, u_types
 let u_camAngYZ, u_camAngXZ
@@ -61,6 +63,7 @@ let u_bg_pow = RL([2, 1], .5)
 let features = { symmetry: 0, studs: 0, colors: 0, height: 0 }
 let height_
 let correctBlocksNumber = 0
+
 
 // 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
 let r_colorScheme = (1 - R() ** .45) * 5 | 0
@@ -392,6 +395,17 @@ function placeBlocks() {
                     }
                 }
                 blocks.push(bv)
+
+                // push vertices
+                for (let i = 0; i++ < 8;) {
+                    let s = [0, 0, 0].map((_, j) => ((i >> j) & 1) - .5) // permutations, 3 items of {.5, -.5} set
+                    vertices.push([
+                        s[0] * (bv.span[0] + 2 * bv.pos[0]), // pos shouldn't be divided by 2, compensating
+                        s[1] * bv.span[1] + bv.pos[1],
+                        s[2] * bv.span[2] + bv.pos[2]
+                    ])
+                }
+
                 correctBlocksNumber++
                 if (bv.pos[0] > 0)
                     correctBlocksNumber++
@@ -418,10 +432,8 @@ function placeBlocks() {
 let rot = (vec, ang) => {
     var cos = Math.cos(ang);
     var sin = Math.sin(ang);
-    return new Array(
-        vec[0] * cos - vec[1] * sin,
-        vec[0] * sin + vec[1] * cos
-    )
+    return Array(vec[0] * cos - vec[1] * sin,
+        vec[0] * sin + vec[1] * cos)
 }
 
 
@@ -439,7 +451,7 @@ let rot = (vec, ang) => {
 
 
 function setup() {
-    let size=min(windowHeight, windowWidth)
+    let size = min(windowHeight, windowWidth)
     canvas = createCanvas(size, size, WEBGL)
 
     sf = sf.join('\n')
@@ -454,63 +466,19 @@ function setup() {
     placeBlocks();
 
     viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
-    blocks.forEach(b => {
-        // if(b.type==typePillar) return
-
-        let s = { x: b.size[0] / 2, y: b.size[1] / 2, z: b.size[2] / 2, }
-        let vertices = [
-            createVector(s.x, s.y, s.z),
-            createVector(-s.x, s.y, s.z),
-            createVector(s.x, s.y, -s.z),
-            createVector(-s.x, s.y, -s.z),
-            createVector(s.x, -s.y, s.z),
-            createVector(-s.x, -s.y, s.z),
-            createVector(s.x, -s.y, -s.z),
-            createVector(-s.x, -s.y, -s.z),
-        ]
-        vertices.forEach(v => {
-            let pos = v.copy()
-            // console.log(b)
-            pos.x += b.pos[0]
-            pos.y += b.pos[1]
-            pos.z += b.pos[2]
-
-            let xz = rot([pos.x, pos.z], -u_camAngXZ)
-            pos.x = xz[0]
-            pos.z = xz[1]
-            let yz = rot([pos.y, pos.z], -u_camAngYZ) // z is mirrored
-            pos.y = yz[0]
-            pos.z = yz[1]
-            if (pos.x < viewBox.left) viewBox.left = pos.x
-            if (pos.x > viewBox.right) viewBox.right = pos.x
-            if (pos.y < viewBox.bottom) viewBox.bottom = pos.y
-            if (pos.y > viewBox.top) viewBox.top = pos.y
-
-
-            // для отзеркаленного
-            pos = v.copy()
-            pos.x += b.pos[0]
-            pos.y += b.pos[1]
-            pos.z += b.pos[2]
-            pos.x *= -1
-            xz = rot([pos.x, pos.z], -u_camAngXZ)
-            pos.x = xz[0]
-            pos.z = xz[1]
-            yz = rot([pos.y, pos.z], -u_camAngYZ) // z is mirrored
-            pos.y = yz[0]
-            pos.z = yz[1]
-            if (pos.x < viewBox.left) viewBox.left = pos.x
-            if (pos.x > viewBox.right) viewBox.right = pos.x
-            if (pos.y < viewBox.bottom) viewBox.bottom = pos.y
-            if (pos.y > viewBox.top) viewBox.top = pos.y
-        })
+    vertices.forEach(v => {
+        let [x, y, z] = v;
+        [x, z] = rot([x, z], -u_camAngXZ);
+        [y, z] = rot([y, z], -u_camAngYZ)
+        if (x < viewBox.left) viewBox.left = x
+        if (x > viewBox.right) viewBox.right = x
+        if (y < viewBox.bottom) viewBox.bottom = y
+        if (y > viewBox.top) viewBox.top = y
     })
-    // viewBox.left = -viewBox.right
     viewBox.width = viewBox.right - viewBox.left
     viewBox.height = viewBox.top - viewBox.bottom
     viewBox.scale = max(viewBox.width / 1.8, viewBox.height / 1.8, 1)
     viewBox.offset = { x: viewBox.left + viewBox.width / 2, y: viewBox.bottom + viewBox.height / 2 }
-    // viewBox.offset = { x: 0, y: 0 }
 
     b = createGraphics(width, height, WEBGL)
     b.clear()
@@ -578,6 +546,7 @@ function draw() {
     // s.setUniform('mouse', [mouseX / width, -mouseY / height])
     rect(0, 0, width, height)
 
+    console.log(frameCount)
     if (u_tick++ > 5e1) {
         noLoop()
         // save("power.png")
