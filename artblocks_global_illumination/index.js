@@ -64,7 +64,7 @@ let correctBlocksNumber = 0
 
 // 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
 let r_colorScheme = (1 - R() ** .3) * 5 | 0
-console.log('r_colorScheme',r_colorScheme)
+console.log('r_colorScheme', r_colorScheme)
 
 let r_studShape = R() ** 8 * 2 | 0
 u_camAngYZ = .95532
@@ -93,16 +93,16 @@ let preset = RL([
         blocksNumber: 10 + R() * 20 | 0,
         fitnessFunctionNumber: 2,
         maxTry: 6,
-        extra: R() ** 2 * 2,
+        extra: R() * 2,
     },
     {
         gs: 6 + (R() | 0),
         blocksNumber: 10,
         fitnessFunctionNumber: 1,
         maxTry: 4,
-        extra: R() ** 2 * 2,
+        extra: R() * 2,
     },
-],.3)
+], .3)
 
 let { gs, blocksNumber, fitnessFunctionNumber, numberOfBlockTypes, maxTry, extra, } = preset
 numberOfBlockTypes = 2 + R() * 2 | 0
@@ -450,7 +450,7 @@ function setup() {
     let size = min(windowHeight, windowWidth)
     canvas = createCanvas(size, size, WEBGL)
 
-    sf = sf.join('\n')
+    sf = eval('`'+sf.join('\n')+'`')
     sv = sv.join('\n')
     s = createShader(sv, sf)
 
@@ -465,10 +465,10 @@ function setup() {
         let [x, y, z] = v;
         [x, z] = rot([x, z], -u_camAngXZ);
         [y, z] = rot([y, z], -u_camAngYZ)
-        if (x < viewBox.left) viewBox.left = x
-        if (x > viewBox.right) viewBox.right = x
-        if (y < viewBox.bottom) viewBox.bottom = y
-        if (y > viewBox.top) viewBox.top = y
+        viewBox.left = min(x, viewBox.left)
+        viewBox.right = max(x, viewBox.right)
+        viewBox.bottom = min(y, viewBox.bottom)
+        viewBox.top = max(y, viewBox.top)
     })
     viewBox.width = viewBox.right - viewBox.left
     viewBox.height = viewBox.top - viewBox.bottom

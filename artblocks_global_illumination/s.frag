@@ -2,7 +2,6 @@ precision highp float;
 #define BLOCKS_NUMBER_MAX 60
 varying vec2 uv;
 uniform float t;
-uniform int blocksNumber;
 uniform vec3 positions[BLOCKS_NUMBER_MAX];
 uniform vec3 sizes[BLOCKS_NUMBER_MAX];
 uniform ivec3 colors[BLOCKS_NUMBER_MAX];
@@ -18,7 +17,6 @@ uniform float camScale;
 uniform vec2 camOffset;
 uniform vec2 camAng;
 uniform int r_colorScheme;
-uniform float gs;
 uniform float height;
 uniform int r_studShape;
 #define PI 3.1415
@@ -69,7 +67,7 @@ float dist(vec3 p) {
     float res = p.y + 1.; // floor plane
     for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
         eye = 0;
-        if(i >= blocksNumber)
+        if(i >= ${blocksNumber})
             break;
         vec3 pb = p;
         pb -= positions[i];
@@ -203,13 +201,13 @@ void main() {
         // pride
         if(r_colorScheme == 3)
             // col = sin(p.y*6.28/height+palette[0].r*6.28 - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .4 + .6;
-            col = sin(length(p) / max(gs, height) * 6.28 * 2. - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+            col = sin(length(p) / max(${gs}., height) * 6.28 * 2. - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
             // p*=.3;
             // col = sin(8.*dot(sin(p), cos(p.zxy))  - vec3(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
 
         if(eye == 1) {
             col = vec3(0);
-            vec3 pe = p + fract(gs / 2.);
+            vec3 pe = p + fract(${gs}. / 2.);
             pe = fract(pe) - .5;
             col += step(.3, length(pe.xz));
             col += step(-.1, -length(pe.xz + .1));
