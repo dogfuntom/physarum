@@ -16,10 +16,8 @@ let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 - Скачивалку в большом размере
 - Скачивалку JSON файла
-- Кодгольфнуть глсл
-- Кодгольфнуть жс
 
-
+✓ Кодгольфнуть вершины
 ✓ В цветовые схемы добавить 7 цветов. Можно на бумажке ещё раз записать, какие буду схемы и фичи
 ✓ Попробовать запретить текстуры для больших
 ✓ Решить, текстуры будут меняться в зависимости от цветовой схемы? Например, будет ли цветовая схема «без»
@@ -58,7 +56,6 @@ let draft = false
 let u_tick = 0
 let m = [0, 0]
 let maxMaxTry = 30
-// let u_bg_pow = RL([4,2,.75,1],.5)
 let u_bg_pow = RL([2, 1], .5)
 let features = { symmetry: 0, studs: 0, colors: 0, height: 0 }
 let height_
@@ -66,18 +63,17 @@ let correctBlocksNumber = 0
 
 
 // 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
-let r_colorScheme = (1 - R() ** .45) * 5 | 0
+let r_colorScheme = (1 - R() ** .3) * 5 | 0
+console.log('r_colorScheme',r_colorScheme)
 
 let r_studShape = R() ** 8 * 2 | 0
 u_camAngYZ = .95532
-// u_camAngXZ = ((R() * 3 | 0) - 1) * PI / 4 // includes en-face
-// u_camAngXZ = ((R() * 2 | 0) - 1) * PI / 2 - PI / 4
 u_camAngXZ = ((R() * 2 | 0) - .5) * 3.1415 / 2 - 3.1415
 
 let u_bg_pos = [R() * 3 - 1, -1]
 
-let presetId = R() ** .3 * 3 | 0
-let presets = [
+// let presetId = R() ** .3 * 3 | 0
+let preset = RL([
     {
         gs: 8 + R() * 2 | 0,
         blocksNumber: 30,
@@ -94,9 +90,9 @@ let presets = [
     },
     {
         gs: 6 + R() * 4 | 0,
-        blocksNumber: 10 + R() * 10 | 0,
+        blocksNumber: 10 + R() * 20 | 0,
         fitnessFunctionNumber: 2,
-        maxTry: 10,
+        maxTry: 6,
         extra: R() ** 2 * 2,
     },
     {
@@ -106,9 +102,9 @@ let presets = [
         maxTry: 4,
         extra: R() ** 2 * 2,
     },
-]
+],.3)
 
-let { gs, blocksNumber, fitnessFunctionNumber, numberOfBlockTypes, maxTry, extra, } = presets[presetId]
+let { gs, blocksNumber, fitnessFunctionNumber, numberOfBlockTypes, maxTry, extra, } = preset
 numberOfBlockTypes = 2 + R() * 2 | 0
 
 
@@ -461,7 +457,6 @@ function setup() {
     // pixelDensity(1)
     palette = SH(palette)
     if (r_colorScheme == 2) palette = palette.slice(0, 2)
-    console.log(palette, 'palette')
 
     placeBlocks();
 
