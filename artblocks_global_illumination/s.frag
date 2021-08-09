@@ -17,22 +17,13 @@ uniform ivec3 colors[BLOCKS_NUMBER_MAX];
 uniform int types[BLOCKS_NUMBER_MAX];
 uniform float rotations[BLOCKS_NUMBER_MAX];
 uniform V palette[20];
-// uniform v mouse;
-uniform v u_res;
 uniform sampler2D b;
-uniform float camScale;
-uniform v camOffset;
-uniform v camAng;
 uniform float t;
-uniform int r_studShape;
-// float smax(float d1, float d2, float k) {
-//     float h = clamp(.5 - .5 * (d2 - d1) / k, .0, 1.);
-//     return mix(d2, d1, h) + k * h * (1. - h);
-// }
 
 ivec3 colIds;
 float gl;
 float camDist = 400.;
+v u_res = v(${width}, ${height})*${pixelDensity()+1e-6};
 
 
 float cyl(V p, V s, float cornerR) {
@@ -56,10 +47,6 @@ v random2f() {
     rn.y = (rn.y < 0.5) ? a.y : 1.0 - a.y;
     return rn * 2. - 1.;
 }
-
-// v random2f() {
-//     return fract(sin(v(dot(mod(uv + t, 12.3457), v(127.1, 311.7)), dot(mod(uv + t, 12.3457), v(269.5, 183.3)))) * 43758.5453);
-// }
 
 int eye;
 
@@ -108,7 +95,7 @@ float dist(V p) {
             ps.xz += (l - 1.) / 2.;
             ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
             float h = .24;
-            float stud = (r_studShape == 1) ? abs(length(ps.xz) - .28 + .05) - .05 : length(ps.xz) - .28;
+            float stud = (${r_studShape} == 1) ? abs(length(ps.xz) - .28 + .05) - .05 : length(ps.xz) - .28;
             stud = max(stud, abs(ps.y - sizes[i].y / 2. - h / 2.) - h / 2.);
             block = min(stud, block);
         }

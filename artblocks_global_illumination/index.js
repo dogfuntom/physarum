@@ -494,7 +494,7 @@ function draw() {
     b.image(canvas, width * -0.5, height * -0.5, width, height);
     clear();
     shader(s);
-    s.setUniform('u_res', [width * pixelDensity(), height * pixelDensity()])
+    // s.setUniform('u_res', [])
     s.setUniform('b', b)
     s.setUniform('t', u_tick)
     s.setUniform('positions', u_positions)
@@ -503,8 +503,6 @@ function draw() {
     s.setUniform('colors', u_colors)
     s.setUniform('palette', u_palette)
     s.setUniform('types', u_types)
-    // s.setUniform('camOffset', [, viewBox.offset.y])
-    s.setUniform('r_studShape', r_studShape)
     rect(0, 0, width, height)
 
     console.log(u_tick)
