@@ -56,7 +56,7 @@ float dist(V p) {
     float res = p.y + 1.; // floor plane
     for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
         eye = 0;
-        if(i >= ${blocksNumber})
+        if(i >= ${blocks.length})
             break;
         V pb = p;
         pb -= positions[i];
@@ -95,7 +95,7 @@ float dist(V p) {
             ps.xz += (l - 1.) / 2.;
             ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
             float h = .24;
-            float stud = (${r_studShape} == 1) ? abs(length(ps.xz) - .28 + .05) - .05 : length(ps.xz) - .28;
+            float stud = (${features.studs=r_studShape} == 1) ? abs(length(ps.xz) - .28 + .05) - .05 : length(ps.xz) - .28;
             stud = max(stud, abs(ps.y - sizes[i].y / 2. - h / 2.) - h / 2.);
             block = min(stud, block);
         }

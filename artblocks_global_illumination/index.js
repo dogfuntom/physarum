@@ -10,6 +10,7 @@ let M = Math
 /*
 Баги
 - Пингвинчик!
+- Попробовать клюв с цилиндром
 - beak пофиксить: точно резать + пипки не обрезать.
 - Прелоудер
 - На айфоне чтобы работало
@@ -224,7 +225,7 @@ function placeBlocks() {
         let bvt
         let bvtInitial = RL(blocksVariants)
         if (n >= blocksNumber - extra && r_colorScheme != 4)
-            bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6
+            bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6, maxTry=3
         // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
         // тот, что лучше подходит под критерий.
         // Открытый вопрос, что делать, если ничего не подошло. Варианты:
