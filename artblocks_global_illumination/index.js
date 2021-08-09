@@ -63,7 +63,7 @@ let correctBlocksNumber = 0
 
 
 // 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
-let r_colorScheme = (1 - R() ** .3) * 5 | 0
+let r_colorScheme = (1 - R() ** .2) * 5 | 0
 console.log('r_colorScheme', r_colorScheme)
 
 let r_studShape = R() ** 8 * 2 | 0
@@ -481,20 +481,10 @@ function setup() {
 
 
 function draw() {
-
-    // if (resized) {
-    //     resizeCanvas(windowWidth, windowHeight)
-    //     b = createGraphics(width, height, WEBGL)
-    //     u_tick = 0
-    //     resized=false
-    // }
-
-
     b.clear();
     b.image(canvas, width * -0.5, height * -0.5, width, height);
     clear();
     shader(s);
-    // s.setUniform('u_res', [])
     s.setUniform('b', b)
     s.setUniform('t', u_tick)
     s.setUniform('positions', u_positions)
