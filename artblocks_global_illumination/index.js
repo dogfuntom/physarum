@@ -1,6 +1,6 @@
 console.clear();
 let S, ss, R, t
-// tokenData.hash='0x3a2a23408eaa3d9a2c5bb65b1d4ed78da8d65c736e4e75a9bb9f8c1c9c280772'
+// tokenData.hash='0x1cdf923a8065697fd31d9531970bca3445f0d58e3743570b2b8e3ec7d56b4f20'
 // tokenData.hash='0x580000000000000000000000000000000000000000000000000000000000000'
 console.log(tokenData.hash)
 S = Uint32Array.from([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
@@ -9,8 +9,8 @@ let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 let M = Math
 /*
 Баги
-- beak пофиксить: точно резать + пипки не обрезать.
 - Пингвинчик!
+- beak пофиксить: точно резать + пипки не обрезать.
 - Прелоудер
 - На айфоне чтобы работало
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -57,9 +57,8 @@ let u_tick = 1e-6 // so not to turn into int
 let m = [0, 0]
 let maxMaxTry = 30
 let u_bg_pow = RL([2, 1], .5)
-let features = { symmetry: 0, studs: 0, colors: 0, height: 0 }
+let features = { symmetry: 0, studs: 0, colors: 0, height: 0, eyes: 0, aerials: 0, blocksNumber: 0 }
 let height_
-let correctBlocksNumber = 0
 
 
 // 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
@@ -72,33 +71,40 @@ u_camAngXZ = ((R() * 2 | 0) - .5) * 3.1415 / 2 - 3.1415
 
 // let presetId = R() ** .3 * 3 | 0
 let preset = RL([
+    // {
+    //     gs: 8 + R() * 2 | 0,
+    //     blocksNumber: 30,
+    //     fitnessFunctionNumber: 5, // cage
+    //     maxTry: 8,
+    //     extra: 0,
+    // },
+    // {
+    //     gs: 8 + R() * 2 | 0,
+    //     blocksNumber: 30,
+    //     fitnessFunctionNumber: 3, // shroom
+    //     maxTry: 8,
+    //     extra: R() ** 4 * 8,
+    // },
+    // {
+    //     gs: 6 + R() * 4 | 0,
+    //     blocksNumber: 10 + R() * 20 | 0,
+    //     fitnessFunctionNumber: 2,
+    //     maxTry: 6,
+    //     extra: R() * 2,
+    // },
+    // {
+    //     gs: 6 + (R() | 0),
+    //     blocksNumber: 10 + R() * 10 | 0,
+    //     fitnessFunctionNumber: 0,
+    //     maxTry: 4,
+    //     extra: R() ** 2 * 3,
+    // },
     {
-        gs: 8 + R() * 2 | 0,
-        blocksNumber: 30,
-        fitnessFunctionNumber: 5, // cage
-        maxTry: 8,
-        extra: 0,
-    },
-    {
-        gs: 8 + R() * 2 | 0,
-        blocksNumber: 30,
-        fitnessFunctionNumber: 3, // shroom
-        maxTry: 8,
-        extra: R() ** 4 * 8,
-    },
-    {
-        gs: 6 + R() * 4 | 0,
-        blocksNumber: 10 + R() * 20 | 0,
-        fitnessFunctionNumber: 2,
-        maxTry: 6,
-        extra: R() * 2,
-    },
-    {
-        gs: 6 + (R() | 0),
-        blocksNumber: 10 + R() * 10 | 0,
+        gs: 4,
+        blocksNumber: 3 + R() * 4 | 0,
         fitnessFunctionNumber: 0,
         maxTry: 4,
-        extra: R() * 2,
+        extra: 1,
     },
 ], .3)
 
@@ -382,34 +388,19 @@ function placeBlocks() {
                     ])
                 }
 
-                correctBlocksNumber++
+                features.blocksNumber++
                 if (bv.pos[0] > 0)
-                    correctBlocksNumber++
+                    features.blocksNumber++
             } else console.log('bv.pos.y is NaN')
         } else console.log('bv not defined')
     }
     console.log('N BLOCKS', blocks.length, '\n==============================')
-    console.log(blocks[0])
+    console.log(blocks)
     height_ = M.max(...disallowedHeightMap.flat())
     console.log('height_', height_)
-    console.log('correctBlocksNumber', correctBlocksNumber)
+    console.log('features', features)
 }
 
-
-
-
-
-
-
-
-
-
-
-// let rot = (v, a) => {
-//     let c = M.cos(a)
-//     let s = M.sin(a)
-//     return Array(v[0] * c - v[1] * s, v[0] * s + v[1] * c)
-// }
 
 
 
@@ -467,19 +458,6 @@ function setup() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 function draw() {
     b.clear();
     b.image(canvas, width * -0.5, height * -0.5, width, height);
@@ -496,9 +474,9 @@ function draw() {
     rect(0, 0, width, height)
 
     console.log(u_tick)
-    if (u_tick++ > 5e1) {
+    if (u_tick++ > 5e0) {
         noLoop()
-        // save("power.png")
+        // save(`${tokenData.hash}.png`)   
         // setTimeout(()=>location.reload(false), 2000)
     }
 }
