@@ -72,34 +72,34 @@ u_camAngXZ = ((R() * 2 | 0) - .5) * 3.1415 / 2 - 3.1415
 
 // let presetId = R() ** .3 * 3 | 0
 let preset = RL([
-    // {
-    //     gs: 8 + R() * 2 | 0,
-    //     blocksNumber: 30,
-    //     fitnessFunctionNumber: 5, // cage
-    //     maxTry: 8,
-    //     extra: 0,
-    // },
-    // {
-    //     gs: 8 + R() * 2 | 0,
-    //     blocksNumber: 30,
-    //     fitnessFunctionNumber: 3, // shroom
-    //     maxTry: 8,
-    //     extra: R() ** 4 * 8,
-    // },
-    // {
-    //     gs: 6 + R() * 4 | 0,
-    //     blocksNumber: 10 + R() * 20 | 0,
-    //     fitnessFunctionNumber: 2,
-    //     maxTry: 6,
-    //     extra: R() * 2,
-    // },
-    // {
-    //     gs: 6 + (R() | 0),
-    //     blocksNumber: 10 + R() * 10 | 0,
-    //     fitnessFunctionNumber: 0,
-    //     maxTry: 4,
-    //     extra: R() ** 2 * 3,
-    // },
+    {
+        gs: 8 + R() * 2 | 0,
+        blocksNumber: 30,
+        fitnessFunctionNumber: 5, // cage
+        maxTry: 8,
+        extra: 0,
+    },
+    {
+        gs: 8 + R() * 2 | 0,
+        blocksNumber: 30,
+        fitnessFunctionNumber: 3, // shroom
+        maxTry: 8,
+        extra: R() ** 4 * 8,
+    },
+    {
+        gs: 6 + R() * 4 | 0,
+        blocksNumber: 10 + R() * 20 | 0,
+        fitnessFunctionNumber: 2,
+        maxTry: 6,
+        extra: R() * 2,
+    },
+    {
+        gs: 6 + (R() | 0),
+        blocksNumber: 10 + R() * 10 | 0,
+        fitnessFunctionNumber: 0,
+        maxTry: 4,
+        extra: R() ** 2 * 3,
+    },
     {
         gs: 4,
         blocksNumber: 3 + R() * 4 | 0,
@@ -225,7 +225,7 @@ function placeBlocks() {
         let bvt
         let bvtInitial = RL(blocksVariants)
         if (n >= blocksNumber - extra && r_colorScheme != 4)
-            bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6, maxTry=3
+            bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6, maxTry=6
         // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
         // тот, что лучше подходит под критерий.
         // Открытый вопрос, что делать, если ничего не подошло. Варианты:
