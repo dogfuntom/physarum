@@ -97,8 +97,8 @@ let preset = RL([
     },
     {
         gs: 6 + (R() | 0),
-        blocksNumber: 10,
-        fitnessFunctionNumber: 1,
+        blocksNumber: 10 + R() * 10 | 0,
+        fitnessFunctionNumber: 0,
         maxTry: 4,
         extra: R() * 2,
     },
@@ -120,15 +120,15 @@ let groundBlock;
 let blocksHeightMap;
 let palette = RL([
     // // GOOD
-    ["#ddd", "#aaa", "#888", "#555", "#222"],
-    ["#f26b21", "#f78e31", "#fbb040", "#fcec52", "#cbdb47", "#99ca3c", "#208b3a"], // green orange
-    ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"], // colorful
-    ["#e63946", "#f1faee", "#a8dadc", "#457b9d", "#1d3557"], // magenta blue
-    ["#50514f", "#f25f5c", "#ffe066", "#247ba0", "#70c1b3"], // lego
+    ["#ddd", "#888", "#555", "#222", "#aaa"],
+    ["#f26b21", "#f78e31", "#fbb040", "#cbdb47", "#99ca3c", "#208b3a", "#fcec52"], // green orange
+    ["#9b5de5", "#f15bb5", "#00bbf9", "#00f5d4", "#fee440"], // colorful
+    ["#f1faee", "#a8dadc", "#457b9d", "#1d3557", "#e63946"], // magenta blue
+    ["#50514f", "#f25f5c", "#247ba0", "#70c1b3", "#ffe066"], // lego
     ["#541388", "#d90368", "#f1e9da", "#2e294e", "#ffd400"],
-    ["#1f2041", "#4b3f72", "#ffc857", "#119da4", "#19647e"],
-    ["#540d6e", "#ee4266", "#ffd23f", "#f3fcf0", "#1f271b"],
-    ["#e4572e", "#29335c", "#f3a712", "#a8c686", "#669bbc"],
+    ["#1f2041", "#4b3f72", "#119da4", "#19647e", "#ffc857"],
+    ["#540d6e", "#ee4266", "#f3fcf0", "#1f271b", "#ffd23f"],
+    ["#e4572e", "#29335c", "#a8c686", "#669bbc", "#f3a712"],
 
 ], .5)
 
@@ -146,61 +146,44 @@ function placeBlocks() {
         { // beak
             size: [2, 1, 2],
             maskTop: [[0, 1], [0, 1]],
-            maskBottom: [[1, 1], [1, 1]],
             type: typeBeak2x2,
         },
         { // beak flipped
             size: [2, 1, 2],
-            maskTop: [[1, 1], [1, 1]],
             maskBottom: [[0, 1], [0, 1]],
             type: typeBeak2x2Flipped,
         },
         { // 4x2
             size: [2, 1, 4],
-            maskTop: [[1, 1, 1, 1,], [1, 1, 1, 1,]],
-            maskBottom: [[1, 1, 1, 1,], [1, 1, 1, 1,]],
             type: typeBlock,
         },
         { // 3x2
             size: [2, 1, 3],
-            maskTop: [[1, 1, 1,], [1, 1, 1,]],
-            maskBottom: [[1, 1, 1,], [1, 1, 1,]],
             type: typeBlock,
         },
         { // 6x1
             size: [1, 1, 6],
-            maskTop: [[1, 1, 1, 1, 1, 1,]],
-            maskBottom: [[1, 1, 1, 1, 1, 1,]],
             type: typeBlock,
         },
         { // arc
             size: [1, 2, 3],
-            maskTop: [[1, 1, 1]],
             maskBottom: [[1, 0, 1]],
             type: typeArc,
         },
         { // line
             size: [1, 1, 3],
-            maskTop: [[1, 1, 1]],
-            maskBottom: [[1, 1, 1]],
             type: typeBlock,
         },
         { // block
             size: [2, 1, 2],
-            maskTop: [[1, 1], [1, 1]],
-            maskBottom: [[1, 1], [1, 1]],
             type: typeBlock,
         },
         { // 1x1
             size: [1, 1, 1],
-            maskTop: [[1]],
-            maskBottom: [[1]],
             type: typeBlock,
         },
         { // 1x1 but high
             size: [1, 2, 1],
-            maskTop: [[1]],
-            maskBottom: [[1]],
             type: typeBlock,
         },
 
@@ -210,13 +193,11 @@ function placeBlocks() {
         { // Pillar
             size: [1, 4, 1],
             maskTop: [[0]],
-            maskBottom: [[1]],
             type: typePillar,
         },
         { // eye
             size: [1, .5, 1],
             maskTop: [[0]],
-            maskBottom: [[1]],
             type: typeEye,
         },
     ])
@@ -261,8 +242,9 @@ function placeBlocks() {
             bvt.symX = true
             bvt.rot = R() * 4 | 0 // (blockSizeTry.x%2==0 && blockSizeTry.z%2==0)?floor(R(4)):floor(R(2))*2
             if (bvt.type == typeEye) bvt.rot = 0
-            // if (n == blocksNumber - 1)
-            //     bvt.rot = 3//floor(R() * 2)*3
+            let makeMask = () => [...Array(bvt.size[0])].map(() => Array(bvt.size[2]).fill(1))
+            bvt.maskBottom = bvt.maskBottom || makeMask()
+            bvt.maskTop = bvt.maskTop || makeMask()
             // Поворачиваем весь blockVariantTry на 90° несколько раз.
             // Далее ротейт будет использоваться только для передачи в юниформ.
             bvt.span = [...bvt.size]
@@ -386,7 +368,7 @@ function placeBlocks() {
                         let bz = floor(bi / bv.span[0])
                         bi++
                         blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv.size[1]
-                        if (bv.maskTop[bx][bz] == 0) blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = -Infinity
+                        if (bv.maskTop[bx][bz] == 0) blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = -99
                         disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv.size[1]
                     }
                 }
@@ -450,12 +432,14 @@ function setup() {
     let size = min(windowHeight, windowWidth)
     canvas = createCanvas(size, size, WEBGL)
 
-    sf = eval('`'+sf.join('\n')+'`')
+    sf = eval('`' + sf.join('\n') + '`')
     sv = sv.join('\n')
     s = createShader(sv, sf)
 
     // pixelDensity(1)
+    let badColor = palette.pop()
     palette = SH(palette)
+    palette.push(badColor)
     if (r_colorScheme == 2) palette = palette.slice(0, 2)
 
     placeBlocks();
