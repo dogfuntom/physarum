@@ -6,7 +6,7 @@ console.log(tokenData.hash)
 S = Uint32Array.from([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
 let RL = (ar, p) => ar[ar.length * R() ** (p || 1) | 0]
 let SH = (ar) => { return ar.sort(() => R() - 0.5) }
-
+let M = Math
 /*
 Баги
 - beak пофиксить: точно резать + пипки не обрезать.
@@ -53,7 +53,7 @@ const texSolid = 0, texLayers = 1, texGyr = 2
 const texNorm = 2, texAO = 3
 const blocksNumMax = 60
 let draft = false
-let u_tick = 0
+let u_tick = 1e-6 // so not to turn into int
 let m = [0, 0]
 let maxMaxTry = 30
 let u_bg_pow = RL([2, 1], .5)
@@ -69,8 +69,6 @@ console.log('r_colorScheme', r_colorScheme)
 let r_studShape = R() ** 8 * 2 | 0
 u_camAngYZ = .95532
 u_camAngXZ = ((R() * 2 | 0) - .5) * 3.1415 / 2 - 3.1415
-
-let u_bg_pos = [R() * 3 - 1, -1]
 
 // let presetId = R() ** .3 * 3 | 0
 let preset = RL([
@@ -242,7 +240,7 @@ function placeBlocks() {
             bvt.symX = true
             bvt.rot = R() * 4 | 0 // (blockSizeTry.x%2==0 && blockSizeTry.z%2==0)?floor(R(4)):floor(R(2))*2
             if (bvt.type == typeEye) bvt.rot = 0
-            let makeMask = () => [...Array(bvt.size[0])].map(() => Array(bvt.size[2]).fill(1))
+            let makeMask = () => Array(9).fill(Array(9).fill(1))
             bvt.maskBottom = bvt.maskBottom || makeMask()
             bvt.maskTop = bvt.maskTop || makeMask()
             // Поворачиваем весь blockVariantTry на 90° несколько раз.
@@ -340,11 +338,11 @@ function placeBlocks() {
 
             let fitnessFunctions = [
                 0, // any
-                -Math.hypot(bvt.pos[0], bvt.pos[2]), // high, bn 16 gs 10
+                -M.hypot(bvt.pos[0], bvt.pos[2]), // high, bn 16 gs 10
                 -maxHeightTry, // low
-                -Math.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]), // mashroom
-                -abs(Math.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]) - gs), // cage
-                -abs(Math.hypot(bvt.pos[0], maxHeightTry * 2, bvt.pos[2]) - gs), // cage: blocksNum = 90, gs = 16
+                -M.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]), // mashroom
+                -abs(M.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]) - gs), // cage
+                -abs(M.hypot(bvt.pos[0], maxHeightTry * 2, bvt.pos[2]) - gs), // cage: blocksNum = 90, gs = 16
                 maxHeightTry + bvt.pos[2], // eyes
             ]
             fitness = fitnessFunctions[fitnessFunctionNumber]
@@ -392,7 +390,7 @@ function placeBlocks() {
     }
     console.log('N BLOCKS', blocks.length, '\n==============================')
     console.log(blocks[0])
-    height_ = Math.max(...disallowedHeightMap.flat())
+    height_ = M.max(...disallowedHeightMap.flat())
     console.log('height_', height_)
     console.log('correctBlocksNumber', correctBlocksNumber)
 }
@@ -407,34 +405,23 @@ function placeBlocks() {
 
 
 
-let rot = (vec, ang) => {
-    var cos = Math.cos(ang);
-    var sin = Math.sin(ang);
-    return Array(vec[0] * cos - vec[1] * sin,
-        vec[0] * sin + vec[1] * cos)
-}
-
-
-
-
-
-
-
-
-
-// function windowResized() {
-//     resized=true
-//     loop()
+// let rot = (v, a) => {
+//     let c = M.cos(a)
+//     let s = M.sin(a)
+//     return Array(v[0] * c - v[1] * s, v[0] * s + v[1] * c)
 // }
+
+
+
+
+
+
+
 
 
 function setup() {
     let size = min(windowHeight, windowWidth)
     canvas = createCanvas(size, size, WEBGL)
-
-    sf = eval('`' + sf.join('\n') + '`')
-    sv = sv.join('\n')
-    s = createShader(sv, sf)
 
     // pixelDensity(1)
     let badColor = palette.pop()
@@ -445,10 +432,11 @@ function setup() {
     placeBlocks();
 
     viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
+    let rot = (x, y, a) => [x * cos(a) - y * sin(a), x * sin(a) + y * cos(a)]
     vertices.forEach(v => {
         let [x, y, z] = v;
-        [x, z] = rot([x, z], -u_camAngXZ);
-        [y, z] = rot([y, z], -u_camAngYZ)
+        [x, z] = rot(x, z, -u_camAngXZ);
+        [y, z] = rot(y, z, -u_camAngYZ)
         viewBox.left = min(x, viewBox.left)
         viewBox.right = max(x, viewBox.right)
         viewBox.bottom = min(y, viewBox.bottom)
@@ -467,6 +455,10 @@ function setup() {
     u_colors = blocks.map(b => [b.color, b.color2, b.texture]).flat()
     u_types = blocks.map(b => b.type)
     u_rotations = blocks.map(b => b.rot)
+
+    sf = eval('`' + sf.join('\n') + '`')
+    sv = sv.join('\n')
+    s = createShader(sv, sf)
 }
 
 
@@ -503,43 +495,22 @@ function draw() {
     clear();
     shader(s);
     s.setUniform('u_res', [width * pixelDensity(), height * pixelDensity()])
+    s.setUniform('b', b)
     s.setUniform('t', u_tick)
-    s.setUniform('backbuffer', b)
-    s.setUniform('blocksNumber', blocks.length)
     s.setUniform('positions', u_positions)
     s.setUniform('sizes', u_sizes)
     s.setUniform('rotations', u_rotations)
     s.setUniform('colors', u_colors)
     s.setUniform('palette', u_palette)
     s.setUniform('types', u_types)
-    s.setUniform('gridSize', gridSize.x)
-    s.setUniform('camScale', viewBox.scale / 1)
-    s.setUniform('camOffset', [viewBox.offset.x, viewBox.offset.y])
-    s.setUniform('camAng', [u_camAngYZ, u_camAngXZ - (m[0] * 2 - 1) * TAU])
-    s.setUniform('u_bg_pow', u_bg_pow)
-    s.setUniform('u_bg_pos', u_bg_pos)
-    s.setUniform('r_colorScheme', r_colorScheme)
+    // s.setUniform('camOffset', [, viewBox.offset.y])
     s.setUniform('r_studShape', r_studShape)
-    s.setUniform('gs', gs)
-    s.setUniform('height', height_)
-    // s.setUniform('mouse', [mouseX / width, -mouseY / height])
     rect(0, 0, width, height)
 
-    console.log(frameCount)
+    console.log(u_tick)
     if (u_tick++ > 5e1) {
         noLoop()
         // save("power.png")
         // setTimeout(()=>location.reload(false), 2000)
     }
 }
-
-
-
-
-// function mouseDragged() {
-    // u_tick = 0
-    // // m[0] = (mouseX / width * 32 | 0) / 32
-    // m[0] = mouseX / width
-    // m[1] = mouseY / width
-    // loop()
-// }
