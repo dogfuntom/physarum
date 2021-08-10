@@ -1,23 +1,25 @@
 console.clear();
 let S, ss, R, t
-// tokenData.hash='0x1cdf923a8065697fd31d9531970bca3445f0d58e3743570b2b8e3ec7d56b4f20'
-// tokenData.hash='0x580000000000000000000000000000000000000000000000000000000000000'
+if(window.location.hash) {
+    tokenData.hash = window.location.hash.slice(1)
+  }
 console.log(tokenData.hash)
 S = Uint32Array.from([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
 let RL = (ar, p) => ar[ar.length * R() ** (p || 1) | 0]
 let SH = (ar) => { return ar.sort(() => R() - 0.5) }
 let M = Math
+
 /*
 Баги
 - Пингвинчик!
-- Попробовать клюв с цилиндром
-- beak пофиксить: точно резать + пипки не обрезать.
 - Прелоудер
 - На айфоне чтобы работало
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 - Скачивалку в большом размере
 - Скачивалку JSON файла
 
+✓ beak пофиксить: точно резать + пипки не обрезать.
+✓ Попробовать клюв с цилиндром
 ✓ Кодгольфнуть вершины
 ✓ В цветовые схемы добавить 7 цветов. Можно на бумажке ещё раз записать, какие буду схемы и фичи
 ✓ Попробовать запретить текстуры для больших
@@ -58,15 +60,26 @@ let u_tick = 1e-6 // so not to turn into int
 let m = [0, 0]
 let maxMaxTry = 30
 let u_bg_pow = RL([2, 1], .5)
-let features = { symmetry: 0, studs: 0, colors: 0, height: 0, eyes: 0, aerials: 0, blocksNumber: 0 }
+let features = {
+    symmetry: 0, 
+    studs: 0, 
+    palette: 0, 
+    // 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
+    colorScheme: (1 - R() ** .2) * 5 | 0,
+    layout: 0,
+    height: 0,
+    eyes: 0,
+    aerials: 0, 
+    blocksNumber: 0,
+    bgType: u_bg_pow,
+    bgLight: R() * 3 - 1,
+ }
 let height_
 
 
-// 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
-let r_colorScheme = (1 - R() ** .2) * 5 | 0
-console.log('r_colorScheme', r_colorScheme)
+console.log('features.colorScheme', features.colorScheme)
 
-let r_studShape = R() ** 8 * 2 | 0
+features.studs = R() ** 8 * 2 | 0
 u_camAngYZ = .95532
 u_camAngXZ = ((R() * 2 | 0) - .5) * 3.1415 / 2 - 3.1415
 
@@ -78,6 +91,13 @@ let preset = RL([
         fitnessFunctionNumber: 5, // cage
         maxTry: 8,
         extra: 0,
+    },
+    { // cutie
+        gs: 4,
+        blocksNumber: 3 + R() * 4 | 0,
+        fitnessFunctionNumber: 0,
+        maxTry: 4,
+        extra: 1,
     },
     {
         gs: 8 + R() * 2 | 0,
@@ -99,13 +119,6 @@ let preset = RL([
         fitnessFunctionNumber: 0,
         maxTry: 4,
         extra: R() ** 2 * 3,
-    },
-    {
-        gs: 4,
-        blocksNumber: 3 + R() * 4 | 0,
-        fitnessFunctionNumber: 0,
-        maxTry: 4,
-        extra: 1,
     },
 ], .3)
 
@@ -224,7 +237,7 @@ function placeBlocks() {
         let bv
         let bvt
         let bvtInitial = RL(blocksVariants)
-        if (n >= blocksNumber - extra && r_colorScheme != 4)
+        if (n >= blocksNumber - extra && features.colorScheme != 4)
             bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6, maxTry=6
         // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
         // тот, что лучше подходит под критерий.
@@ -239,7 +252,7 @@ function placeBlocks() {
             bvt.color = R() * (palette.length - 1 | 0) + 1
             bvt.color2 = R() * (palette.length - 1 | 0) + 1
             bvt.texture = R() * 4 | 0
-            if (r_colorScheme == 1) bvt.texture = 0
+            if (features.colorScheme == 1) bvt.texture = 0
             // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
             // надо или его копию делать, или ещё чего.
 
@@ -419,7 +432,7 @@ function setup() {
     let badColor = palette.pop()
     palette = SH(palette)
     palette.push(badColor)
-    if (r_colorScheme == 2) palette = palette.slice(0, 2)
+    if (features.colorScheme == 2) palette = palette.slice(0, 2)
 
     placeBlocks();
 
@@ -451,6 +464,8 @@ function setup() {
     sf = eval('`' + sf.join('\n') + '`')
     sv = sv.join('\n')
     s = createShader(sv, sf)
+
+    // console.log()
 }
 
 
@@ -477,7 +492,8 @@ function draw() {
     console.log(u_tick)
     if (u_tick++ > 5e0) {
         noLoop()
-        // save(`${tokenData.hash}.png`)   
+        // save(`${tokenData.hash}.png`)
+        // canvas.remove()
         // setTimeout(()=>location.reload(false), 2000)
     }
 }

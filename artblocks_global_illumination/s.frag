@@ -9,6 +9,8 @@ precision highp float;
 #define STEPS 4e2
 #define EPS .001
 #define box(p,s) (length(p - clamp(p, -(s)/2., (s)/2.)) - cornerR * 1.4)
+#define sabs(p) sqrt(abs(p)*abs(p)+.00005)
+#define smax(a,b) (a+b+sabs(a-b))*.5
 
 varying v uv;
 uniform V positions[BLOCKS_NUMBER_MAX];
@@ -95,20 +97,54 @@ float dist(V p) {
             ps.xz += (l - 1.) / 2.;
             ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
             float h = .24;
-            float stud = (${features.studs=r_studShape} == 1) ? abs(length(ps.xz) - .28 + .05) - .05 : length(ps.xz) - .28;
+            float stud = (${features.studs} == 1) ? abs(length(ps.xz) - .28 + .05) - .05 : length(ps.xz) - .28;
             stud = max(stud, abs(ps.y - sizes[i].y / 2. - h / 2.) - h / 2.);
             block = min(stud, block);
         }
 
-        if(types[i] == 3 || types[i] == 4) { // beak
-            // pb.z *= -1.;
-            V pe = pb;
-            pe.z += .55;
-            pe.yz *= rot(PI * .26);
-            if(types[i] == 3)
-                pe.yz *= rot(-PI / 2.);
-            block = max(block, -pe.z);
+        // // rounded slopes
+        // if (pb.z<0.){
+        //     if(types[i] == 3) { // beak
+        //         block=max(block, length(pb.zy+v(0,sizes[i].y/2.))-1.);
+        //     }
+        //     if(types[i] == 4) { // beak down
+        //         block=max(block, length(pb.zy-v(0,sizes[i].y/2.))-1.);
+        //     }
+        // }
+
+        // old slopes
+        // if(types[i] == 3 || types[i] == 4) { // beak
+        //     // pb.z *= -1.;
+        //     V pe = pb;
+        //     pe.z += .55;
+        //     pe.yz *= rot(PI * .26);
+        //     // if(types[i] == 3)
+        //     //     pe.yz *= rot(-PI / 2.);
+        //     block = max(block, -pe.z);
+        // }
+
+        // if(types[i] == 3 || types[i] == 4) { // beak
+        //     if (pb.z<0.){
+        //         // pb*=1.0;
+        //         float s = 1.4142;
+        //         pb.zy+=vec2(1,.5);
+        //         pb.zy*=rot(-PI/4.);
+        //         vec2 n=vec2(0,1)*rot(-PI/8.);
+        //         // vec2 n=vec2(.3827,.9238);
+        //         pb.zy-=2.*min(.0,dot(pb.zy,n))*n;
+        //         pb.zy.x-=s;
+        //         n*=rot(-PI*1.5);
+        //         pb.zy-=2.*min(.0,dot(pb.zy,n))*n;
+        //         pb.zy-=clamp(pb.zy,-s,0.);
+        //         block = max(length(pb.zy)/2., block);
+        //         // block = length(pb.zy);
+        //     }
+        // }
+
+        if(pb.z<0.15 && (types[i] == 3 || types[i] == 4)) { // beak
+            block = smax(block, (-pb.z*.8-(types[i] == 3 ? -1. : 1.)*pb.y-.5)/1.4142);
         }
+
 
         if(types[i] == 7) { // eye
             // pb.z -= .5;
@@ -187,7 +223,7 @@ void main() {
                 col = col2;
 
         // pride
-        if(${r_colorScheme} == 3)
+        if(${features.colorScheme} == 3)
             col = sin(length(p) / max(float(${gs}), float(${height_})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
             // p*=.3;
             // col = sin(8.*dot(sin(p), cos(p.zxy))  - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
@@ -203,8 +239,8 @@ void main() {
         if(colIds.z == -1) {
             o = palette[0];
             if(length(o) > .4)
-                o *= smoothstep(5., 0., length(uv_ + v(${R() * 3 - 1}, -1)));
-            if(${r_colorScheme} == 3)
+                o *= smoothstep(5., 0., length(uv_ + v(${features.bgLight}, -1)));
+            if(${features.colorScheme} == 3)
                 // o = V(o.r*.5);
                 o = V(.2);
             if(sin(length(pow(abs(uv_), v(${u_bg_pow}))) * 32.) > 0.)
@@ -218,7 +254,7 @@ void main() {
     }
 
     // gazya
-    if(${r_colorScheme} == 4)
+    if(${features.colorScheme} == 4)
         o = (V(10. / j));
 
     gl_FragColor = mix(texture2D(b, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (t + 1.));
