@@ -1,8 +1,8 @@
 console.clear();
 let S, ss, R, t
-if(window.location.hash) {
+if (window.location.hash) {
     tokenData.hash = window.location.hash.slice(1)
-  }
+}
 console.log(tokenData.hash)
 S = Uint32Array.from([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
 let RL = (ar, p) => ar[ar.length * R() ** (p || 1) | 0]
@@ -61,30 +61,26 @@ let m = [0, 0]
 let maxMaxTry = 30
 let u_bg_pow = RL([2, 1], .5)
 let features = {
-    symmetry: 0, 
-    studs: 0, 
-    palette: 0, 
+    symmetry: R() ** 4. * 2 | 0,
+    studs: R() ** 8 * 2 | 0,
+    palette: 0,
     // 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
     colorScheme: (1 - R() ** .2) * 5 | 0,
     layout: 0,
     height: 0,
     eyes: 0,
-    aerials: 0, 
+    aerials: 0,
     blocksNumber: 0,
     bgType: u_bg_pow,
     bgLight: R() * 3 - 1,
- }
-let height_
+}
 
 
-console.log('features.colorScheme', features.colorScheme)
 
-features.studs = R() ** 8 * 2 | 0
 u_camAngYZ = .95532
-u_camAngXZ = ((R() * 2 | 0) - .5) * 3.1415 / 2 - 3.1415
+u_camAngXZ = ((features.symmetry) - .5) * 3.1415 / 2 - 3.1415
 
-// let presetId = R() ** .3 * 3 | 0
-let preset = RL([
+let presets = [
     {
         gs: 8 + R() * 2 | 0,
         blocksNumber: 30,
@@ -120,9 +116,10 @@ let preset = RL([
         maxTry: 4,
         extra: R() ** 2 * 3,
     },
-], .3)
+]
+features.layout = R() ** .3 * presets.length | 0
 
-let { gs, blocksNumber, fitnessFunctionNumber, numberOfBlockTypes, maxTry, extra, } = preset
+let { gs, blocksNumber, fitnessFunctionNumber, numberOfBlockTypes, maxTry, extra, } = presets[features.layout]
 numberOfBlockTypes = 2 + R() * 2 | 0
 
 
@@ -238,7 +235,7 @@ function placeBlocks() {
         let bvt
         let bvtInitial = RL(blocksVariants)
         if (n >= blocksNumber - extra && features.colorScheme != 4)
-            bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6, maxTry=6
+            bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6, maxTry = 6
         // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
         // тот, что лучше подходит под критерий.
         // Открытый вопрос, что делать, если ничего не подошло. Варианты:
@@ -403,16 +400,21 @@ function placeBlocks() {
                 }
 
                 features.blocksNumber++
-                if (bv.pos[0] > 0)
+                if (bv.type == typeEye) features.eyes++
+                if (bv.type == typePillar) features.aerials++
+                if (bv.pos[0] > 0) {
                     features.blocksNumber++
+                    if (bv.type == typeEye) features.eyes++
+                    if (bv.type == typePillar) features.aerials++
+                }
             } else console.log('bv.pos.y is NaN')
         } else console.log('bv not defined')
     }
     console.log('N BLOCKS', blocks.length, '\n==============================')
     console.log(blocks)
-    height_ = M.max(...disallowedHeightMap.flat())
-    console.log('height_', height_)
-    console.log('features', features)
+    features.height = M.max(...disallowedHeightMap.flat())
+    // console.log('height_', height_)
+    // console.log('features', features)
 }
 
 
