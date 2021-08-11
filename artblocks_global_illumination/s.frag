@@ -180,7 +180,10 @@ void main() {
     gl = 0.;
     float d = 0., e = 1e9, ep, j;
     v uv_ = (uv*u_res/min(u_res.x,u_res.y)) + random2f() * 1.5 / u_res;
-    V p, ro = V(uv_ * ${viewBox.scale} + v(${viewBox.offset.x}, ${viewBox.offset.y}), -camDist), rd = V(0, 0, .9 + .1 * rnd(length(uv_))), o;
+    V p, ro = V(uv_ * ${viewBox.scale} + 
+    v(${viewBox.offset.x}, 
+    ${viewBox.offset.y}), -camDist), 
+    rd = V(0, 0, .9 + .1 * rnd(length(uv_))), o;
     bool outline = false;
     for(float i = 0.; i < STEPS; i++) {
         j = i;
@@ -224,7 +227,7 @@ void main() {
 
         // pride
         if(${features.colorScheme} == 3)
-            col = sin(length(p) / max(float(${gs}), float(${height_})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+            col = sin(length(p) / max(float(${gs}), float(${features.height})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
             // p*=.3;
             // col = sin(8.*dot(sin(p), cos(p.zxy))  - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
 
@@ -243,7 +246,7 @@ void main() {
             if(${features.colorScheme} == 3)
                 // o = V(o.r*.5);
                 o = V(.2);
-            if(sin(length(pow(abs(uv_), v(${u_bg_pow}))) * 32.) > 0.)
+            if(sin(length(pow(abs(uv_), v(${features.bgType}))) * 32.) > 0.)
                 o *= .95;
         } else {
             // shading
