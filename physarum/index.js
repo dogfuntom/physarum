@@ -1,6 +1,14 @@
+/*
+fix mic
+osc
+*/
+
 'use strict'
 let twgl = require('twgl.js')
 const dat = require('dat.gui')
+// const osc = require('osc')
+// const express = require("express")
+// const WebSocket = require("ws")
 import * as Tone from 'tone'
 let micFFT, mic
 const canvas = document.getElementById('canvasgl')
@@ -12,7 +20,78 @@ const gl = twgl.getWebGLContext(canvas, {
   // alpha: false,
 })
 
+// // OSC
 
+// var getIPAddresses = function () {
+//     var os = require("os"),
+//         interfaces = os.networkInterfaces(),
+//         ipAddresses = [];
+
+//     for (var deviceName in interfaces) {
+//         var addresses = interfaces[deviceName];
+//         for (var i = 0; i < addresses.length; i++) {
+//             var addressInfo = addresses[i];
+//             if (addressInfo.family === "IPv4" && !addressInfo.internal) {
+//                 ipAddresses.push(addressInfo.address);
+//             }
+//         }
+//     }
+
+//     return ipAddresses;
+// };
+
+// // Bind to a UDP socket to listen for incoming OSC events.
+// var udpPort = new osc.UDPPort({
+//     localAddress: "0.0.0.0",
+//     localPort: 57121
+// });
+
+// udpPort.on("ready", function () {
+//     var ipAddresses = getIPAddresses();
+//     console.log("Listening for OSC over UDP.");
+//     ipAddresses.forEach(function (address) {
+//         console.log(" Host:", address + ", Port:", udpPort.options.localPort);
+//     });
+//     console.log("To start the demo, go to http://localhost:8081 in your web browser.");
+// });
+
+// udpPort.open();
+
+// // Create an Express-based Web Socket server to which OSC messages will be relayed.
+// var appResources = __dirname + "/web",
+//     app = express(),
+//     server = app.listen(1234),
+//     wss = new WebSocket.Server({
+//         server: server
+//     });
+
+// app.use("/", express.static(appResources));
+// wss.on("connection", function (socket) {
+//     console.log("A Web Socket connection has been established!");
+//     var socketPort = new osc.WebSocketPort({
+//         socket: socket
+//     });
+
+//     var relay = new osc.Relay(udpPort, socketPort, {
+//         raw: true
+//     });
+// });
+
+
+// var webSocketServer = require('ws');
+import WebSocket from 'ws';
+
+console.log(WebSocket)
+
+// const wss = new WebSocketServer({ port: 8080 });
+
+// wss.on('connection', function connection(ws) {
+//   ws.on('message', function incoming(message) {
+//     console.log('received: %s', message);
+//   });
+
+//   ws.send('something');
+// });
 
 
 
