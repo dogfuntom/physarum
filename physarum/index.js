@@ -6,11 +6,8 @@ osc
 'use strict'
 let twgl = require('twgl.js')
 const dat = require('dat.gui')
-// const osc = require('osc')
-// const express = require("express")
-// const WebSocket = require("ws")
 import * as Tone from 'tone'
-let micFFT, mic
+let micFFT, mic, beat
 const canvas = document.getElementById('canvasgl')
 const gl = twgl.getWebGLContext(canvas, {
   antialias: true,
@@ -20,95 +17,76 @@ const gl = twgl.getWebGLContext(canvas, {
   // alpha: false,
 })
 
-// // OSC
+// OSC
+var socket = new WebSocket("ws://127.0.0.1:8080");
 
-// var getIPAddresses = function () {
-//     var os = require("os"),
-//         interfaces = os.networkInterfaces(),
-//         ipAddresses = [];
+socket.onopen = function () {
+  console.log("Connected!");
+};
 
-//     for (var deviceName in interfaces) {
-//         var addresses = interfaces[deviceName];
-//         for (var i = 0; i < addresses.length; i++) {
-//             var addressInfo = addresses[i];
-//             if (addressInfo.family === "IPv4" && !addressInfo.internal) {
-//                 ipAddresses.push(addressInfo.address);
-//             }
-//         }
-//     }
-
-//     return ipAddresses;
-// };
-
-// // Bind to a UDP socket to listen for incoming OSC events.
-// var udpPort = new osc.UDPPort({
-//     localAddress: "0.0.0.0",
-//     localPort: 57121
-// });
-
-// udpPort.on("ready", function () {
-//     var ipAddresses = getIPAddresses();
-//     console.log("Listening for OSC over UDP.");
-//     ipAddresses.forEach(function (address) {
-//         console.log(" Host:", address + ", Port:", udpPort.options.localPort);
-//     });
-//     console.log("To start the demo, go to http://localhost:8081 in your web browser.");
-// });
-
-// udpPort.open();
-
-// // Create an Express-based Web Socket server to which OSC messages will be relayed.
-// var appResources = __dirname + "/web",
-//     app = express(),
-//     server = app.listen(1234),
-//     wss = new WebSocket.Server({
-//         server: server
-//     });
-
-// app.use("/", express.static(appResources));
-// wss.on("connection", function (socket) {
-//     console.log("A Web Socket connection has been established!");
-//     var socketPort = new osc.WebSocketPort({
-//         socket: socket
-//     });
-
-//     var relay = new osc.Relay(udpPort, socketPort, {
-//         raw: true
-//     });
-// });
-
-
-// var webSocketServer = require('ws');
-import WebSocket from 'ws';
-
-console.log(WebSocket)
-
-// const wss = new WebSocketServer({ port: 8080 });
-
-// wss.on('connection', function connection(ws) {
-//   ws.on('message', function incoming(message) {
-//     console.log('received: %s', message);
-//   });
-
-//   ws.send('something');
-// });
-
-
-
-
-window.addEventListener("click", function (event) {
-  if (!mic) {
-    console.log('mic…')
-    mic = new Tone.UserMedia();
-    micFFT = new Tone.FFT();
-    micFFT.set({
-      normalRange: true,
-      size: 64,
-    })
-    mic.connect(micFFT);
-    mic.open()
-    frame()
+socket.onclose = function (event) {
+  if (event.wasClean) {
+    console.log('Connection was closed and its okay');
+  } else {
+    console.log('Connection closed. Anything alright?'); // for example websocket server offline
   }
+  console.log('Code: ' + event.code + ' Reason: ' + event.reason);
+};
+
+socket.onmessage = function (event) {
+  try {
+    const data = JSON.parse(event.data);
+
+    let name = data.address.split('/').pop()
+    let value = data.args[0].value
+    console.log("OSC", name, value)
+
+    // if this control has its peer in gui, we set min-max values form there
+    let guiControllersFiltered = gui.__controllers.filter(c => c.property == name)
+    if (guiControllersFiltered.length > 0) {
+      value *= guiControllersFiltered[0].__max - guiControllersFiltered[0].__min
+      value += guiControllersFiltered[0].__min
+    }
+
+    // add only if this exist in obj
+    if (Object.keys(obj).includes(name)) { obj[name] = value } else { console.log(`no "${name}" key in obj`, Object.keys(obj)) }
+
+  } catch (e) {
+    console.error('Can\'t recognize. Is data an object?', e);
+  }
+};
+
+socket.onerror = function (error) {
+  console.log("Error " + error.message);
+};
+
+
+
+
+
+
+if (!mic) {
+  console.log('mic…')
+  mic = new Tone.UserMedia()
+  micFFT = new Tone.FFT()
+  micFFT.set({
+    normalRange: true,
+    size: 64,
+    debug: true,
+  })
+  mic.connect(micFFT)
+}
+else {
+  console.log(mic)
+}
+document.querySelector('#button-start').addEventListener("click", function (event) {
+  mic.open().then(() => {
+    console.log("mic is open!")
+    document.querySelector('#button-start').remove()
+    setTimeout(animate,30)
+  }).catch(e => {
+    console.log("mic not open", e)
+  })
 })
 
 
@@ -131,7 +109,6 @@ var obj = {
   ANGLE_SPREAD: .1,
   STEP_SIZE: .1,
   DECAY: .5,
-  DIFFUSE_RADIUS: 2,
   DEPOSITE: .001,
   // SENCE_MIN: .001,
   // SENCE_MAX: 1,
@@ -157,17 +134,17 @@ var obj = {
 }
 
 gui.remember(obj)
-let ld = gui.add(obj, 'LOOKUP_DIST').min(0).max(.1).step(0.0001)
-gui.add(obj, 'STEP_SIZE').min(0.00001).max(.1).step(0.0001)
-gui.add(obj, 'FRICTION').min(0).max(.9999).step(0.0001)
-gui.add(obj, 'LOOKUP_ANGLE').min(0).max(Math.PI * 2.).step(0.001)
-gui.add(obj, 'TURN_ANGLE').min(0).max(Math.PI * 2.).step(0.001)
-gui.add(obj, 'ANGLE_SPREAD').min(0).max(Math.PI).step(0.001)
-gui.add(obj, 'DEPOSITE').min(0).max(.00001).step(.00000001)
-gui.add(obj, 'DECAY').min(0).max(1).step(0.001)
-// gui.add(obj, 'SENCE_MIN').min(0).max(.0001).step(.000001)
-// gui.add(obj, 'REPULSION').min(0).max(100000).step(.000001)
-gui.add(obj, 'BEAT_MULT').min(0).max(50).step(.001)
+let ld = gui.add(obj, 'LOOKUP_DIST').min(0).max(.1).step(0.0001).listen()
+gui.add(obj, 'STEP_SIZE').min(0.00001).max(.1).step(0.0001).listen()
+gui.add(obj, 'FRICTION').min(0).max(.9999).step(0.0001).listen()
+gui.add(obj, 'LOOKUP_ANGLE').min(0).max(Math.PI * 2.).step(0.001).listen()
+gui.add(obj, 'TURN_ANGLE').min(0).max(Math.PI * 2.).step(0.001).listen()
+gui.add(obj, 'ANGLE_SPREAD').min(0).max(Math.PI).step(0.001).listen()
+gui.add(obj, 'DEPOSITE').min(0).max(.00001).step(.00000001).listen()
+gui.add(obj, 'DECAY').min(0).max(1).step(0.001).listen()
+// gui.add(obj, 'SENCE_MIN').min(0).max(.0001).step(.000001).listen()
+// gui.add(obj, 'REPULSION').min(0).max(100000).step(.000001).listen()
+gui.add(obj, 'BEAT_MULT').min(0).max(50).step(.001).listen()
 // gui.add(obj, 'SENSE_ADD').min(-.0001).max(.0001).step(.0000001)
 gui.add(obj, 'RES').min(2).max(3000).step(1).onFinishChange(
   function () {
@@ -176,13 +153,16 @@ gui.add(obj, 'RES').min(2).max(3000).step(1).onFinishChange(
     draw2 = twgl.createFramebufferInfo(gl, attachments, size, size)
   }
 )
-gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(5).step(1)
-gui.add(obj, 'RESPAWN_P').min(0).max(.1).step(.000001)
-// gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(10).step(1)
-gui.add(obj, 'LIGHTNESS').min(1).max(1000).step(1)
+gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(5).step(1).listen()
+gui.add(obj, 'RESPAWN_P').min(0).max(.1).step(.000001).listen()
+// gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(10).step(1).listen()
+gui.add(obj, 'LIGHTNESS').min(1).max(1000).step(1).listen()
 // gui.add(obj, 'record')
 gui.add(obj, 'randomize')
 
+
+
+// console.log()
 
 const mousepos = [0, 0]
 
@@ -280,10 +260,13 @@ let temp
 gl.enable(gl.BLEND)
 function frame(time) {
   time = new Date() / 1000 - timeStart
-  let beat = Array(64).fill(0)
+
+  beat = Array(64).fill(0)
+  console.log('micFFT.getValue()', micFFT.getValue())
+  console.log('mic', mic)
   if (micFFT) {
     beat = micFFT.getValue().map(d => (d * 1000))
-    // console.log(beat[0])
+    console.log('beat[0]', beat[0])
   }
 
   twgl.resizeCanvasToDisplaySize(gl.canvas)
@@ -383,10 +366,10 @@ function frame(time) {
 //   requestAnimationFrame(animate)
 // })(0);
 
-(function animate(now) {
+function animate(now) {
   frame()
   requestAnimationFrame(animate)
-})(0);
+}
 
 
 function setMousePos(e) {
