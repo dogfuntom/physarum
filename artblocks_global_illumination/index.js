@@ -418,6 +418,16 @@ function placeBlocks() {
     features.height = M.max(...disallowedHeightMap.flat())
     // console.log('height_', height_)
     // console.log('features', features)
+    // blocks=[]
+    // blocks.push({
+    //     type: 0,
+    //     size:[1,2,3],
+    //     pos: [0,0,0],
+    //     rot: 0,
+    //     color: 1,
+    //     color2: 1,
+    //     texture: 1,
+    // })
 }
 
 let findViewBox = () => {
@@ -467,7 +477,6 @@ function setup() {
     placeBlocks()
 
     findViewBox()
-
 
     u_sizes = blocks.map(b => b.size).flat()
     u_positions = blocks.map(b => b.pos).flat()
