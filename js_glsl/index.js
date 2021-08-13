@@ -12,7 +12,7 @@ let M = Math
 let rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
 
 
-let preloader,preloaderSize
+let preloader, preloaderSize
 const typeBlock = 0, typeCyl = 1, typeBall = 2, typeBeak2x2 = 3, typeBeak2x2Flipped = 4,
     typeArc = 5, typePillar = 6, typeEye = 7
 const texSolid = 0, texLayers = 1, texGyr = 2
@@ -25,7 +25,7 @@ let s, sf, sv, b, canvas
 let u_palette, u_colors, u_rotations, u_positions, u_sizes, u_types
 let gs, blocksNumber, fitnessFunctionNumber, maxTry, extra, numberOfBlockTypes
 let features
-let blocksHeightMap,disallowedHeightMap;
+let blocksHeightMap, disallowedHeightMap;
 let blocks
 let vertices
 let palette
@@ -90,7 +90,7 @@ let init = () => {
         aerials: 0,
         blocksNumber: 0,
         bgType: RL([2, 1], .5),
-        bgLight: R() * 3 - 1|0,
+        bgLight: R() * 3 - 1 | 0,
     }
 
     u_camAngXZ = ((features.symmetry) - .5) * 3.1415 / 2 - 3.1415
@@ -204,7 +204,7 @@ function placeBlocks() {
             type: typeBlock,
         },
 
-    ].filter(d=>d.size[2]<gs)).slice(0, numberOfBlockTypes)
+    ].filter(d => d.size[2] < gs)).slice(0, numberOfBlockTypes)
 
     let blocksVariantsExtra = SH([
         { // Pillar
@@ -230,188 +230,28 @@ function placeBlocks() {
         .fill()
         .map(() => Array(gs).fill(0))
 
-    for (let n = 0; n < blocksNumber; n++) {
-        let maxHeight = 0
-        let fitness, maxFitness = -9e9
-        let bv
-        let bvt
-        let extra=false
-        let bvtInitial = RL(blocksVariants)
-        if (n >= blocksNumber - extra && features.colorScheme != 4)
-            bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6, maxTry = 6, extra=true
-        // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
-        // тот, что лучше подходит под критерий.
-        // Открытый вопрос, что делать, если ничего не подошло. Варианты:
-        // - добиться редкости случаев, когда пазл не сложился.
-        //   И в этом случае тупо всё сначала начинать с новым сидом.
-        // - сперва кидать самые большие детали, чтобы не вышло, что я положил один штырь, и никто не может к нему прицепиться
-        // - засчитывать только те попытки, когда деталь не нарушает правил. Иначе упрёмся в безысходный максимум.
-
-        for (let try_ = 0; try_ < maxTry; try_++) {
-            bvt = JSON.parse(JSON.stringify(bvtInitial))
-            bvt.color = R() * (palette.length - 1 | 0) + 1
-            bvt.color2 = R() * (palette.length - 1 | 0) + 1
-            bvt.texture = R() * 4 | 0
-            if (features.colorScheme == 1) bvt.texture = 0
-            // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
-            // надо или его копию делать, или ещё чего.
-
-            // есть ли смысл тут сделать глубокую копию? Есть. И всё в ней хранить.
-            bvt.symX = true
-            bvt.rot = R() * 4 | 0 // (blockSizeTry.x%2==0 && blockSizeTry.z%2==0)?floor(R(4)):floor(R(2))*2
-            if (bvt.type == typeEye) bvt.rot = 0
-            let makeMask = () => Array(9).fill(Array(9).fill(1))
-            bvt.maskBottom = bvt.maskBottom || makeMask()
-            bvt.maskTop = bvt.maskTop || makeMask()
-            // Поворачиваем весь blockVariantTry на 90° несколько раз.
-            // Далее ротейт будет использоваться только для передачи в юниформ.
-            bvt.span = [...bvt.size]
-            for (let i = 0; i < bvt.rot; i++) {
-                // flipping sizes
-                // тут косяк. До этого мы деталь не крутили, только размеры подгоняли.
-                // теперь надо крутить, но размеры оставлять тут правильными. А вот координаты углов можно 
-                // ставить с учётом повотора.
-                bvt.span.reverse()
-                //rotating matrices
-                bvt.maskBottom = rotArray(bvt.maskBottom)
-                bvt.maskTop = rotArray(bvt.maskTop)
-                bvt.symX = !bvt.symX
-            }
-            // интерраптинг, иф не влезло
-            if (bvt.span[0] > gs / 2) {
-                // console.log(bvt.span[0], 'is longer than ', gs)
-                if (maxTry < maxMaxTry) maxTry++; continue // можно макс макс трай убрать, если макс трай не очень мелкий
-            }
-            ///////////////////////////////////////////////////////////////////////////////////////////
-            ///////////////////////////////////////////////////////////////////////////////////////////
-            ///////////////////////////////////////////////////////////////////////////////////////////
-            if (gs % 2 == 0)
-                bvt.pos = [
-                    bvt.span[0] / 2 + (R() * (gs / 2 + 1 - bvt.span[0]) | 0),
-                    0,
-                    - gs / 2 + bvt.span[2] / 2 + (R() * (gs + 1 - bvt.span[2]) | 0),
-                ]
-            else {
-                bvt.pos = [
-                    bvt.span[0] / 2 + (R() * ((gs - 1) / 2 + 1 - bvt.span[0]) | 0) + .5,
-                    0,
-                    // - (gs - 1) / 2 + bvt.span[2] / 2 + (R() * (gs - 1 + 1 + 1 - bvt.span[2]) | 0) + .5-1,
-                    - gs / 2 + bvt.span[2] / 2 + (R() * (gs + 1 - bvt.span[2]) | 0),
-                ]
-            }
-            if (bvt.span[0] % 2 == gs % 2 && R() < 1 / (gs - bvt.span[0]))
-                if (bvt.span[0] % 2 || bvt.symX) // если чётное число пупырок, надо чтобы ось симетрии совпадала
-                    bvt.pos[0] = 0
-            // тут можно циклы выкинуть
-            let studL = 0
-            let studR = 0
-            let xx = [...Array(bvt.span[0])].map((d, i) => bvt.pos[0] + i - (bvt.span[0] - 1.) / 2)
-            let zz = [...Array(bvt.span[2])].map((d, i) => bvt.pos[2] + i - (bvt.span[2] - 1.) / 2)
-            for (let x of xx) {
-                for (let z of zz) {
-                    if (x >= 0) studR++;
-                    else studL++;
-                }
-            }
-
-            // if (
-            //     // блок про симметрию симметрии
-            //     (
-            //         (studL == 0) || // деталь не попала на ось симметрии
-            //         (studR == studL && bvt.symX)
-            //     )
-            //     //  && // стоит ровно посередине, ось симметрии совпадает
-            //     // bvt.span[0] <= gs &&
-            //     // bvt.span[2] <= gs
-            // ) { }
-            // else {
-            //     if(maxTry<maxMaxTry)maxTry++;
-            //     continue
-            // }
-
-            // debugger
-
-            let maxHeightTry = 0;
-            let maxHeightTryLikeWithoutBottomHoles = 0;
-            let maxDisallowedHeightTry = 0;
-            let bi = 0
-            for (let z of zz) {
-                for (let x of xx) {
-                    let bx = bi % bvt.span[0]
-                    let bz = floor(bi / bvt.span[0])
-                    bi++
-                    maxHeightTryLikeWithoutBottomHoles = max(maxHeightTryLikeWithoutBottomHoles, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
-                    maxDisallowedHeightTry = max(maxDisallowedHeightTry, disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
-                    if (bvt.maskBottom[bx][bz] == 1) { // если посчитать только те, что с 1 внизу, высота не должна отличаться от той, что считается для всех клеток
-                        maxHeightTry = max(maxHeightTry, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
-                    }
-                }
-            }
-            if (maxHeightTry < maxDisallowedHeightTry) {
-                if (maxTry < maxMaxTry) maxTry++; continue;
-            }
-            if (maxHeightTry > maxHeightTryLikeWithoutBottomHoles) {
-                if (maxTry < maxMaxTry) maxTry++; continue;
-            }
-            // TODO possible endless lop here!
-
-
-            let fitnessFunctions = [
-                0, // any
-                -M.hypot(bvt.pos[0], bvt.pos[2]), // high, bn 16 gs 10
-                -maxHeightTry, // low
-                -M.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]), // mashroom
-                -abs(M.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]) - gs), // cage
-                -abs(M.hypot(bvt.pos[0], maxHeightTry * 2, bvt.pos[2]) - gs), // cage: blocksNum = 90, gs = 16
-                maxHeightTry * 2. + bvt.pos[2], // eyes
-            ]
-            fitness = fitnessFunctions[fitnessFunctionNumber]
-
-            if (fitness > maxFitness || try_ == 0) {
-                maxFitness = fitness // maxfitness не нужен, если  || try_==0
-                maxHeight = maxHeightTry
-                bv = bvt
-            }
+    for (let n = 0; n < 10; n++) {
+        let bv = {
+            pos: [R()*20, R()*50, R()*20],
+            size: [R()*10+5, R()*20+5, R()*10+5],
+            rot: 0,
+            type: 0,
+            color: R()*palette.length|0,
+            color2: R()*palette.length|0,
+            texture: R()*4|0,
         }
-        if (bv) {
-            bv.pos[1] = maxHeight + bv.size[1] / 2;
-            if (bv.pos[1]) {
-                if(bv.pos[1]==0)continue // eyes on the froor are prohibited
-                let xx = Array(bv.span[0]).fill().map((d, i) => bv.pos[0] + i - (bv.span[0] - 1.) / 2)
-                let zz = Array(bv.span[2]).fill().map((d, i) => bv.pos[2] + i - (bv.span[2] - 1.) / 2)
-                let bi = 0
-                for (let z of zz) {
-                    for (let x of xx) {
-                        let bx = bi % bv.span[0]
-                        let bz = floor(bi / bv.span[0])
-                        bi++
-                        blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv.size[1]
-                        if (bv.maskTop[bx][bz] == 0) blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = -99
-                        disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv.size[1]
-                    }
-                }
-                blocks.push(bv)
+        bv.span=bv.size
+        blocks.push(bv)
 
-                // push vertices
-                for (let i = 0; i++ < 8;) {
-                    let s = [0, 0, 0].map((_, j) => ((i >> j) & 1) - .5) // permutations, 3 items of {.5, -.5} set
-                    vertices.push([
-                        s[0] * (bv.span[0] + 2 * bv.pos[0]), // pos shouldn't be divided by 2, compensating
-                        s[1] * bv.span[1] + bv.pos[1],
-                        s[2] * bv.span[2] + bv.pos[2]
-                    ])
-                }
-
-                features.blocksNumber++
-                if (bv.type == typeEye) features.eyes++
-                if (bv.type == typePillar) features.aerials++
-                if (bv.pos[0] > 0) {
-                    features.blocksNumber++
-                    if (bv.type == typeEye) features.eyes++
-                    if (bv.type == typePillar) features.aerials++
-                }
-            } else console.log('bv.pos.y is NaN')
-        } else console.log('bv not defined')
+        // push vertices
+        for (let i = 0; i++ < 8;) {
+            let s = [0, 0, 0].map((_, j) => ((i >> j) & 1) - .5) // permutations, 3 items of {.5, -.5} set
+            vertices.push([
+                s[0] * (bv.span[0] + 2 * bv.pos[0]), // pos shouldn't be divided by 2, compensating
+                s[1] * bv.span[1] + bv.pos[1],
+                s[2] * bv.span[2] + bv.pos[2]
+            ])
+        }
     }
     console.log('N BLOCKS', blocks.length, '\n==============================')
     console.log(blocks)
@@ -461,11 +301,11 @@ function preload() {
 
 function setup() {
 
-    let size = 400//min(windowHeight, windowWidth)
+    let size = min(windowHeight, windowWidth)
     canvas = createCanvas(size, size, WEBGL)
     b = createGraphics(width, height, WEBGL)
     // tokenData.hash=arr.pop().hash
-    
+
     // Below part needs changing if hash changes
 
     // pixelDensity(1)
@@ -487,15 +327,15 @@ function setup() {
 
     s = createShader(sv.join('\n'), eval('`' + sf.join('\n') + '`'))
 
-    preloaderSize=document.querySelector('canvas').getBoundingClientRect()
+    preloaderSize = document.querySelector('canvas').getBoundingClientRect()
     console.log(preloaderSize)
     preloader = document.body.appendChild(document.createElement('div'))
-    preloader.style.position='absolute'
-    preloader.style.left=preloaderSize.x
-    preloader.style.top=preloaderSize.bottom-preloaderSize.height
-    preloader.style.height=preloaderSize.height
-    preloader.style.width=preloaderSize.width
-    preloader.style.background='#0004'
+    preloader.style.position = 'absolute'
+    preloader.style.left = preloaderSize.x
+    preloader.style.top = preloaderSize.bottom - preloaderSize.height
+    preloader.style.height = preloaderSize.height
+    preloader.style.width = preloaderSize.width
+    preloader.style.background = '#0004'
 
     loop()
 }
@@ -522,8 +362,8 @@ function draw() {
     rect(0, 0, width, height)
 
     console.log(u_tick)
-    preloader.style.width=preloaderSize.width * (1-u_tick / 5e1)
-    preloader.style.left=preloaderSize.x + preloaderSize.width * (u_tick / 5e1)
+    preloader.style.width = preloaderSize.width * (1 - u_tick / 5e1)
+    preloader.style.left = preloaderSize.x + preloaderSize.width * (u_tick / 5e1)
 
     if (u_tick++ > 5e1) {
         preloader.remove()

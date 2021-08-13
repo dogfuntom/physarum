@@ -9,8 +9,9 @@ precision highp float;
 #define STEPS 4e2
 #define EPS .001
 #define box(p,s) (length(p - clamp(p, -(s)/2., (s)/2.)) - cornerR * 1.4)
-#define sabs(p) sqrt(abs(p)*abs(p)+.00005)
+#define sabs(p) sqrt(abs(p)*abs(p)+10.)
 #define smax(a,b) (a+b+sabs(a-b))*.5
+#define smin(a,b) (a+b-sabs(a-b))*.5
 
 varying v uv;
 uniform V positions[BLOCKS_NUMBER_MAX];
@@ -53,8 +54,8 @@ v random2f() {
 int eye;
 
 float dist(V p) {
-    colIds = ivec3(0, 0, -1);
-    p.x = abs(p.x);
+    // colIds = ivec3(0, 0, -1);
+    p.x = sabs(p.x);
     float res = p.y + 1.; // floor plane
     for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
         eye = 0;
@@ -88,18 +89,6 @@ float dist(V p) {
             float sph = cyl(pb + V(0, sizes[i].y - .5, 0) / 2., V(.2, .25, .2), cornerR);
             // float sph = length(pb) - .45;
             block = max(block, min(cyl_, sph));
-        }
-
-        // studs
-        if(types[i] != 6) {
-            V ps = pb;
-            v l = sizes[i].xz;
-            ps.xz += (l - 1.) / 2.;
-            ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
-            float h = .24;
-            float stud = (${features.studs} == 1) ? abs(length(ps.xz) - .28 + .05) - .05 : length(ps.xz) - .28;
-            stud = max(stud, abs(ps.y - sizes[i].y / 2. - h / 2.) - h / 2.);
-            block = min(stud, block);
         }
 
         // // rounded slopes
@@ -161,10 +150,11 @@ float dist(V p) {
             // block = max(block, min(cyl, sph));
         }
 
-        if(block < res) {
-            res = block;
+        res=smin(res,block);
+        // if(block < res) {
+            // res = block;
             colIds = colors[i];
-        }
+        // }
         if(res < EPS)
             break;
     }
@@ -226,8 +216,8 @@ void main() {
                 col = col2;
 
         // pride
-        if(${features.colorScheme} == 3)
-            col = sin(length(p) / max(float(${gs}), float(${features.height})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+        // if(${features.colorScheme} == 3)
+            col = sin(length(p) / 60. / max(float(${gs}), float(${features.height})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
             // p*=.3;
             // col = sin(8.*dot(sin(p), cos(p.zxy))  - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
 
