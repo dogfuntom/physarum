@@ -66,7 +66,7 @@ float dist(V p) {
 
         // box
         float cornerR = .01;//.025;//.05;
-        float gap = .01;
+        float gap = .008;
         float block;
         if(types[i] == 0 || types[i] == 3 || types[i] == 4 || types[i] == 5 || types[i] == 6 || types[i] == 7) {
             block = box(pb, sizes[i] - 2. * (cornerR + gap));
