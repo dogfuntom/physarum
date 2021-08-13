@@ -483,10 +483,10 @@ function setup() {
     preloader = document.body.appendChild(document.createElement('div'))
     preloader.style.position='absolute'
     preloader.style.left=preloaderSize.x
-    preloader.style.top=preloaderSize.bottom-preloaderSize.height/100
-    preloader.style.height=preloaderSize.height/100
-    preloader.style.width=0
-    preloader.style.background='#fff9'
+    preloader.style.top=preloaderSize.bottom-preloaderSize.height
+    preloader.style.height=preloaderSize.height
+    preloader.style.width=preloaderSize.width
+    preloader.style.background='#0004'
 
     loop()
 }
@@ -513,7 +513,8 @@ function draw() {
     rect(0, 0, width, height)
 
     console.log(u_tick)
-    preloader.style.width=preloaderSize.width * u_tick / 5e1
+    preloader.style.width=preloaderSize.width * (1-u_tick / 5e1)
+    preloader.style.left=preloaderSize.x + preloaderSize.width * (u_tick / 5e1)
 
     if (u_tick++ > 5e1) {
         preloader.remove()
