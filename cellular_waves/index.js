@@ -9,13 +9,9 @@ const dat = require('dat.gui')
 import * as Tone from 'tone'
 let micFFT, mic, beat
 const canvas = document.getElementById('canvasgl')
-const gl = twgl.getWebGLContext(canvas, {
-  antialias: true,
-  depth: false,
-  preserveDrawingBuffer: true,
-  // premultipliedAlpha: false, 
-  // alpha: false,
-})
+const gl = canvas.getContext("webgl2");
+gl.getExtension('EXT_color_buffer_float')
+
 
 // OSC
 var socket = new WebSocket("ws://127.0.0.1:8080");
@@ -83,14 +79,14 @@ document.querySelector('#button-start').addEventListener("click", function (even
   mic.open().then(() => {
     console.log("mic is open!")
     document.querySelector('#button-start').remove()
-    setTimeout(animate,30)
+    setTimeout(animate, 30)
   }).catch(e => {
     console.log("mic not open", e)
   })
 })
 
 
-const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE }]
+const attachments = [{ wrap: gl.CLAMP_TO_EDGE, format: gl.R32F, type: gl.FLOAT }]
 
 const n = 512
 const m = n
@@ -167,10 +163,6 @@ gui.add(obj, 'randomize')
 const mousepos = [0, 0]
 
 const vFlat = require('./flat.vert')
-const fParticles = require('./particles.frag')
-const vRender = require('./render.vert')
-const fRender = require('./render.frag')
-const fClear = require('./clear.frag')
 const fDiffusion = require('./diffusion.frag')
 const fShow = require('./show.frag')
 
@@ -179,14 +171,8 @@ twgl.addExtensionsToContext(gl)
 gl.getExtension("OES_texture_float")
 gl.getExtension("WEBGL_color_buffer_float")
 
-const programParticles = twgl.createProgramInfo(gl, [vFlat, fParticles]);
-const programRender = twgl.createProgramInfo(gl, [vRender, fRender]);
-const programClear = twgl.createProgramInfo(gl, [vFlat, fClear])
 const programDiffusion = twgl.createProgramInfo(gl, [vFlat, fDiffusion])
 const programShow = twgl.createProgramInfo(gl, [vFlat, fShow])
-
-let fb1 = twgl.createFramebufferInfo(gl, attachments, n, m)
-let fb2 = twgl.createFramebufferInfo(gl, attachments, n, m)
 
 // can it be removed?
 const pointId = []
@@ -201,12 +187,6 @@ for (let i = 0; i < n; i++) {
     pointMass.push(Math.random() * 5)
   }
 }
-const pointsObject = {
-  v_id: { data: pointId, numComponents: 1 },
-  v_position: { data: pointPositions, numComponents: 2 },
-  v_mass: { data: pointMass, numComponents: 1 }, // не используем пока что. Вычисляем из координат ФБО
-}
-const pointsBuffer = twgl.createBufferInfoFromArrays(gl, pointsObject)
 
 const positionObject = {
   position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComponents: 2 },
@@ -231,7 +211,7 @@ let temp
 
 
 
-gl.enable(gl.BLEND)
+// gl.enable(gl.BLEND)
 function frame(time) {
   time = new Date() / 1000 - timeStart
 
@@ -247,37 +227,43 @@ function frame(time) {
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
 
   {  // diffusion
-    gl.blendFunc(gl.ONE, gl.ZERO)
+    // gl.blendFunc(gl.ONE, gl.ZERO)
     gl.useProgram(programDiffusion.program);
     twgl.setBuffersAndAttributes(gl, programDiffusion, positionBuffer);
     twgl.setUniforms(programDiffusion, {
       u_tex_draw: draw2.attachments[0],
       u_time: time,
       u_resolution: [size, size],
-      DECAY: obj.DECAY,
-      DIFFUSE_RADIUS: obj.DIFFUSE_RADIUS,
-      BEAT: beat,
     });
     twgl.bindFramebufferInfo(gl, draw1);
     twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
   }
 
-  temp = fb1;
-  fb1 = fb2;
-  fb2 = temp;
 
+  {  // diffusion
+    // gl.blendFunc(gl.ONE, gl.ZERO)
+    gl.useProgram(programShow.program);
+    twgl.setBuffersAndAttributes(gl, programShow, positionBuffer);
+    twgl.setUniforms(programShow, {
+      u_tex_draw: draw2.attachments[0],
+      u_time: time,
+      u_resolution: [gl.canvas.width, gl.canvas.height],
+      // u_resolution: [size, size],
+    });
+    twgl.bindFramebufferInfo(gl, null);
+    twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
+  }
 
-  // to screen
-  gl.blendFunc(gl.ONE, gl.ZERO)
-  gl.useProgram(programShow.program)
-  twgl.setBuffersAndAttributes(gl, programShow, positionBuffer)
-  twgl.setUniforms(programShow, {
-    u_tex_draw: draw1.attachments[0],
-    u_resolution: [gl.canvas.width, gl.canvas.height],
-    LIGHTNESS: obj.LIGHTNESS,
-  })
-  twgl.bindFramebufferInfo(gl, null)
-  twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN)
+  // // to screen
+  // // gl.blendFunc(gl.ONE, gl.ZERO)
+  // gl.useProgram(programShow.program)
+  // twgl.setBuffersAndAttributes(gl, programShow, positionBuffer)
+  // twgl.setUniforms(programShow, {
+  //   u_tex_draw: draw1.attachments[0],
+  //   u_resolution: [gl.canvas.width, gl.canvas.height],
+  // })
+  // twgl.bindFramebufferInfo(gl, null)
+  // twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN)
 
   temp = draw1
   draw1 = draw2
