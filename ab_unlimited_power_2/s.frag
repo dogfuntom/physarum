@@ -124,7 +124,9 @@ float dist(V p) {
         if(res < EPS)
             break;
     }
-    float a=res, b=-length(p.xz)-4.;
+    float a=res, b=-(length(p.x)-1.);
+
+    if(-b<a) colIds=ivec3(0,0,0);
     return (a+b+sqrt(abs((a-b))*abs((a-b))+.05))*.5;//smax(res,);
 }
 
