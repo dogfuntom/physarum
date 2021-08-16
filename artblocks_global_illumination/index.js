@@ -1,5 +1,5 @@
 // arr = arr.slice(0, 10)
-// tokenData.hash=`0x9c388a82f244cd5a21dfb4888abe1564d7440dfa703025eee2ac16ddf2f06b38`
+// tokenData.hash=`0xc347e92f69471625e14d7a400fba15b13d9a1a81df6e0bc9c7c188bfe2f0c0f9`
 
 
 console.clear();
@@ -235,10 +235,10 @@ function placeBlocks() {
         let fitness, maxFitness = -9e9
         let bv
         let bvt
-        let extra=false
+        let isExtra=false
         let bvtInitial = RL(blocksVariants)
         if (n >= blocksNumber - extra && features.colorScheme != 4)
-            bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6, maxTry = 6, extra=true
+            bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6, maxTry = 6, isExtra=true
         // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
         // тот, что лучше подходит под критерий.
         // Открытый вопрос, что делать, если ничего не подошло. Варианты:
@@ -329,7 +329,6 @@ function placeBlocks() {
             //     continue
             // }
 
-            // debugger
 
             let maxHeightTry = 0;
             let maxHeightTryLikeWithoutBottomHoles = 0;
@@ -376,7 +375,7 @@ function placeBlocks() {
         if (bv) {
             bv.pos[1] = maxHeight + bv.size[1] / 2;
             if (bv.pos[1]) {
-                if(bv.pos[1]==0)continue // eyes on the froor are prohibited
+                if(isExtra && bv.pos[1]==0) {console.log('extra on the floor!');continue} // eyes on the froor are prohibited
                 let xx = Array(bv.span[0]).fill().map((d, i) => bv.pos[0] + i - (bv.span[0] - 1.) / 2)
                 let zz = Array(bv.span[2]).fill().map((d, i) => bv.pos[2] + i - (bv.span[2] - 1.) / 2)
                 let bi = 0
@@ -492,12 +491,13 @@ function setup() {
     preloader = document.body.appendChild(document.createElement('div'))
     preloader.style.position='absolute'
     preloader.style.left=preloaderSize.x
-    preloader.style.top=preloaderSize.bottom-preloaderSize.height
-    preloader.style.height=preloaderSize.height
-    preloader.style.width=preloaderSize.width
-    preloader.style.background='#0004'
+    preloader.style.top=preloaderSize.bottom-preloaderSize.height/100
+    preloader.style.height=preloaderSize.height/100
+    preloader.style.width=0
+    preloader.style.background='#fff9'
 
     loop()
+    console.log('features.eyes',features.eyes)
 }
 
 
@@ -522,8 +522,7 @@ function draw() {
     rect(0, 0, width, height)
 
     console.log(u_tick)
-    preloader.style.width=preloaderSize.width * (1-u_tick / 5e1)
-    preloader.style.left=preloaderSize.x + preloaderSize.width * (u_tick / 5e1)
+    preloader.style.width=preloaderSize.width * u_tick / 5e1
 
     if (u_tick++ > 5e1) {
         preloader.remove()

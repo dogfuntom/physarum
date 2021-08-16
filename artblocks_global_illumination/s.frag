@@ -180,7 +180,7 @@ void main() {
     gl = 0.;
     float d = 0., e = 1e9, ep, j;
     v uv_ = (uv*u_res/min(u_res.x,u_res.y)) + random2f() * 1.5 / u_res;
-    V p, ro = V(uv_ * ${viewBox.scale} + 
+    V p, ro = V(uv_ * float(${viewBox.scale}) + 
     v(${viewBox.offset.x}, 
     ${viewBox.offset.y}), -camDist), 
     rd = V(0, 0, .9 + .1 * rnd(length(uv_))), o;
