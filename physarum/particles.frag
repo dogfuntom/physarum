@@ -9,6 +9,7 @@ uniform vec2 u_tex_draw_res;
 uniform float u_time;
 uniform float u_tick;
 uniform vec2 u_resolution;
+uniform vec2 u_tex_fbo_res;
 uniform vec2 u_mouse;
 
 mat2 rot(float a) {
@@ -34,6 +35,8 @@ uniform float SENCE_MAX;
 // uniform float SENSE_ADD;
 #define SENSE_ADD .0
 uniform float RESPAWN_P;
+uniform float RESPAWN_RADIUS;
+uniform float REFLECT_RADIUS;
 uniform float FRICTION;
 uniform float REPULSION;
 uniform float ANGLE_SPREAD;
@@ -101,7 +104,7 @@ vec2 grad(vec2 pos) {
 }
 
 void main() {
-  float id = (floor(gl_FragCoord.x) + floor(gl_FragCoord.y) * u_resolution.x) * .0001;
+  float id = (floor(gl_FragCoord.x) + floor(gl_FragCoord.y) * u_tex_fbo_res.x) * .0001;
 
   vec4 particle = texture2D(u_tex_fbo, v_position);
   vec2 pos = particle.xy;
@@ -115,8 +118,8 @@ void main() {
     // gl_FragColor.r = (rnd(id + 1. + u_time * .001 + length(pos)) * 2. - 1.);
     // gl_FragColor.g = (rnd(id + 2. + u_time * .001 + length(pos)) * 2. - 1.);
     float angle = rnd(id + u_time * .001 + length(pos)) * 2. * 3.1415;
-    gl_FragColor.rg = vec2(.6, 0) * rot(angle);
-    gl_FragColor.ba = vec2(.0001, 0) * STEP_SIZE * rot(rnd(id) * 2. * 3.1415);
+    gl_FragColor.rg = vec2(RESPAWN_RADIUS, 0) * rot(angle) / u_resolution * u_resolution.y;
+    gl_FragColor.ba = vec2(.0001, 0) * rot(rnd(id) * 2. * 3.1415);
   }
 
   // physics
@@ -142,14 +145,14 @@ void main() {
     // float repulsion = 1. / length(vecToCenter);
     // vel -= sign(rnd(id) - .9) * repulsion * vec2(.0001, 0) * rot(atan(vecToCenter.y, vecToCenter.x));
 
-    // // reflect from circle
-    // if(length(pos) > .9) {
-    //   pos = normalize(pos) * .9;
-    //   vec2 n=normalize(vec2(pos));
-    //   vel = reflect(vel, -n);
-    // }
+    // reflect from circle
+    if(length(pos*u_resolution/u_resolution.y) > REFLECT_RADIUS) {
+      pos = normalize(pos*u_resolution/u_resolution.y) * REFLECT_RADIUS;
+      vec2 n=normalize(vec2(pos*u_resolution/u_resolution.y));
+      vel = reflect(vel, -n);
+    }
 
-    pos += vel;// / mass;
+    pos += vel / u_resolution * u_resolution.y;// / mass;
     pos = fract(pos * .5 + .5) * 2. - 1.;
     gl_FragColor = vec4(pos, vel);
   }

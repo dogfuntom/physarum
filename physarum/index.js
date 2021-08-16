@@ -116,7 +116,9 @@ var obj = {
   // SENSE_ADD: .0001,
   REPULSION: 100,
   RESPAWN_P: .001,
-  DIFFUSE_RADIUS: 1,
+  RESPAWN_RADIUS: .5,
+  REFLECT_RADIUS: 1,
+  DIFFUSE_RADIUS: 0,
   FRICTION: .1,
   RES: size,
   BEAT_MULT: 1,
@@ -155,6 +157,8 @@ gui.add(obj, 'RES').min(2).max(3000).step(1).onFinishChange(
 )
 gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(5).step(1).listen()
 gui.add(obj, 'RESPAWN_P').min(0).max(.1).step(.000001).listen()
+gui.add(obj, 'RESPAWN_RADIUS').min(0).max(4.).step(.000001).listen()
+gui.add(obj, 'REFLECT_RADIUS').min(0).max(4.).step(.000001).listen()
 // gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(10).step(1).listen()
 gui.add(obj, 'LIGHTNESS').min(1).max(1000).step(1).listen()
 // gui.add(obj, 'record')
@@ -303,7 +307,8 @@ function frame(time) {
       u_tick: tick,
       u_time: time,
       u_mouse: mousepos,
-      u_resolution: [n, m],
+      u_resolution: [gl.canvas.width, gl.canvas.height],
+      u_tex_fbo_res: [n, m],
       LOOKUP_DIST: obj.LOOKUP_DIST,
       LOOKUP_ANGLE: obj.LOOKUP_ANGLE,
       ANGLE_SPREAD: obj.ANGLE_SPREAD,
@@ -313,6 +318,8 @@ function frame(time) {
       SENCE_MAX: obj.SENCE_MAX,
       SENSE_ADD: obj.SENSE_ADD,
       RESPAWN_P: obj.RESPAWN_P,
+      RESPAWN_RADIUS: obj.RESPAWN_RADIUS,
+      REFLECT_RADIUS: obj.REFLECT_RADIUS,
       FRICTION: obj.FRICTION,
       REPULSION: obj.REPULSION,
       BEAT: beat,
