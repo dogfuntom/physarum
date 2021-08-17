@@ -26,7 +26,8 @@ float rnd(float x) {
 }
 
 uniform float LOOKUP_DIST;
-#define LOOKUP_DIST_CENTER LOOKUP_DIST * 1.
+uniform float LOOKUP_DIST_SPREAD;
+#define LOOKUP_DIST_CENTER LOOKUP_DIST
 uniform float LOOKUP_ANGLE;
 uniform float TURN_ANGLE;
 uniform float STEP_SIZE;
@@ -40,25 +41,25 @@ uniform float REFLECT_RADIUS;
 uniform float FRICTION;
 uniform float REPULSION;
 uniform float ANGLE_SPREAD;
-uniform float BEAT[16];
+// uniform float BEAT;
 
 vec2 turn(vec2 pos, vec2 vel, float mass) {
 
   vec2 uv = pos * .5 + .5;// + vec2(1, 0) / u_tex_draw_res);
-  vec2 sensorL = uv + (rot(-LOOKUP_ANGLE * mass) * normalize(vel)) * LOOKUP_DIST * mass;
-  vec2 sensorC = uv + normalize(vel) * LOOKUP_DIST_CENTER * mass;
-  vec2 sensorR = uv + (rot(LOOKUP_ANGLE * mass) * normalize(vel)) * LOOKUP_DIST * mass;
+  vec2 sensorL = uv + (rot(-LOOKUP_ANGLE * mass) * normalize(vel)) * LOOKUP_DIST * (1. - LOOKUP_DIST_SPREAD * mass);
+  vec2 sensorC = uv + normalize(vel) * LOOKUP_DIST * (1. - LOOKUP_DIST_SPREAD * mass);
+  vec2 sensorR = uv + (rot(LOOKUP_ANGLE * mass) * normalize(vel)) * LOOKUP_DIST * (1. - LOOKUP_DIST_SPREAD * mass);
   vec2 sensor0 = uv;
 
   float senseL = texture2D(u_tex_draw, sensorL).a;
-  senseL = clamp(senseL, SENCE_MIN, SENCE_MAX);
+  // senseL = clamp(senseL, SENCE_MIN, SENCE_MAX);
   float senseC = texture2D(u_tex_draw, sensorC).a;
-  senseC = clamp(senseC, SENCE_MIN, SENCE_MAX);
+  // senseC = clamp(senseC, SENCE_MIN, SENCE_MAX);
   float senseR = texture2D(u_tex_draw, sensorR).a;
-  senseR = clamp(senseR, SENCE_MIN, SENCE_MAX);
+  // senseR = clamp(senseR, SENCE_MIN, SENCE_MAX);
   float sense0 = texture2D(u_tex_draw, sensor0).a;
 
- float turn_angle_rnd = TURN_ANGLE + ANGLE_SPREAD*(rnd(length(pos))*2.-1.);
+  float turn_angle_rnd = TURN_ANGLE + ANGLE_SPREAD * (rnd(length(pos)) * 2. - 1.);
 
 // stadard
   if(senseC > senseL && senseC > senseR)
@@ -117,7 +118,7 @@ void main() {
   if(rnd(id + u_time) < RESPAWN_P || u_tick < 2.) {
     // gl_FragColor.r = (rnd(id + 1. + u_time * .001 + length(pos)) * 2. - 1.);
     // gl_FragColor.g = (rnd(id + 2. + u_time * .001 + length(pos)) * 2. - 1.);
-    float angle = rnd(id + u_time * .001 + length(pos)) * 2. * 3.1415;
+    float angle = rnd(id + u_time * .001) * 2. * 3.1415;
     gl_FragColor.rg = vec2(RESPAWN_RADIUS, 0) * rot(angle) / u_resolution * u_resolution.y;
     gl_FragColor.ba = vec2(.0001, 0) * rot(rnd(id) * 2. * 3.1415);
   }
@@ -137,20 +138,20 @@ void main() {
   // spinning
     // vel += vec2(0, -.0005) * rot(atan(pos.y, pos.x));
 
-    vel += turn(pos, normalize(vel),mass) * STEP_SIZE * 10000.;// * 1.001;
+    vel += turn(pos, normalize(vel), mass) * STEP_SIZE * 10000.;// * 1.001;
 
-    vel -= REPULSION * grad(pos);
+    // vel -= REPULSION * grad(pos);
 
     // vec2 vecToCenter = u_mouse - pos;
     // float repulsion = 1. / length(vecToCenter);
     // vel -= sign(rnd(id) - .9) * repulsion * vec2(.0001, 0) * rot(atan(vecToCenter.y, vecToCenter.x));
 
-    // reflect from circle
-    if(length(pos*u_resolution/u_resolution.y) > REFLECT_RADIUS) {
-      pos = normalize(pos*u_resolution/u_resolution.y) * REFLECT_RADIUS;
-      vec2 n=normalize(vec2(pos*u_resolution/u_resolution.y));
-      vel = reflect(vel, -n);
-    }
+    // // reflect from circle
+    // if(length(pos * u_resolution / u_resolution.y) > REFLECT_RADIUS) {
+    //   pos = normalize(pos * u_resolution / u_resolution.y) * REFLECT_RADIUS;
+    //   vec2 n = normalize(vec2(pos * u_resolution / u_resolution.y));
+    //   vel = reflect(vel, -n);
+    // }
 
     pos += vel / u_resolution * u_resolution.y;// / mass;
     pos = fract(pos * .5 + .5) * 2. - 1.;

@@ -5,7 +5,7 @@ uniform vec2 u_resolution;
 uniform float DECAY;
 uniform float DIFFUSE_RADIUS;
 uniform float u_time;
-uniform float BEAT[16];
+// uniform float BEAT[16];
 #define DIFFUSE_RADIUS_MAX  10
 
 #define K (.06)
@@ -20,16 +20,16 @@ float rnd(float x) {
 
 void main() {
     vec4 val;
-    gl_FragColor = texture2D(u_tex_draw, gl_FragCoord.xy / u_resolution) * DECAY;
+    // gl_FragColor = texture2D(u_tex_draw, gl_FragCoord.xy / u_resolution) * DECAY;
 
-// //     vec2 R = vec2(0, 1);
-// //     val += texture2D(u_tex_draw, gl_FragCoord.xy / u_resolution);
-// //     val += texture2D(u_tex_draw, fract((gl_FragCoord.xy + R.xy) / u_resolution)) / 2.;
-// //     val += texture2D(u_tex_draw, fract((gl_FragCoord.xy + R.yx) / u_resolution)) / 2.;
-// //     val += texture2D(u_tex_draw, fract((gl_FragCoord.xy - R.xy) / u_resolution)) / 2.;
-// //     val += texture2D(u_tex_draw, fract((gl_FragCoord.xy - R.yx) / u_resolution)) / 2.;
-// //     val /= 3.;
-// //    gl_FragColor = val * DECAY;
+    vec2 R = vec2(0, 1);
+    val += texture2D(u_tex_draw, gl_FragCoord.xy / u_resolution);
+    val += texture2D(u_tex_draw, fract((gl_FragCoord.xy + R.xy) / u_resolution)) / 2.;
+    val += texture2D(u_tex_draw, fract((gl_FragCoord.xy + R.yx) / u_resolution)) / 2.;
+    val += texture2D(u_tex_draw, fract((gl_FragCoord.xy - R.xy) / u_resolution)) / 2.;
+    val += texture2D(u_tex_draw, fract((gl_FragCoord.xy - R.yx) / u_resolution)) / 2.;
+    val /= 3.;
+   gl_FragColor = val * DECAY;
 
 //     float k_sum = 0.;
 //     for(int i = -DIFFUSE_RADIUS_MAX; i <= DIFFUSE_RADIUS_MAX; i++) {

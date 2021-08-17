@@ -1,6 +1,7 @@
 /*
 fix mic
-osc
+respawn all
+find the sequence
 */
 
 'use strict'
@@ -92,7 +93,7 @@ document.querySelector('#button-start').addEventListener("click", function (even
 
 const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE }]
 
-const n = 512
+const n = 1000
 const m = n
 let size = 600
 let draw1 = twgl.createFramebufferInfo(gl, attachments, size, size)
@@ -104,6 +105,7 @@ const gui = new dat.GUI()
 
 var obj = {
   LOOKUP_DIST: .1,
+  LOOKUP_DIST_SPREAD: .0,
   LOOKUP_ANGLE: .1,
   TURN_ANGLE: .1,
   ANGLE_SPREAD: .1,
@@ -113,6 +115,7 @@ var obj = {
   // SENCE_MIN: .001,
   // SENCE_MAX: 1,
   LIGHTNESS: 100,
+  FREQ_PEAKER: 3,
   // SENSE_ADD: .0001,
   REPULSION: 100,
   RESPAWN_P: .001,
@@ -137,6 +140,7 @@ var obj = {
 
 gui.remember(obj)
 let ld = gui.add(obj, 'LOOKUP_DIST').min(0).max(.1).step(0.0001).listen()
+gui.add(obj, 'LOOKUP_DIST_SPREAD').min(0).max(1).step(0.0001).listen()
 gui.add(obj, 'STEP_SIZE').min(0.00001).max(.1).step(0.0001).listen()
 gui.add(obj, 'FRICTION').min(0).max(.9999).step(0.0001).listen()
 gui.add(obj, 'LOOKUP_ANGLE').min(0).max(Math.PI * 2.).step(0.001).listen()
@@ -156,11 +160,12 @@ gui.add(obj, 'RES').min(2).max(3000).step(1).onFinishChange(
   }
 )
 gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(5).step(1).listen()
-gui.add(obj, 'RESPAWN_P').min(0).max(.1).step(.000001).listen()
+gui.add(obj, 'RESPAWN_P').min(0).max(.01).step(.000001).listen()
 gui.add(obj, 'RESPAWN_RADIUS').min(0).max(4.).step(.000001).listen()
-gui.add(obj, 'REFLECT_RADIUS').min(0).max(4.).step(.000001).listen()
+gui.add(obj, 'REFLECT_RADIUS').min(0.01).max(4.).step(.000001).listen()
 // gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(10).step(1).listen()
-gui.add(obj, 'LIGHTNESS').min(1).max(1000).step(1).listen()
+gui.add(obj, 'LIGHTNESS').min(1).max(500).step(1).listen()
+gui.add(obj, 'FREQ_PEAKER').min(0).max(63.9).step(1).listen()
 // gui.add(obj, 'record')
 gui.add(obj, 'randomize')
 
@@ -269,8 +274,8 @@ function frame(time) {
   console.log('micFFT.getValue()', micFFT.getValue())
   console.log('mic', mic)
   if (micFFT) {
-    beat = micFFT.getValue().map(d => (d * 1000))
-    console.log('beat[0]', beat[0])
+    beat = micFFT.getValue().map(d => (d * 1000))[Math.floor(obj.FREQ_PEAKER)]
+    // console.log('beat[0]', beat[0])
   }
 
   twgl.resizeCanvasToDisplaySize(gl.canvas)
@@ -310,6 +315,7 @@ function frame(time) {
       u_resolution: [gl.canvas.width, gl.canvas.height],
       u_tex_fbo_res: [n, m],
       LOOKUP_DIST: obj.LOOKUP_DIST,
+      LOOKUP_DIST_SPREAD: obj.LOOKUP_DIST_SPREAD,
       LOOKUP_ANGLE: obj.LOOKUP_ANGLE,
       ANGLE_SPREAD: obj.ANGLE_SPREAD,
       TURN_ANGLE: obj.TURN_ANGLE,
