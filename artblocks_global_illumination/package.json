@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "description": "",
     "scripts": {
-    "minify": "npx parcel build"
+      "start": "export NODE_ENV=production && parcel build index.js",
+      "v": "parcel --version"
+  },
+  "optimizers": {
+    "*.js": ["@parcel/optimizer-terser"]
   },
   "author": "",
   "license": "ISC",
