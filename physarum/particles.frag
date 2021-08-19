@@ -22,7 +22,7 @@ mat2 rot(float a) {
 
 #pragma glslify: random = require(glsl-random)
 float rnd(float x) {
-  return random(vec2(mod(x * .0001,101.121)));
+  return random(vec2(mod(x * .1,101.121)));
 }
 
 uniform float LOOKUP_DIST;

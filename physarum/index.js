@@ -38,6 +38,7 @@ socket.onmessage = function (event) {
 
     // if this control has its peer in gui, we set min-max values form there
     let guiControllersFiltered = gui.__controllers.filter(c => c.property == name)
+    console.log('osc giu', guiControllersFiltered)
     if (guiControllersFiltered.length > 0) {
       value *= guiControllersFiltered[0].__max - guiControllersFiltered[0].__min
       value += guiControllersFiltered[0].__min
@@ -60,12 +61,11 @@ socket.onmessage = function (event) {
       //   twgl.bindFramebufferInfo(gl, fbo1);
       //   twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
       // }
-
-
     }
 
     // add only if this exist in obj
     if (Object.keys(obj).includes(name)) { obj[name] = value } else { console.log(`no "${name}" key in obj`, Object.keys(obj)) }
+    console.log(Object.keys(obj).includes(name), 'osc')
 
   } catch (e) {
     // console.error('Can\'t recognize. Is data an object?', e);
@@ -127,7 +127,7 @@ var obj = {
   ANGLE_SPREAD: .1,
   STEP_SIZE: .001,
   DECAY: .5,
-  DEPOSITE: .00001,
+  DEPOSITE: .0000001,
   // SENCE_MIN: .001,
   // SENCE_MAX: 1,
   LIGHTNESS: 100,
@@ -175,7 +175,7 @@ gui.add(obj, 'RES').min(2).max(3000).step(1).onFinishChange(
     draw1 = twgl.createFramebufferInfo(gl, attachments, size, size)
     draw2 = twgl.createFramebufferInfo(gl, attachments, size, size)
   }
-)
+).listen()
 // gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(5).step(1).listen()
 gui.add(obj, 'RESPAWN_P').min(0).max(.01).step(.000001).listen()
 gui.add(obj, 'RESPAWN_RADIUS').min(0).max(4.).step(.000001).listen()
