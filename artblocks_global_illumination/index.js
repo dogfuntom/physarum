@@ -467,7 +467,7 @@ function preload() {
 
 function setup() {
 
-    let size = 400//min(windowHeight, windowWidth)
+    let size = min(windowHeight, windowWidth)
     canvas = createCanvas(size, size, WEBGL)
     b = createGraphics(width, height, WEBGL)
     // tokenData.hash=arr.pop().hash
