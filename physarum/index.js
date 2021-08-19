@@ -9,7 +9,7 @@ const gl = twgl.getWebGLContext(canvas, {
   depth: false,
   preserveDrawingBuffer: true,
 })
-let tick = 0
+let tick = 10
 let timeStart = new Date() / 1000
 
 // OSC
@@ -45,27 +45,18 @@ socket.onmessage = function (event) {
     }
 
     if (name == 'RESET') {
-      // console.log('reset')
+      console.log('reset')
       tick = 0
       timeStart = new Date() / 1000
-
-      // {  // clear ONCE
-      //   gl.blendFunc(gl.ONE, gl.ZERO)
-      //   // а тут работает, потому что мы прибавляем постоянно к фону маленькое значение vec4(.005)
-      //   // Оно клампится и не становится больше единицы
-      //   gl.useProgram(programClear.program);
-      //   twgl.setBuffersAndAttributes(gl, programClear, positionBuffer);
-      //   twgl.setUniforms(programClear, {
-      //     u_tick: tick,
-      //   });
-      //   twgl.bindFramebufferInfo(gl, fbo1);
-      //   twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
-      // }
     }
-
     // add only if this exist in obj
     if (Object.keys(obj).includes(name)) { obj[name] = value } else { console.log(`no "${name}" key in obj`, Object.keys(obj)) }
     console.log(Object.keys(obj).includes(name), 'osc')
+
+    // if (name == 'RES') {
+    // updateRes()
+    // }
+
 
   } catch (e) {
     // console.error('Can\'t recognize. Is data an object?', e);
@@ -119,28 +110,31 @@ const gui = new dat.GUI()
 
 
 var obj = {
-  LOOKUP_DIST: .1,
+  LOOKUP_DIST: 0.019544345140457154,
   LOOKUP_DIST_SPREAD: .0,
-  LOOKUP_ANGLE: .1,
-  LOOKUP_ANGLE_SPREAD: .0,
+  "LOOKUP_ANGLE": 2.0801507899899323,
+  "LOOKUP_ANGLE_SPREAD": 0,
   TURN_ANGLE: .1,
-  ANGLE_SPREAD: .1,
-  STEP_SIZE: .001,
-  DECAY: .5,
-  DEPOSITE: .0000001,
+  "TURN_ANGLE": 2.0801506027364183,
+  "ANGLE_SPREAD": 0.1,
+  "STEP_SIZE": 0.006308676521629095,
+  "DECAY": 0.7979053258895874,
+  "DEPOSITE": 9.917010366916656e-8,
   // SENCE_MIN: .001,
   // SENCE_MAX: 1,
-  LIGHTNESS: 100,
+  LIGHTNESS: 0,
   FREQ_PEAKER: 1,
   // SENSE_ADD: .0001,
   // REPULSION: 100,
-  RESPAWN_P: .0001,
-  RESPAWN_RADIUS: .45,
-  REFLECT_RADIUS: 1,
   // DIFFUSE_RADIUS: 1,
-  FRICTION: .9,
+  "FRICTION": 0.9999,
+  "BEAT_MULT": 0,
+  // "RES": 266.58042684197426,
+  "RESPAWN_P": 0.001005757674574852,
+  "RESPAWN_RADIUS": 0.37447306513786316,
+  "REFLECT_RADIUS": 1,
+  "FREQ_PEAKER": 1,
   RES: size,
-  BEAT_MULT: .5,
   // RESPAW: true,
   randomize: function () {
     // obj.FRICTION = Math.random()
@@ -153,6 +147,20 @@ var obj = {
     })
   }
 }
+
+// {
+//   "preset": "Default",
+//   "remembered": {
+//     "Default": {
+//       "0": {
+//         "LOOKUP_DIST": ,
+
+//       }
+//     }
+//   },
+//   "closed": false,
+//   "folders": {}
+// }
 
 gui.remember(obj)
 let ld = gui.add(obj, 'LOOKUP_DIST').min(0).max(.1).step(0.0001).listen()
@@ -169,24 +177,22 @@ gui.add(obj, 'DECAY').min(0).max(1).step(0.001).listen()
 // gui.add(obj, 'REPULSION').min(0).max(100000).step(.000001).listen()
 gui.add(obj, 'BEAT_MULT').min(0).max(50).step(.001).listen()
 // gui.add(obj, 'SENSE_ADD').min(-.0001).max(.0001).step(.0000001)
-gui.add(obj, 'RES').min(2).max(3000).step(1).onFinishChange(
-  function () {
-    size = this.getValue()
-    draw1 = twgl.createFramebufferInfo(gl, attachments, size, size)
-    draw2 = twgl.createFramebufferInfo(gl, attachments, size, size)
-  }
-).listen()
+gui.add(obj, 'RES').min(10).max(3000).step(1).listen().onFinishChange(updateRes)
 // gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(5).step(1).listen()
 gui.add(obj, 'RESPAWN_P').min(0).max(.01).step(.000001).listen()
 gui.add(obj, 'RESPAWN_RADIUS').min(0).max(4.).step(.000001).listen()
 gui.add(obj, 'REFLECT_RADIUS').min(0.01).max(4.).step(.000001).listen()
 // gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(10).step(1).listen()
-gui.add(obj, 'LIGHTNESS').min(1).max(500).step(1).listen()
+gui.add(obj, 'LIGHTNESS').min(1).max(50).step(0.01).listen()
 gui.add(obj, 'FREQ_PEAKER').min(0).max(63.9).step(1).listen()
 // gui.add(obj, 'record')
 gui.add(obj, 'randomize')
 
-
+function updateRes() {
+  size = Math.floor(obj.RES)
+  draw1 = twgl.createFramebufferInfo(gl, attachments, size, size)
+  draw2 = twgl.createFramebufferInfo(gl, attachments, size, size)
+}
 
 // console.log()
 
@@ -284,7 +290,7 @@ let temp
 gl.enable(gl.BLEND)
 function frame(time) {
   time = new Date() / 1000 - timeStart
-  console.log(time)
+  console.log(time, tick)
 
   beat = Array(64).fill(0)
   console.log('micFFT.getValue()', micFFT.getValue()[0])

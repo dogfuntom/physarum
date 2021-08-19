@@ -8,20 +8,15 @@ uniform float u_time;
 // uniform float BEAT[16];
 #define DIFFUSE_RADIUS_MAX  10
 
-#define K (.06)
-#define F (.05)
-#define Da 1.5
-#define Db .9
-
 #pragma glslify: random = require(glsl-random)
 float rnd(float x) {
   return random(vec2(x * .0001));
 }
 
 void main() {
-    vec4 val;
-    // gl_FragColor = texture2D(u_tex_draw, gl_FragCoord.xy / u_resolution) * DECAY;
+    gl_FragColor = texture2D(u_tex_draw, gl_FragCoord.xy / u_resolution) * DECAY;
 
+    vec4 val;
     vec2 R = vec2(0, 1);
     val += texture2D(u_tex_draw, gl_FragCoord.xy / u_resolution);
     val += texture2D(u_tex_draw, fract((gl_FragCoord.xy + R.xy) / u_resolution)) / 2.;

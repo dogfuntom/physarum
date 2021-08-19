@@ -44,8 +44,9 @@ void main() {
  
   // color.a = clamp(1. / u_time, 0., 1.);
   // color.a = (.5 + .5 * sin(u_time * 1.));// * u_time / exp(u_time);// / u_time;
-  float velCol = smoothstep(.0,.01,length(vel)*.1);
-  color.rgb = vec3(velCol)*.0001; // instagram magents color
+  // float velCol = smoothstep(.0,.01,length(vel)*.1);
+  // color.rgb = vec3(velCol)*.0001; // instagram magents color
+  color.rgb = vec3(.0001); // instagram magents color
   // color.rgb = vec3(v_mass,0,1.-v_mass)*.0001;
   color.a = DEPOSITE + DEPOSITE * BEAT * BEAT_MULT;
   // color.a = DEPOSITE * pow(sin((u_time-length(pos))*10.)*.1+.9, 8.);

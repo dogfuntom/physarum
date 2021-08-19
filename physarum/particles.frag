@@ -20,10 +20,13 @@ mat2 rot(float a) {
 #pragma glslify: snoise2d = require(../modules/math/glsl-noise/simplex/2d.glsl)
 #pragma glslify: snoise3d = require(../modules/math/glsl-noise/simplex/3d.glsl)
 
-#pragma glslify: random = require(glsl-random)
-float rnd(float x) {
-  return random(vec2(mod(x * .1,101.121)));
+// #pragma glslify: random = require(glsl-random)
+
+float random(vec2 co){
+    return fract(sin(dot(mod(co,123.321)-246.642, vec2(12.9898, 78.233))) * 43758.5453);
 }
+
+#define rnd(x) fract(54321.987 * sin(987.12345 * mod(x,123.321)-246.642))
 
 uniform float LOOKUP_DIST;
 uniform float LOOKUP_DIST_SPREAD;
@@ -117,9 +120,11 @@ void main() {
 
   // init
   if(u_tick < 2.){
-    gl_FragColor.r = random(gl_FragCoord.xy/u_tex_fbo_res);
-    gl_FragColor.g = random(gl_FragCoord.xy/u_tex_fbo_res+1.);
-    gl_FragColor.ba = vec2(0);
+    gl_FragColor.r = 1000.*random(gl_FragCoord.xy/u_tex_fbo_res);
+    gl_FragColor.g = 1000.*random(gl_FragCoord.xy/u_tex_fbo_res+.001);
+    gl_FragColor.ba = vec2(.1, 0) * rot(rnd(id) * 2. * 3.1415);
+    // gl_FragColor.ba = vec2(0);
+    return;
   }
 
   // respawn
@@ -127,8 +132,9 @@ void main() {
     // gl_FragColor.r = (rnd(id + 1. + u_time * .001 + length(pos)) * 2. - 1.);
     // gl_FragColor.g = (rnd(id + 2. + u_time * .001 + length(pos)) * 2. - 1.);
     float angle = rnd(mod(id + u_time * .001, 113.179)) * 2. * 3.1415;
-    gl_FragColor.rg = vec2(RESPAWN_RADIUS, 0) * rot(angle) / u_resolution * u_resolution.y;
+    gl_FragColor.rg = vec2(RESPAWN_RADIUS*(1.+.1*(rnd(angle+id)-rnd(angle-id))), 0) * rot(angle) / u_resolution * u_resolution.y;
     gl_FragColor.ba = vec2(.0001, 0) * rot(rnd(id) * 2. * 3.1415);
+    return;
   }
 
   // physics
@@ -148,7 +154,7 @@ void main() {
 
     vel += turn(pos, normalize(vel), mass) * STEP_SIZE * 10000.;// * 1.001;
 
-    // vel -= REPULSION * grad(pos);
+    // vel -= REPULSION *.000000000001 * grad(pos);
 
     // vec2 vecToCenter = u_mouse - pos;
     // float repulsion = 1. / length(vecToCenter);
