@@ -20,7 +20,7 @@
     "scripts": {
         "serve": "parcel serve ./index.html",
         "bridge": "node bridge.js",
-        "build": "parcel build ./index.html --dist-dir ./gh-pages",
+        "build": "parcel build ./index.html --dist-dir ./gh-pages --public-url .",
         "start": "concurrently --kill-others \"npm run serve\" \"npm run bridge\""
     },
     "glslify": {
