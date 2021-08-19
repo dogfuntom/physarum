@@ -1,9 +1,3 @@
-/*
-fix mic
-respawn all
-find the sequence
-*/
-
 'use strict'
 let twgl = require('twgl.js')
 const dat = require('dat.gui')
@@ -14,9 +8,9 @@ const gl = twgl.getWebGLContext(canvas, {
   antialias: true,
   depth: false,
   preserveDrawingBuffer: true,
-  // premultipliedAlpha: false, 
-  // alpha: false,
 })
+let tick = 0
+let timeStart = new Date() / 1000
 
 // OSC
 var socket = new WebSocket("ws://127.0.0.1:8080");
@@ -49,11 +43,32 @@ socket.onmessage = function (event) {
       value += guiControllersFiltered[0].__min
     }
 
+    if (name == 'RESET') {
+      // console.log('reset')
+      tick = 0
+      timeStart = new Date() / 1000
+
+      // {  // clear ONCE
+      //   gl.blendFunc(gl.ONE, gl.ZERO)
+      //   // а тут работает, потому что мы прибавляем постоянно к фону маленькое значение vec4(.005)
+      //   // Оно клампится и не становится больше единицы
+      //   gl.useProgram(programClear.program);
+      //   twgl.setBuffersAndAttributes(gl, programClear, positionBuffer);
+      //   twgl.setUniforms(programClear, {
+      //     u_tick: tick,
+      //   });
+      //   twgl.bindFramebufferInfo(gl, fbo1);
+      //   twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
+      // }
+
+
+    }
+
     // add only if this exist in obj
     if (Object.keys(obj).includes(name)) { obj[name] = value } else { console.log(`no "${name}" key in obj`, Object.keys(obj)) }
 
   } catch (e) {
-    console.error('Can\'t recognize. Is data an object?', e);
+    // console.error('Can\'t recognize. Is data an object?', e);
   }
 };
 
@@ -67,7 +82,7 @@ socket.onerror = function (error) {
 
 
 if (!mic) {
-  console.log('mic…')
+  // console.log('mic…')
   mic = new Tone.UserMedia()
   micFFT = new Tone.FFT()
   micFFT.set({
@@ -78,15 +93,15 @@ if (!mic) {
   mic.connect(micFFT)
 }
 else {
-  console.log(mic)
+  // console.log(mic)
 }
 document.querySelector('#button-start').addEventListener("click", function (event) {
   mic.open().then(() => {
-    console.log("mic is open!")
+    // console.log("mic is open!")
     document.querySelector('#button-start').remove()
-    setTimeout(animate,30)
+    setTimeout(animate, 30)
   }).catch(e => {
-    console.log("mic not open", e)
+    // console.log("mic not open", e)
   })
 })
 
@@ -107,30 +122,31 @@ var obj = {
   LOOKUP_DIST: .1,
   LOOKUP_DIST_SPREAD: .0,
   LOOKUP_ANGLE: .1,
+  LOOKUP_ANGLE_SPREAD: .0,
   TURN_ANGLE: .1,
   ANGLE_SPREAD: .1,
-  STEP_SIZE: .1,
+  STEP_SIZE: .001,
   DECAY: .5,
-  DEPOSITE: .001,
+  DEPOSITE: .00001,
   // SENCE_MIN: .001,
   // SENCE_MAX: 1,
   LIGHTNESS: 100,
-  FREQ_PEAKER: 3,
+  FREQ_PEAKER: 1,
   // SENSE_ADD: .0001,
-  REPULSION: 100,
-  RESPAWN_P: .001,
-  RESPAWN_RADIUS: .5,
+  // REPULSION: 100,
+  RESPAWN_P: .0001,
+  RESPAWN_RADIUS: .45,
   REFLECT_RADIUS: 1,
-  DIFFUSE_RADIUS: 0,
-  FRICTION: .1,
+  // DIFFUSE_RADIUS: 1,
+  FRICTION: .9,
   RES: size,
-  BEAT_MULT: 1,
+  BEAT_MULT: .5,
   // RESPAW: true,
   randomize: function () {
     // obj.FRICTION = Math.random()
     // obj.STEP_SIZE = Math.random()*
     gui.__controllers.forEach(c => {
-      console.log(c.property)
+      // console.log(c.property)
       if (c.constructor.name != 'NumberControllerSlider') return
       if (['LIGHTNESS', 'RESPAWN_P', 'REPULSION'].includes(c.property)) return
       c.setValue(c.__min + Math.random() * (c.__max - c.__min))
@@ -144,6 +160,7 @@ gui.add(obj, 'LOOKUP_DIST_SPREAD').min(0).max(1).step(0.0001).listen()
 gui.add(obj, 'STEP_SIZE').min(0.00001).max(.1).step(0.0001).listen()
 gui.add(obj, 'FRICTION').min(0).max(.9999).step(0.0001).listen()
 gui.add(obj, 'LOOKUP_ANGLE').min(0).max(Math.PI * 2.).step(0.001).listen()
+gui.add(obj, 'LOOKUP_ANGLE_SPREAD').min(0).max(1).step(0.001).listen()
 gui.add(obj, 'TURN_ANGLE').min(0).max(Math.PI * 2.).step(0.001).listen()
 gui.add(obj, 'ANGLE_SPREAD').min(0).max(Math.PI).step(0.001).listen()
 gui.add(obj, 'DEPOSITE').min(0).max(.000001).step(.00000001).listen()
@@ -159,7 +176,7 @@ gui.add(obj, 'RES').min(2).max(3000).step(1).onFinishChange(
     draw2 = twgl.createFramebufferInfo(gl, attachments, size, size)
   }
 )
-gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(5).step(1).listen()
+// gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(5).step(1).listen()
 gui.add(obj, 'RESPAWN_P').min(0).max(.01).step(.000001).listen()
 gui.add(obj, 'RESPAWN_RADIUS').min(0).max(4.).step(.000001).listen()
 gui.add(obj, 'REFLECT_RADIUS').min(0.01).max(4.).step(.000001).listen()
@@ -222,8 +239,6 @@ const positionObject = {
 }
 const positionBuffer = twgl.createBufferInfoFromArrays(gl, positionObject)
 
-let tick = 0
-let timeStart = new Date() / 1000
 let temp
 
 
@@ -269,10 +284,11 @@ let temp
 gl.enable(gl.BLEND)
 function frame(time) {
   time = new Date() / 1000 - timeStart
+  console.log(time)
 
   beat = Array(64).fill(0)
-  console.log('micFFT.getValue()', micFFT.getValue())
-  console.log('mic', mic)
+  console.log('micFFT.getValue()', micFFT.getValue()[0])
+  // console.log('mic', mic)
   if (micFFT) {
     beat = micFFT.getValue().map(d => (d * 1000))[Math.floor(obj.FREQ_PEAKER)]
     // console.log('beat[0]', beat[0])
@@ -317,6 +333,7 @@ function frame(time) {
       LOOKUP_DIST: obj.LOOKUP_DIST,
       LOOKUP_DIST_SPREAD: obj.LOOKUP_DIST_SPREAD,
       LOOKUP_ANGLE: obj.LOOKUP_ANGLE,
+      LOOKUP_ANGLE_SPREAD: obj.LOOKUP_ANGLE_SPREAD,
       ANGLE_SPREAD: obj.ANGLE_SPREAD,
       TURN_ANGLE: obj.TURN_ANGLE,
       STEP_SIZE: obj.STEP_SIZE,

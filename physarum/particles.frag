@@ -22,13 +22,14 @@ mat2 rot(float a) {
 
 #pragma glslify: random = require(glsl-random)
 float rnd(float x) {
-  return random(vec2(x * .0001));
+  return random(vec2(mod(x * .0001,101.121)));
 }
 
 uniform float LOOKUP_DIST;
 uniform float LOOKUP_DIST_SPREAD;
 #define LOOKUP_DIST_CENTER LOOKUP_DIST
 uniform float LOOKUP_ANGLE;
+uniform float LOOKUP_ANGLE_SPREAD;
 uniform float TURN_ANGLE;
 uniform float STEP_SIZE;
 uniform float SENCE_MIN;
@@ -46,9 +47,9 @@ uniform float ANGLE_SPREAD;
 vec2 turn(vec2 pos, vec2 vel, float mass) {
 
   vec2 uv = pos * .5 + .5;// + vec2(1, 0) / u_tex_draw_res);
-  vec2 sensorL = uv + (rot(-LOOKUP_ANGLE * mass) * normalize(vel)) * LOOKUP_DIST * (1. - LOOKUP_DIST_SPREAD * mass);
+  vec2 sensorL = uv + (rot(-LOOKUP_ANGLE * (1. - LOOKUP_ANGLE_SPREAD * mass)) * normalize(vel)) * LOOKUP_DIST * (1. - LOOKUP_DIST_SPREAD * mass);
   vec2 sensorC = uv + normalize(vel) * LOOKUP_DIST * (1. - LOOKUP_DIST_SPREAD * mass);
-  vec2 sensorR = uv + (rot(LOOKUP_ANGLE * mass) * normalize(vel)) * LOOKUP_DIST * (1. - LOOKUP_DIST_SPREAD * mass);
+  vec2 sensorR = uv + (rot(LOOKUP_ANGLE * (1. - LOOKUP_ANGLE_SPREAD * mass)) * normalize(vel)) * LOOKUP_DIST * (1. - LOOKUP_DIST_SPREAD * mass);
   vec2 sensor0 = uv;
 
   float senseL = texture2D(u_tex_draw, sensorL).a;
@@ -115,10 +116,17 @@ void main() {
   // if(mod(floor(u_time / 4.),2.)==0.) mass==1.-mass;
 
   // init
-  if(rnd(id + u_time) < RESPAWN_P || u_tick < 2.) {
+  if(u_tick < 2.){
+    gl_FragColor.r = random(gl_FragCoord.xy/u_tex_fbo_res);
+    gl_FragColor.g = random(gl_FragCoord.xy/u_tex_fbo_res+1.);
+    gl_FragColor.ba = vec2(0);
+  }
+
+  // respawn
+  if(rnd(id + u_time) < RESPAWN_P) {
     // gl_FragColor.r = (rnd(id + 1. + u_time * .001 + length(pos)) * 2. - 1.);
     // gl_FragColor.g = (rnd(id + 2. + u_time * .001 + length(pos)) * 2. - 1.);
-    float angle = rnd(id + u_time * .001) * 2. * 3.1415;
+    float angle = rnd(mod(id + u_time * .001, 113.179)) * 2. * 3.1415;
     gl_FragColor.rg = vec2(RESPAWN_RADIUS, 0) * rot(angle) / u_resolution * u_resolution.y;
     gl_FragColor.ba = vec2(.0001, 0) * rot(rnd(id) * 2. * 3.1415);
   }
