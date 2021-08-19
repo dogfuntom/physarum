@@ -20,7 +20,7 @@
     "scripts": {
         "serve": "parcel serve ./index.html",
         "bridge": "node bridge.js",
-        "build": "parcel build ./index.html --dist-dir ./gh-pages --public-url .",
+        "build": "parcel build ./index.html --dist-dir ./gh-pages --public-url https://shaders.dianov.org/physarum/gh-pages/",
         "start": "concurrently --kill-others \"npm run serve\" \"npm run bridge\""
     },
     "glslify": {
