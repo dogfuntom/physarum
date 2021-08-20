@@ -1,4 +1,10 @@
-// // there are a million of ways to look at the moon, but the moon is always the same.
+// There are a million ways to look at the moon, but the moon is always the same.
+
+// Click or hit Space to get a new artwork.
+// Press 1...9 to select the auto update speed, press 0 to stop.
+
+// generative art,pixel,interactive,regex
+
 import { generate } from 'css-tree';
 import * as p5 from 'p5'
 const s = (p) => {
@@ -191,7 +197,7 @@ const s = (p) => {
     if (key.code == 'Space') {
       p.mouseClicked()
     }
-    console.log(key)
+    // console.log(key)
   }
 
 
