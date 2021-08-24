@@ -1,11 +1,4 @@
-// There are a million ways to look at the moon, but the moon is always the same.
-
-// Click or hit Space to get a new artwork.
-// Press 1...9 to select the auto update speed, press 0 to stop.
-
-// generative art,pixel,interactive,regex
-
-import { generate } from 'css-tree';
+// import { generate } from 'css-tree';
 import * as p5 from 'p5'
 const s = (p) => {
 
@@ -123,10 +116,11 @@ const s = (p) => {
     return dict[letter] ? dict[letter] : "#fff0";
   };
 
+
   p.windowResized = () => {
-    let size = p.min(window.innerWidth, window.innerHeight);
-    p.resizeCanvas(size, size);
-    // g=createGraphics(size, size)
+    // let size = p.min(p.windowWidth, p.windowHeight);
+    p.resizeCanvas(p.windowWidth, p.windowHeight);
+    // g=p.createGraphics(p.windowWidth, p.windowHeight)
     if (outCol) p.draw()
   }
 
@@ -206,16 +200,18 @@ const s = (p) => {
     p.background(outCol);
     document.body.style.backgroundColor = p.color(outCol).toString();
     if (g) g.remove()
-    g = p.createGraphics(p.width, p.height);
+    let gs=p.min(p.width, p.height)
+    g = p.createGraphics(gs,gs);
     g.noStroke();
 
     // background('black');
     for (let i = 0; i < 1; i += 0.5) {
       p.fill(p.lerpColor(p.color(outCol), p.color("white"), i));
-      p.circle(p.width / 2, p.height / 2, p.height * (1 - i ** 8));
+      p.circle(p.width / 2, p.height / 2, gs * (1 - i ** 8));
     }
 
     g.scale(g.width / size);
+
     for (let i = 0; i < size * size; i++) {
       let x = i % size;
       let y = p.floor(i / size);
@@ -239,12 +235,18 @@ const s = (p) => {
 
 
 
+    p.push()
+    // p.minSize=p.min(p.width,p.height)
+    p.translate(p.width/2,p.height/2)
+    // console.log(g.width,g.height)
     p.tint(...p.color(outCol).levels.slice(0, 3), 40);
-    p.image(g, p.width / size / 4, p.height / size / 4, p.width, p.height);
+    // p.image(g, p.width / size / 4, p.height / size / 4, p.width, p.height);
+    p.translate(gs/size/4,gs/size/4)
+    p.image(g, -g.width/2, -g.height/2, g.width, g.height);
+    p.translate(-gs/size/4,-gs/size/4)
     p.tint(255, 255);
-    p.image(g, 0, 0, p.width, p.height);
-    // setTimeout(() => document.querySelector('canvas').style.opacity = 1, 100)
-    // document.querySelector('canvas').style.opacity = 1
+    p.image(g, -g.width/2, -g.height/2, g.width, g.height);
+    p.pop()
   };
 };
 let myp5 = new p5(s);
