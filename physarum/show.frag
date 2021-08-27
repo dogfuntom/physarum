@@ -17,11 +17,12 @@ void main() {
     gl_FragColor.a = 1.;//*(1.-BEAT);
     // gl_FragColor.a = 1.;
     // gl_FragColor = #ff00ffff;
+ 
+    if(gl_FragCoord.y/u_resolution.y>.01) return;
 
     for(int i=0;i<256;i++){
         if(i == int(gl_FragCoord.x/u_resolution.x*256.))
-        gl_FragColor.b = BEAT_ARRAY[i];
+        gl_FragColor.b += BEAT_ARRAY[i];
     }
-
 }
 
