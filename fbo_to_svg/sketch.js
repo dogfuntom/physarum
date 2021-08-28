@@ -2,9 +2,11 @@ let s
 let g
 let tex
 let blue
+let svg = document.querySelector("svg");
+
 function preload() {
   s = loadShader('s.vert', 's.frag')
-  blue=loadImage('BlueNoise470.png')
+  blue = loadImage('BlueNoise470.png')
 }
 let minWinSize
 
@@ -13,26 +15,62 @@ let palette
 
 
 function setup() {
-  createCanvas(100, 100, WEBGL);
+  createCanvas(100, 100)
+  let fbSize = 10
+  g = createGraphics(fbSize, fbSize, WEBGL)
+  g_back = createGraphics(g.width, g.height)
   pixelDensity(1)
 
-  shader(s);
+  g.shader(s);
 
   mouseClicked()
 
   windowResized()
-  s.setUniform('blue', blue);
 }
 
 function mouseClicked() {
-palette = palettes[Math.floor(Math.random()*palettes.length)]
+  palette = palettes[Math.floor(Math.random() * palettes.length)]
 }
 
+
+
+
 function draw() {
+  // background(255)
+  s.setUniform('backbuffer', g);
+
   s.setUniform('t', millis() / 1000);
-  s.setUniform('res', [minWinSize * pixelDensity(), minWinSize * pixelDensity()]);
-  quad(-1, -1, 1, -1, 1, 1, -1, 1);
+  s.setUniform('res', [g.width, g.height]);
+
+  g.quad(-1, -1, 1, -1, 1, 1, -1, 1);
+
+  image(g, 0, 0, width, height)
+  g.loadPixels()
+  let pxls = g.pixels
+  stroke(0)
+  scale(2)
+  for (let i = 0; i < pxls.length; i += 4*3) {
+    point(pxls[i], pxls[i + 1])
+    let path = document.createElement("path");
+    let x1 = pxls[i]
+    let y1 = pxls[i+1]
+    let x2 = pxls[i+4]
+    let y2 = pxls[i+4+1]
+    let x3 = pxls[i+4*2]
+    let y3 = pxls[i+4*2+1]
+    // beginShape()
+    // vertex(x1,y1)
+    // vertex(x2,y2)
+    // vertex(x3,y3)
+    // endShape(CLOSE)
+    // path.setAttribute('d', `M ${x1} ${y1} L ${x2} ${y2} L ${x3} ${y3} Z`)
+    // document.getElementById("svg").add(path);
+  }
+  // noLoop()
 }
+
+
+
 
 function windowResized() {
   minWinSize = min(windowWidth, windowHeight)

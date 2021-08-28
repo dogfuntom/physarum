@@ -1,6 +1,6 @@
 precision highp float;
 varying vec2 vPos;
-uniform sampler2D blue;
+uniform sampler2D backbuffer;
 uniform float t;
 uniform vec2 res;
 
@@ -8,23 +8,24 @@ uniform vec2 res;
 #define rnd(x) fract(54321.987 * sin(987.12345 * fract(x)))
 
 void main() {
-  vec2 uv = (gl_FragCoord.xy * 2. - res) / min(res.x, res.y);
-  float n = texture2D(blue, fract(gl_FragCoord.xy / res)).r;
-  // vec2 offset = vec2(0,.5);
-  // offset*=rot(t-n*4.);
-  // gl_FragColor=mix(vec4(1,0,0,1),vec4(0,0,1,1),smoothstep(n-.1,n+.1,length(uv-offset)));
+  vec2 uv = gl_FragCoord.xy / res / 2.;
+  vec4 b = texture2D(backbuffer, vec2(uv.x, 1. - uv.y));
 
-  float j, d, e = 1.;
-  vec3 p;
-  for(float i = 1.; i < 99.; i++) {
-    j = i;
-    p = normalize(vec3(uv, 1)) * d * (1. - n * .6);
-    p.z -= 1.;
-
-    d += e = length(p) - .5;
-    if(e < .01)
-      break;
+  // danger
+  uv.x += 123.4321;
+  if(t < .5) {
+    gl_FragColor.r = .5;//rnd(length(uv));
+    gl_FragColor.g = .5;//rnd(length(uv + .1));
+    gl_FragColor.b = .5+.1;
+    gl_FragColor.a = .5;//rnd(length(uv + .2));
+  } else {
+    vec2 p = b.rg * 2. - 1.;
+    vec2 v = vec2(rnd(length(uv + .2)),rnd(length(uv + .3)))*2.-1.;
+    p += v * .1;
+    // p.x + .01*(2.*rnd(length(uv + t)) - 1.);
+    // gl_FragColor.g += p.y + .01*(2.*rnd(length(uv + .1 + t)) - 1.);
+    gl_FragColor.rg = fract(p * .5 + .5);
+    gl_FragColor.ba = v * .5 + .5;
   }
-  gl_FragColor += 3. / j;
-  gl_FragColor.a = 1.;
+  // gl_FragColor.a = 1.;
 }
