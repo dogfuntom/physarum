@@ -32,11 +32,11 @@ void main() {
     if(abs(uv.x) > 1. || abs(uv.y) > 1.)
         discard;
 
-    float id = 1.*floor(length(uvInit*uvInit)*1.-u_time)/8.;
+    float id = 1. * floor(length(uvInit * uvInit) * 1. - u_time) / 8.;
     float k = 1.;
     uv = abs(uv);
     for(float i = 0.; i++ < 5.;) {
-        if(i<2. || rnd(id) < .7)
+        if(i < 2. || rnd(id) < .7)
         // if(i<3. || rnd(id) < .7)
             id += k * (step(1. / 3., uv.x) + step(1. / 3., uv.y));
         k /= 3.;
@@ -44,8 +44,10 @@ void main() {
         uv = mod(uv + 1., 2.) - 1.;
         uv = abs(uv);
     }
-    id=floor(id*10.-u_time-length(uvInit*uvInit));
-    outColor += palette[int(rnd(id)*5.)];
+    id = floor(id * 10. - u_time - length(uvInit * uvInit));
+    vec4 c1 = palette[int(rnd(id) * 5.)];
+    vec4 c2 = palette[(int(rnd(id) * 5.) + 1) % 5];
+    outColor = mix(c1, c2, .5 + .5 * cos(length(uvInit) * 10.));
     // outColor += vec4(rnd(id + .1), rnd(id + .2), rnd(id + .3), 1);
     outColor.a = 1.;
 }
