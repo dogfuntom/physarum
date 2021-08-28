@@ -113,4 +113,3 @@ function handleTouch(e) {
 // canvas.addEventListener('contextmenu', e => e.preventDefault());
 canvas.addEventListener('touchstart', handleTouch, {passive: false});
 canvas.addEventListener('touchmove', handleTouch, {passive: false});
-
