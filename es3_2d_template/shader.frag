@@ -15,6 +15,7 @@ uniform float tick;
 uniform float u_time;
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
+uniform vec4 palette[5];
 
 // #pragma glslify: hsv = require(glsl-hsv2rgb) 
 // #pragma glslify: noise= require(glsl-noise/simplex/4d) 
@@ -27,15 +28,24 @@ uniform vec2 u_mouse;
 
 void main() {
     vec2 uv = (gl_FragCoord.xy * 2. - u_resolution) / min(u_resolution.x, u_resolution.y);
-    float id;
+    vec2 uvInit = uv;
+    if(abs(uv.x) > 1. || abs(uv.y) > 1.)
+        discard;
+
+    float id = 1.*floor(length(uvInit*uvInit)*1.-u_time)/8.;
     float k = 1.;
-    for(float i = 0.; i++ < 4.;) {
+    uv = abs(uv);
+    for(float i = 0.; i++ < 5.;) {
+        if(i<2. || rnd(id) < .7)
+        // if(i<3. || rnd(id) < .7)
+            id += k * (step(1. / 3., uv.x) + step(1. / 3., uv.y));
+        k /= 3.;
+        uv *= 3.;
+        uv = mod(uv + 1., 2.) - 1.;
         uv = abs(uv);
-        id += k * (step(1. / 3., uv.x) + step(1. / 3., uv.y));
-        k/=3.;
-        uv*=3.;
-        uv=fract(uv);
     }
-    outColor = vec4(rnd(id + .1), rnd(id + .2), rnd(id + .3), 1);
+    id=floor(id*10.-u_time-length(uvInit*uvInit));
+    outColor += palette[int(rnd(id)*5.)];
+    // outColor += vec4(rnd(id + .1), rnd(id + .2), rnd(id + .3), 1);
     outColor.a = 1.;
 }
