@@ -22,11 +22,12 @@ mat2 rot(float a) {
 
 // #pragma glslify: random = require(glsl-random)
 
-float random(vec2 co){
-    return fract(sin(dot(mod(co,123.321)-246.642, vec2(12.9898, 78.233))) * 43758.5453);
-}
+// float random(vec2 co){
+//     return fract(sin(dot(mod(co,123.321)-246.642, vec2(12.9898, 78.233))) * 43758.5453);
+// }
 
-#define rnd(x) fract(54321.987 * sin(98.12345 * mod(x,12.321)-24.642))
+// #define rnd(x) fract(54321.987 * sin(98.12345 * mod(x,12.321)-24.642))
+
 
 uniform float LOOKUP_DIST;
 uniform float LOOKUP_DIST_SPREAD;
@@ -46,6 +47,14 @@ uniform float FRICTION;
 uniform float REPULSION;
 uniform float ANGLE_SPREAD;
 // uniform float BEAT;
+
+float PHI = 1.61803398874989484820459;  // Φ = Golden Ratio   
+float gold_noise(in vec2 xy, in float seed) {
+  return fract(tan(distance(xy * PHI, xy) * seed) * xy.x);
+}
+#define rnd(x) gold_noise(vec2(x),123.321)
+#define rnds(x,s) gold_noise(vec2(x),s)
+
 
 vec2 turn(vec2 pos, vec2 vel, float mass) {
 
@@ -108,32 +117,40 @@ vec2 grad(vec2 pos) {
   return gr;
 }
 
+// float rand(vec2 co){
+//     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+// }
+
 void main() {
   float id = (floor(gl_FragCoord.x) + floor(gl_FragCoord.y) * u_tex_fbo_res.x) * 1.54321e-5;
 
   vec4 particle = texture2D(u_tex_fbo, v_position);
   vec2 pos = particle.xy;
   vec2 vel = particle.zw;
-  float mass = rnd(id);
+  float mass = rnd(gl_FragCoord.xy);
   // float mass = sin(rnd(id)*6.28-u_time);
   // if(mod(floor(u_time / 4.),2.)==0.) mass==1.-mass;
 
   // init
   if(u_tick < 2.){
-    gl_FragColor.r = 1000.*random(gl_FragCoord.xy/u_tex_fbo_res);
-    gl_FragColor.g = 1000.*random(gl_FragCoord.xy/u_tex_fbo_res+.001);
-    gl_FragColor.ba = vec2(.1, 0) * rot(rnd(id) * 2. * 3.1415);
+    gl_FragColor.r = rnds(gl_FragCoord.xy,mod(u_time,1.))*2.-1.;
+    gl_FragColor.g = rnds(gl_FragCoord.xy,mod(u_time,1.)+1.)*2.-1.;
+    gl_FragColor.ba = vec2(.1, 0) * rot(rnd(gl_FragCoord.xy) * 2. * 3.1415);
     // gl_FragColor.ba = vec2(0);
     return;
   }
 
   // respawn
-  if(rnd(id + u_time) < RESPAWN_P) {
+  if(rnds(gl_FragCoord.xy,fract(u_time)) < RESPAWN_P) {
     // gl_FragColor.r = (rnd(id + 1. + u_time * .001 + length(pos)) * 2. - 1.);
     // gl_FragColor.g = (rnd(id + 2. + u_time * .001 + length(pos)) * 2. - 1.);
-    float angle = rnd(id + fract(u_time)) * 2. * 3.1415;
-    gl_FragColor.rg = vec2(RESPAWN_RADIUS*(1.+.1*(rnd(+id)-rnd(-id))), 0) * rot(angle) / u_resolution * u_resolution.y;
-    gl_FragColor.ba = vec2(.0001, 0) * rot(rnd(id) * 2. * 3.1415);
+    // float angle = rnd(id*RESPAWN_P*1e-2) * 2. * 3.1415;
+    // float angle = rand(gl_FragCoord.xy*RESPAWN_P+u_time) * 2. * 3.1415;
+    float angle = rnds(gl_FragCoord.xy, mod(u_time,1.81)) * 2. * 3.1415;
+    gl_FragColor.rg = vec2(RESPAWN_RADIUS * (1. + .1 * (rnds(gl_FragCoord.xy, 8.) - rnds(gl_FragCoord.xy, 9.))), 0);
+    gl_FragColor.rg *= rot(angle);
+    gl_FragColor.rg = gl_FragColor.rg / u_resolution * u_resolution.y;
+    gl_FragColor.ba = vec2(.0001, 0) * rot(rnds(gl_FragCoord.xy, 10.) * 2. * 3.1415);
     return;
   }
 
