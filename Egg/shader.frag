@@ -15,13 +15,13 @@ uniform vec2 u_mouse;
 #define BLUE 2.
 
 // #pragma glslify: crystall = require('../modules/sdf/crystall')
-#pragma glslify: rot = require('../modules/math/rotate2D') 
+#pragma glslify: rot = require('../modules/math/rotate2D.glsl') 
 // #pragma glslify: cellular = require('../modules/math/cellularNoise3d') 
 // #pragma glslify: box = require('glsl-sdf-box') 
 #pragma glslify: rnd = require(glsl-random) 
-#pragma glslify: hsv = require(glsl-hsv2rgb) 
-#pragma glslify: snoise3D = require(glsl-noise/simplex/3d) 
-#pragma glslify: snoise2D = require(glsl-noise/simplex/2d) 
+#pragma glslify: hsv = require(./node_modules/glsl-hsv2rgb/index.glsl) 
+#pragma glslify: snoise3D = require(./node_modules/glsl-noise/simplex/3d.glsl) 
+#pragma glslify: snoise2D = require(./node_modules/glsl-noise/simplex/2d.glsl) 
 // #pragma glslify: torus = require(primitive-torus) 
 
 
