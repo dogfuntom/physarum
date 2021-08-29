@@ -17,6 +17,8 @@ uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform vec4 palette[5];
 
+uniform float params[4];
+
 // #pragma glslify: hsv = require(glsl-hsv2rgb) 
 // #pragma glslify: noise= require(glsl-noise/simplex/4d) 
 #pragma glslify: rot = require('../modules/math/rotate2D.glsl') 
@@ -32,22 +34,28 @@ void main() {
     if(abs(uv.x) > 1. || abs(uv.y) > 1.)
         discard;
 
-    float id = 1. * floor(length(uvInit * uvInit) * 1. - u_time) / 8.;
+    float id = 0.;
     float k = 1.;
     uv = abs(uv);
     for(float i = 0.; i++ < 5.;) {
-        if(i < 2. || rnd(id) < .7)
-        // if(i<3. || rnd(id) < .7)
+        // stop recursion
+        if(i < 1. + params[0] * 2. || rnd(id + .5) < .2 + params[1] * .4)
             id += k * (step(1. / 3., uv.x) + step(1. / 3., uv.y));
+        //add waves
+        if(i == 1. || i < params[2] * 5. || rnd(id + .5) < .2 + params[3] * .4)
+            // id += floor((uv.x) - u_time);
+            id += floor(length(uv) * 1. - u_time * (rnd(id+.8) - .5) + id * 123.321 + i * 12.321) / 8.;
         k /= 3.;
         uv *= 3.;
         uv = mod(uv + 1., 2.) - 1.;
         uv = abs(uv);
     }
-    id = floor(id * 10. - u_time - length(uvInit * uvInit));
+    // id = floor(id * 10. - u_time - length(uvInit * uvInit));
     vec4 c1 = palette[int(rnd(id) * 5.)];
-    vec4 c2 = palette[(int(rnd(id) * 5.) + 1) % 5];
-    outColor = mix(c1, c2, .5 + .5 * cos(length(uvInit) * 10.));
-    // outColor += vec4(rnd(id + .1), rnd(id + .2), rnd(id + .3), 1);
+    vec4 c2 = palette[int(rnd(id + .1) * 5.) % 5];
+    float sand = rnd(length(floor((uvInit - 1.) * 243.) / 243.) + .0 * fract(u_time));
+    // outColor = mix(c1, c2, sand+fract(-u_time+((atan(uvInit.y,uvInit.x)/6.283+.5)/1. +length(uvInit))*floor((rnd(id)-.5)*10.) + id*999.));
+    // outColor = mix(c1, c2, sand+fract(-u_time+((atan(uvInit.y,uvInit.x)/6.283+.5)/1. +length(uvInit))*floor((rnd(id)-.5)*10.) + id*999.));
+    outColor = mix(c1, c2, .5 + .5 * cos(length(uvInit) * 10. + u_time * (rnd(id) - .5)) + sand * .2);
     outColor.a = 1.;
 }
