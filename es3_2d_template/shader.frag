@@ -44,7 +44,7 @@ void main() {
         //add waves
         if(i == 1. || i < params[2] * 5. || rnd(id + .5) < .2 + params[3] * .4)
             // id += floor((uv.x) - u_time);
-            id += floor(length(uv) * 1. - u_time * (rnd(id+.8) - .5) + id * 123.321 + i * 12.321) / 8.;
+            id += floor(((rnd(id+.9)<.5)?uv.x:uv.y) * 1. - u_time * (rnd(id+.8) - .5) + id * 123.321 + i * 12.321) / 8.;
         k /= 3.;
         uv *= 3.;
         uv = mod(uv + 1., 2.) - 1.;

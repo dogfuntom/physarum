@@ -30,6 +30,7 @@ function maxContrast(arr) {
 console.log(palettes)
 
 const mousepos = [0, 0];
+let pause = false
 let tick = 0
 let timeLounch = +new Date()
 const canvas = document.getElementById('canvasgl')
@@ -97,11 +98,11 @@ function draw(time) {
   tick++
 }
 
-(function animate(now) {
-  draw(now / 1000);
-  // setTimeout(requestAnimationFrame, 50, animate);
-  requestAnimationFrame(animate);
-})(0);
+function animate() {
+  draw(new Date() / 1000)
+  if(!pause)requestAnimationFrame(animate)
+}
+animate()
 
 function setMousePos(e) {
   mousepos[0] = e.clientX / gl.canvas.clientWidth;
@@ -150,6 +151,7 @@ window.addEventListener('click', mouseClicked)
 function mouseClicked() {
   palette = palettes[Math.floor(palettes.length * Math.random())].map(c => chroma(c).gl())
   params = [Math.random(), Math.random(), Math.random(), Math.random(),]
+  animate()
 }
 
 window.addEventListener('resize', windowResized)
@@ -185,7 +187,8 @@ function keyPressed(key) {
     }
   }
   if (key.code == 'Space') {
-    mouseClicked()
+    pause=!pause
+    if(!pause) animate()
   }
 }
 
