@@ -48,35 +48,35 @@ void main() {
     //     uv = mod(uv + 1., 2.) - 1.;
     //     uv = abs(uv);
     // }
-    // vec4 c1 = palette[int(rnd(id) * 5.)];
-    // vec4 c2 = palette[int(rnd(id + .1) * 5.) % 5];
-    // float sand = rnd(length(floor((uvInit - 1.) * 243.) / 243.) + .0 * fract(u_time));
-    // outColor = mix(c1, c2, .5 + .5 * cos(length(uvInit) * 10. + u_time * (rnd(id) - .5)) + sand * .2);
-    // outColor.a = 1.;
 
-    uv*=4.;
     uv.y *= sqrt(3.);
     uv *= rot(PI * 3. / 4.);
-    uv *= 2.;
     uv.y += 1.;
 
     vec3 crf; // column, row, face
     crf.y = floor((uv.y + floor(uv.x) + 1.) / 3.);
     crf.x = floor(uv.y / 3. - floor(uv.x) / 3. - uv.x / 3.);
+    vec2 uvface; // uv mapped onto cubes
 
     vec2 uvf = floor(uv);
     //front
-    outColor.rg = fract(uv - vec2(0, uv.x)), crf.z = 0.;
+    uvface = fract(uv - vec2(0, uv.x)), crf.z = 0.;
     //right
     if(mod(floor(uv.x - uv.y) - uvf.y - 1., 3.) == 2.)
-        outColor.rg = fract(uv - vec2(uv.y, 0)), crf.z = 1.;
+        uvface = fract(uv - vec2(uv.y, 0)), crf.z = 1.;
     //top
     if(mod(uvf.x + uvf.y + 1., 3.) == 0.)
-        outColor.rg = fract(uv), crf.z = 2.;
+        uvface = fract(uv), crf.z = 2.;
+    uvface=uvface*2.-1.;
 
-    float dist = length(vec3(crf.x, crf.y, -crf.x - crf.y));
-    outColor.b = 1.;
-    outColor.rgb *= hsv(rnd(length(crf.xy) + floor(u_time * 3. - dist / 8.)), .5, 2.);
-    outColor *= (crf.z + 1.) / 3. * (1. - fract(u_time * 3. - dist / 8.));
+    // float dist = length(vec3(crf.x, crf.y, -crf.x - crf.y));
+    // outColor.b = 1.;
+    // outColor.rgb *= hsv(rnd(length(crf.xy) + floor(u_time * 3. - dist / 8.)), .5, 2.);
+    // outColor *= (crf.z + 1.) / 3. * (1. - fract(u_time * 3. - dist / 8.));
 
+    vec4 c1 = palette[int(rnd(length(crf)) * 5.)];
+    vec4 c2 = palette[int(rnd(length(crf) + .1) * 5.) % 5];
+    float sand = rnd(length(floor((uvInit - 1.) * 243.) / 243.) + .0 * fract(u_time));
+    outColor = mix(c1, c2, .5 + .5 * cos(length(uvface) * 10. + 4.*u_time * (rnd(length(crf)) - .5)) + sand * .2);
+    outColor.a = 1.;
 }
