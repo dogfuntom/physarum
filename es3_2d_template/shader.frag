@@ -18,65 +18,23 @@ uniform float params[4];
 #define rnd(x) random(vec2(x))
 #define PI 3.14159265
 
-vec3 hsv(float h, float s, float v){
+vec3 hsv(float h, float s, float v) {
     vec4 t = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
     vec3 p = abs(fract(vec3(h) + t.xyz) * 6.0 - vec3(t.w));
     return v * mix(vec3(t.x), clamp(p - vec3(t.x), 0.0, 1.0), s);
 }
 
-
 void main() {
     vec2 uv = (gl_FragCoord.xy * 2. - u_resolution) / min(u_resolution.x, u_resolution.y);
     vec2 uvInit = uv;
-    // if(abs(uv.x) > 1. || abs(uv.y) > 1.)
-    //     discard;
 
-    // float id = 0.;
-    // float k = 1.;
-    // uv = abs(uv);
-    // for(float i = 0.; i++ < 5.;) {
-    //     // stop recursion
-    //     if(i < 1. + params[0] * 2. || rnd(id + .5) < .2 + params[1] * .4)
-    //         id += k * (step(1. / 3., uv.x) + step(1. / 3., uv.y));
-    //     //add waves
-    //     if(i == 1. || i < params[2] * 5. || rnd(id + .5) < .2 + params[3] * .4)
-    //         // id += floor((uv.x) - u_time);
-    //         id += floor(uv.x * 1. - u_time * (rnd(id+.8) - .5) + id * 123.321 + i * 12.321) / 8.;
-    //         // id += floor(((rnd(id+.9)<.5)?uv.x:uv.y) * 1. - u_time * (rnd(id+.8) - .5) + id * 123.321 + i * 12.321) / 8.;
-    //     k /= 3.;
-    //     uv *= 3.;
-    //     uv = mod(uv + 1., 2.) - 1.;
-    //     uv = abs(uv);
-    // }
+    float id;
+    float ang = atan(uv.y, uv.x) / PI / 2. + .5;
+    
+    float id_o = rnd(floor(length(uv) * 50.) / 50.);
+    float id_l = rnd(floor(ang * 200.) / 200.);
+    id = mix(id_l, id_o, step(sin(length(uv*4.)-u_time)*.5+.5, rnd(id_o+id_l)));
 
-    uv.y *= sqrt(3.);
-    uv *= rot(PI * 3. / 4.);
-    uv.y += 1.;
-
-    vec3 crf; // column, row, face
-    crf.y = floor((uv.y + floor(uv.x) + 1.) / 3.);
-    crf.x = floor(uv.y / 3. - floor(uv.x) / 3. - uv.x / 3.);
-    vec2 uvface; // uv mapped onto cubes
-
-    vec2 uvf = floor(uv);
-    //front
-    uvface = fract(uv - vec2(0, uv.x)), crf.z = 0.;
-    //right
-    if(mod(floor(uv.x - uv.y) - uvf.y - 1., 3.) == 2.)
-        uvface = fract(uv - vec2(uv.y, 0)), crf.z = 1.;
-    //top
-    if(mod(uvf.x + uvf.y + 1., 3.) == 0.)
-        uvface = fract(uv), crf.z = 2.;
-    uvface=uvface*2.-1.;
-
-    // float dist = length(vec3(crf.x, crf.y, -crf.x - crf.y));
-    // outColor.b = 1.;
-    // outColor.rgb *= hsv(rnd(length(crf.xy) + floor(u_time * 3. - dist / 8.)), .5, 2.);
-    // outColor *= (crf.z + 1.) / 3. * (1. - fract(u_time * 3. - dist / 8.));
-
-    vec4 c1 = palette[int(rnd(length(crf)) * 5.)];
-    vec4 c2 = palette[int(rnd(length(crf) + .1) * 5.) % 5];
-    float sand = rnd(length(floor((uvInit - 1.) * 243.) / 243.) + .0 * fract(u_time));
-    outColor = mix(c1, c2, .5 + .5 * cos(length(uvface) * 10. + 4.*u_time * (rnd(length(crf)) - .5)) + sand * .2);
+    outColor.rgb = hsv(id,length(uv),1.);
     outColor.a = 1.;
 }
