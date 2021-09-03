@@ -30,11 +30,16 @@ void main() {
 
     float id;
     float ang = atan(uv.y, uv.x) / PI / 2. + .5;
-    
-    float id_o = rnd(floor(length(uv) * 50.) / 50.);
-    float id_l = rnd(floor(ang * 200.) / 200.);
-    id = mix(id_l, id_o, step(sin(length(uv*4.)-u_time)*.5+.5, rnd(id_o+id_l)));
 
-    outColor.rgb = hsv(id,length(uv),1.);
+    float n_l = rnd(params[0]) * 200.;
+    float n_o = rnd(params[1]) * 200.;
+    float id_o = floor(pow(length(uv / 2.) + .1, 4. * params[0] + 4. * params[0] * .5 * params[1] * sin(length(uv * 8.) - 4. * u_time)) * n_o) / n_o;
+    float id_l = floor(.5 + .2 * sin(u_time + rnd(params[0] + floor(ang * n_l) / n_l)) * n_l + n_l / 2.) / n_l;
+
+    id = mix(id_l, id_o, step(id_o, id_l));
+    // id = mix(id_l, id_o, step(sin(length(uv*4.)-u_time*8.)*.2+.5, rnd(id_o+id_l)));
+
+    // outColor.rgb += rnd(id);//hsv(id-u_time*.1,1.,1.);
+    outColor.rgb = hsv(rnd(id) - u_time * .1, 1., 1.);
     outColor.a = 1.;
 }
