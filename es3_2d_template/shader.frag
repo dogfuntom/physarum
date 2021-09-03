@@ -25,7 +25,7 @@ vec3 hsv(float h, float s, float v) {
 }
 
 float isOAboveL(float id_l, float id_o) {
-    return step(rnd(params[3]*.6+.2), rnd(id_l * .001 + id_o));
+    return step(rnd(params[3]*.6+.2), fract(rnd(id_l * .001 + id_o)+.1*params[1]*sin(u_time*params[2]-length(gl_FragCoord.xy/u_resolution-.5))));
 }
 
 void main() {
@@ -35,19 +35,19 @@ void main() {
     float id;
     float ang = atan(uv.y, uv.x) / PI / 2. + .5;
 
-    float n_l = 8. + pow(rnd(params[0]),1.5) * 150.;
-    float n_o = 8. + pow(rnd(params[1]),1.5) * 150.;
+    float n_l = 8. + floor(pow(rnd(params[0]),1.5) * 150.);
+    float n_o = 8. + floor(pow(rnd(params[1]),1.5) * 150.);
     // float id_o = floor(length(uv) * n_o) / n_o;
     //     float n_l = rnd(params[0]) * 200.;
     // float n_o = rnd(params[1]) * 200.;
-    float len = pow(length(uv / 2.) + .1, 4. * params[0] + 4. * params[0] * .5 * params[1] * sin(length(uv * 8.) - 4. * u_time));
-    float id_o = floor(len * n_o) / n_o;
+    float len = pow(length(uv / 2.) + .1, 4. * params[0] + 4. * params[0] * .5 * params[1] * sin(length(uv * 8.) - 1. * u_time));
+    float id_o = floor(len * n_o+1.) / n_o;
     float id_l = floor(ang * n_l) / n_l;
 // float id_l = floor(ang * n_l) / n_l;
 
     id = mix(id_l, id_o, isOAboveL(id_l, id_o));
     float edges_l = smoothstep(.0, .01, fract(ang * n_l)) - smoothstep(.99, 1., fract(ang * n_l));
-    float edges_o = smoothstep(.0, .01, fract(length(uv) * n_o)) - smoothstep(.99, 1., fract(length(uv) * n_o));
+    float edges_o = smoothstep(.0, .01, fract(len * n_o)) - smoothstep(.99, 1., fract(len * n_o));
 
     float edges = mix(edges_l, edges_o, isOAboveL(id_l, id_o));
     // float shade = smooth;
@@ -56,13 +56,13 @@ void main() {
         edges *= smoothstep(1., 0., fract(ang * n_l));
     }
     if(isOAboveL(id_l, id_o) == 1. && isOAboveL(fract(id_l - 1. / n_l), id_o) == 0.) {
-        edges *= smoothstep(0., 1., fract(ang * n_l));
+        edges *= smoothstep(0., 1., fract(ang * floor(rnd(id)*10.) * n_l));
     }
     if(isOAboveL(id_l, id_o) == 0. && isOAboveL(id_l, fract(id_o + 1. / n_o)) == 1.) {
-        edges *= smoothstep(1., 0., fract(length(uv) * n_o));
+        edges *= smoothstep(1., 0., fract(len * n_o));
     }
     if(isOAboveL(id_l, id_o) == 0. && isOAboveL(id_l, fract(id_o - 1. / n_o)) == 1.) {
-        edges *= smoothstep(0., 1., fract(length(uv) * n_o));
+        edges *= smoothstep(0., 1., fract(len* floor(rnd(id)*10.) * n_o));
     }
     edges = pow(edges, .4);
 
