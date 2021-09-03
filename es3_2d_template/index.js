@@ -8,6 +8,9 @@ const vShader = `#version 300 es
     gl_Position = vec4(position, 0.0, 1.0);
   }`;
 const fShader = require('./shader.frag');
+let saveImageSize = 1024
+let timePrev = +new Date
+let time
 
 
 // CUSTOM STUFF
@@ -39,13 +42,13 @@ const canvas = document.getElementById('canvasgl')
 // canvas.height = canvas.clientHeight * window.devicePixelRatio
 
 // const gl = twgl.getWebGLContext(canvas, { antialias: false, depth: false });
-const gl = canvas.getContext("webgl2");
+const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true })
 
 twgl.addExtensionsToContext(gl);
-console.log(gl.getExtension("OES_texture_float"));
-console.log(gl.getExtension("WEBGL_color_buffer_float"));
+console.log(gl.getExtension("OES_texture_float"))
+console.log(gl.getExtension("WEBGL_color_buffer_float"))
 
-const program = twgl.createProgramInfo(gl, [vShader, fShader]);
+const program = twgl.createProgramInfo(gl, [vShader, fShader])
 
 // const n = 800;
 // const m = n;
@@ -59,7 +62,8 @@ let prevTime;
 
 mouseClicked()
 windowResized()
-function draw(time) {
+function draw() {
+  let time = new Date() / 1000
   dt = (prevTime) ? time - prevTime : 0;
   prevTime = time;
 
@@ -73,6 +77,7 @@ function draw(time) {
     u_resolution: [gl.canvas.width, gl.canvas.height],
     u_mouse: mousepos,
     params: params,
+    viewbox: [0, 0, 1, 1],
   });
 
   twgl.bindFramebufferInfo(gl, null);
@@ -100,8 +105,11 @@ function draw(time) {
 }
 
 function animate() {
-  draw(new Date() / 1000)
-  if (!pause) requestAnimationFrame(animate)
+  if (pause) return;
+  let timeCurrent = +new Date()
+  time+=timeCurrent-timePrev
+  draw()
+  requestAnimationFrame(animate)
 }
 animate()
 
@@ -117,43 +125,19 @@ canvas.addEventListener('mousemove', setMousePos);
 //   mousepos[1] = .501;
 // });
 
-// canvas.addEventListener('mousedown', e => {
-//   if (e.button === 0) {
-//     offGravity = 1;
-//   } else {
-//     restoreColors = 1;
-//   }
-// });
-
-// window.addEventListener('mouseup', () => {
-//   offGravity = 0;
-//   restoreColors = 0;
-// });
-
 function handleTouch(e) {
   e.preventDefault();
   setMousePos(e.touches[0]);
 }
 
-// canvas.addEventListener('contextmenu', e => e.preventDefault());
-canvas.addEventListener('touchstart', handleTouch, { passive: false });
-canvas.addEventListener('touchmove', handleTouch, { passive: false });
 
 
-
-
-
-
-
-
-
-
-window.addEventListener('click', mouseClicked)
+document.querySelector('canvas').addEventListener('click', mouseClicked)
 window.addEventListener('touchstart', mouseClicked)
 function mouseClicked() {
   palette = palettes[Math.floor(palettes.length * Math.random())].map(c => chroma(c).gl())
   params = [Math.random(), Math.random(), Math.random(), Math.random(),]
-  animate()
+  draw()
 }
 
 window.addEventListener('resize', windowResized)
@@ -198,6 +182,65 @@ function keyPressed(key) {
       animate()
     }
   }
+  if (key.code == 'KeyS') {
+    saveImage()
+  }
 }
 
+function saveImage() {
+  if (pause)
+    timeLounch += new Date() - pauseStart
+  pauseStart = new Date
 
+  let size = saveImageSize
+  saveImageSize *= 2
+  let splits = size / 512
+  let step = 1 / splits
+  let splitSize = size / splits
+  canvas.width = splitSize
+  canvas.height = splitSize
+
+  var dynamicCanvas = document.createElement("canvas");
+  var dynamicContext = dynamicCanvas.getContext("2d")
+  dynamicCanvas.height = size;
+  dynamicCanvas.width = size;
+  // change canvas size to 512
+
+  let date = new Date()
+  for (let i = 0; i < 1; i += step) {
+    for (let j = 0; j < 1; j += step) {
+      gl.useProgram(program.program);
+      twgl.setBuffersAndAttributes(gl, program, positionBuffer);
+      twgl.setUniforms(program, {
+        // prevStateCells: shader.attachments[0],
+        tick: tick,
+        palette: palette.flat(),
+        u_time: (date - timeLounch) / 1000,
+        u_resolution: [gl.canvas.width, gl.canvas.height],
+        u_mouse: mousepos,
+        params: params,
+        viewbox: [i, j, step, step],
+      });
+
+      twgl.bindFramebufferInfo(gl, null);
+      twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
+
+      dynamicContext.drawImage(canvas, i * size, size - (j + step) * size);
+
+      console.log(i, j)
+    }
+  }
+
+
+  let link = document.getElementById('link');
+  link.setAttribute('download', `MintyPaper.png`);
+  link.setAttribute('href', dynamicCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
+  link.click();
+
+
+  // resume
+  timeLounch += new Date() - pauseStart
+  // pause = false
+  windowResized()
+  draw()
+}
