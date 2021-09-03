@@ -149,6 +149,7 @@ canvas.addEventListener('touchmove', handleTouch, { passive: false });
 
 
 window.addEventListener('click', mouseClicked)
+window.addEventListener('touchstart', mouseClicked)
 function mouseClicked() {
   palette = palettes[Math.floor(palettes.length * Math.random())].map(c => chroma(c).gl())
   params = [Math.random(), Math.random(), Math.random(), Math.random(),]

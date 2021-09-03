@@ -25,7 +25,7 @@ vec3 hsv(float h, float s, float v) {
 }
 
 float isOAboveL(float id_l, float id_o) {
-    return step(sin(u_time * .0) * .5 + .5, rnd(id_l * .001 + id_o));
+    return step(rnd(params[3]*.6+.2), rnd(id_l * .001 + id_o));
 }
 
 void main() {
@@ -35,13 +35,14 @@ void main() {
     float id;
     float ang = atan(uv.y, uv.x) / PI / 2. + .5;
 
-    float n_l = 8. + rnd(params[0]) * 200.;
-    float n_o = 8. + rnd(params[1]) * 200.;
+    float n_l = 8. + pow(rnd(params[0]),1.5) * 150.;
+    float n_o = 8. + pow(rnd(params[1]),1.5) * 150.;
     // float id_o = floor(length(uv) * n_o) / n_o;
     //     float n_l = rnd(params[0]) * 200.;
     // float n_o = rnd(params[1]) * 200.;
-    float id_o = floor(pow(length(uv / 2.) + .1, 4. * params[0] + 4. * params[0] * .5 * params[1] * sin(length(uv * 8.) - 4. * u_time)) * n_o) / n_o;
-    float id_l = floor(.5 + .2 * sin(u_time*.0 + rnd(params[0] + floor(ang * n_l) / n_l)) * n_l + n_l / 2.) / n_l;
+    float len = pow(length(uv / 2.) + .1, 4. * params[0] + 4. * params[0] * .5 * params[1] * sin(length(uv * 8.) - 4. * u_time));
+    float id_o = floor(len * n_o) / n_o;
+    float id_l = floor(ang * n_l) / n_l;
 // float id_l = floor(ang * n_l) / n_l;
 
     id = mix(id_l, id_o, isOAboveL(id_l, id_o));
@@ -70,7 +71,7 @@ void main() {
     // outColor.a = 1.;
     vec4 c1 = palette[int(rnd(id) * 5.)];
     vec4 c2 = palette[int(rnd(id + .1) * 5.) % 5];
-    float sand = rnd(length(floor((uvInit - 1.) * 243.) / 243.) + .0 * fract(u_time));
+    float sand = rnd(vec2(length(floor((length(uvInit) - 1.) * 243.) / 243.) + .0 * fract(u_time),floor(ang*1000.)/1000.));
     outColor = mix(c1, c2, .5 + .5 * cos(length(uvInit) * 10. + u_time * (rnd(id) - .5)) + sand * .2) * edges;
     outColor.a = 1.;
 
