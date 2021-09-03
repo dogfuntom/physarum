@@ -24,6 +24,10 @@ vec3 hsv(float h, float s, float v) {
     return v * mix(vec3(t.x), clamp(p - vec3(t.x), 0.0, 1.0), s);
 }
 
+float isOAboveL(float id_l, float id_o) {
+    return step(sin(u_time * .0) * .5 + .5, rnd(id_l * .001 + id_o));
+}
+
 void main() {
     vec2 uv = (gl_FragCoord.xy * 2. - u_resolution) / min(u_resolution.x, u_resolution.y);
     vec2 uvInit = uv;
@@ -31,15 +35,43 @@ void main() {
     float id;
     float ang = atan(uv.y, uv.x) / PI / 2. + .5;
 
-    float n_l = rnd(params[0]) * 200.;
-    float n_o = rnd(params[1]) * 200.;
+    float n_l = 8. + rnd(params[0]) * 200.;
+    float n_o = 8. + rnd(params[1]) * 200.;
+    // float id_o = floor(length(uv) * n_o) / n_o;
+    //     float n_l = rnd(params[0]) * 200.;
+    // float n_o = rnd(params[1]) * 200.;
     float id_o = floor(pow(length(uv / 2.) + .1, 4. * params[0] + 4. * params[0] * .5 * params[1] * sin(length(uv * 8.) - 4. * u_time)) * n_o) / n_o;
-    float id_l = floor(.5 + .2 * sin(u_time + rnd(params[0] + floor(ang * n_l) / n_l)) * n_l + n_l / 2.) / n_l;
+    float id_l = floor(.5 + .2 * sin(u_time*.0 + rnd(params[0] + floor(ang * n_l) / n_l)) * n_l + n_l / 2.) / n_l;
+// float id_l = floor(ang * n_l) / n_l;
 
-    id = mix(id_l, id_o, step(id_o, id_l));
-    // id = mix(id_l, id_o, step(sin(length(uv*4.)-u_time*8.)*.2+.5, rnd(id_o+id_l)));
+    id = mix(id_l, id_o, isOAboveL(id_l, id_o));
+    float edges_l = smoothstep(.0, .01, fract(ang * n_l)) - smoothstep(.99, 1., fract(ang * n_l));
+    float edges_o = smoothstep(.0, .01, fract(length(uv) * n_o)) - smoothstep(.99, 1., fract(length(uv) * n_o));
 
-    // outColor.rgb += rnd(id);//hsv(id-u_time*.1,1.,1.);
-    outColor.rgb = hsv(rnd(id) - u_time * .1, 1., 1.);
+    float edges = mix(edges_l, edges_o, isOAboveL(id_l, id_o));
+    // float shade = smooth;
+
+    if(isOAboveL(id_l, id_o) == 1. && isOAboveL(fract(id_l + 1. / n_l), id_o) == 0.) {
+        edges *= smoothstep(1., 0., fract(ang * n_l));
+    }
+    if(isOAboveL(id_l, id_o) == 1. && isOAboveL(fract(id_l - 1. / n_l), id_o) == 0.) {
+        edges *= smoothstep(0., 1., fract(ang * n_l));
+    }
+    if(isOAboveL(id_l, id_o) == 0. && isOAboveL(id_l, fract(id_o + 1. / n_o)) == 1.) {
+        edges *= smoothstep(1., 0., fract(length(uv) * n_o));
+    }
+    if(isOAboveL(id_l, id_o) == 0. && isOAboveL(id_l, fract(id_o - 1. / n_o)) == 1.) {
+        edges *= smoothstep(0., 1., fract(length(uv) * n_o));
+    }
+    edges = pow(edges, .4);
+
+    // // outColor.rgb += rnd(id);//hsv(id-u_time*.1,1.,1.);
+    // outColor.rgb = hsv(rnd(id), 1., 1.) * edges;
+    // outColor.a = 1.;
+    vec4 c1 = palette[int(rnd(id) * 5.)];
+    vec4 c2 = palette[int(rnd(id + .1) * 5.) % 5];
+    float sand = rnd(length(floor((uvInit - 1.) * 243.) / 243.) + .0 * fract(u_time));
+    outColor = mix(c1, c2, .5 + .5 * cos(length(uvInit) * 10. + u_time * (rnd(id) - .5)) + sand * .2) * edges;
     outColor.a = 1.;
+
 }
