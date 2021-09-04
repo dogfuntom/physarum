@@ -15,7 +15,7 @@
   },
   "scripts": {
     "start": "parcel serve ./index.html",
-    "build": "rm -rf ./dist; parcel build --no-source-maps --no-content-hash --public-url ./ ./index.html; cd dist; zip -r Archive.zip ./"
+    "build": "rm -rf ./dist; parcel build --no-source-maps --no-content-hash --public-url ./ ./index.html; cd dist; zip -r Archive.zip ./; mv Archive.zip ~/Downloads/"
   },
   "glslify": {
     "transform": [

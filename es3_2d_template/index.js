@@ -8,9 +8,8 @@ const vShader = `#version 300 es
     gl_Position = vec4(position, 0.0, 1.0);
   }`;
 const fShader = require('./shader.frag');
-let saveImageSize = 1024
-let timePrev = +new Date
-let time
+let timePrev = +new Date()
+let time = 0
 
 
 // CUSTOM STUFF
@@ -36,7 +35,6 @@ const mousepos = [0, 0];
 let pause = false
 let pauseStart
 let tick = 0
-let timeLounch = +new Date()
 const canvas = document.getElementById('canvasgl')
 // canvas.width = canvas.clientWidth * window.devicePixelRatio
 // canvas.height = canvas.clientHeight * window.devicePixelRatio
@@ -57,15 +55,9 @@ const program = twgl.createProgramInfo(gl, [vShader, fShader])
 const positionObject = { position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComponents: 2 } };
 const positionBuffer = twgl.createBufferInfoFromArrays(gl, positionObject);
 
-let dt;
-let prevTime;
-
 mouseClicked()
 windowResized()
 function draw() {
-  let time = new Date() / 1000
-  dt = (prevTime) ? time - prevTime : 0;
-  prevTime = time;
 
   gl.useProgram(program.program);
   twgl.setBuffersAndAttributes(gl, program, positionBuffer);
@@ -73,7 +65,7 @@ function draw() {
     // prevStateCells: shader.attachments[0],
     tick: tick,
     palette: palette.flat(),
-    u_time: (new Date() - timeLounch) / 1000,
+    u_time: time / 1000,
     u_resolution: [gl.canvas.width, gl.canvas.height],
     u_mouse: mousepos,
     params: params,
@@ -108,6 +100,8 @@ function animate() {
   if (pause) return;
   let timeCurrent = +new Date()
   time+=timeCurrent-timePrev
+  console.log(time)
+  timePrev=timeCurrent
   draw()
   requestAnimationFrame(animate)
 }
@@ -175,10 +169,9 @@ function keyPressed(key) {
   if (key.code == 'Space') {
     pause = !pause
     if (pause) {
-      pauseStart = new Date
     }
     else {
-      timeLounch += new Date() - pauseStart
+      timePrev = +new Date()
       animate()
     }
   }
@@ -188,13 +181,13 @@ function keyPressed(key) {
 }
 
 function saveImage() {
-  if (pause)
-    timeLounch += new Date() - pauseStart
-  pauseStart = new Date
+  
+  let size=parseInt(prompt('Width of image to download',10000))
+  console.log(size)
 
-  let size = saveImageSize
-  saveImageSize *= 2
-  let splits = size / 512
+  // size = saveImageSize
+  // saveImageSize *= 2
+  let splits = Math.ceil(size / 512)
   let step = 1 / splits
   let splitSize = size / splits
   canvas.width = splitSize
@@ -215,7 +208,7 @@ function saveImage() {
         // prevStateCells: shader.attachments[0],
         tick: tick,
         palette: palette.flat(),
-        u_time: (date - timeLounch) / 1000,
+        u_time: time / 1000,
         u_resolution: [gl.canvas.width, gl.canvas.height],
         u_mouse: mousepos,
         params: params,
@@ -239,8 +232,6 @@ function saveImage() {
 
 
   // resume
-  timeLounch += new Date() - pauseStart
-  // pause = false
   windowResized()
   draw()
 }

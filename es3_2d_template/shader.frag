@@ -77,7 +77,7 @@ void main() {
     // outColor.a = 1.;
     vec4 c1 = palette[int(rnd(id) * 5.)];
     vec4 c2 = palette[int(rnd(id + .1) * 5.) % 5];
-    float sand = rnd(vec2(length(floor((length(uv) - 1.) * 243.) / 243.) + .0 * fract(u_time), floor(ang * 1000.) / 1000.));
+    float sand = rnd(vec2(length(floor((normalize(uv) - 1.) * 243.) / 243.) + .0 * fract(u_time), floor(ang * 1000.) / 1000.));
     outColor = mix(c1, c2, .5 + .5 * cos(length(uv) * 10. + u_time * (rnd(id) - .5)) + sand * .2) * edges;
     outColor.a = 1.;
 
