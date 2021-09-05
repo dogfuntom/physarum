@@ -17,6 +17,9 @@ let palettes = [["#69d2e7", "#a7dbd8", "#e0e4cc", "#f38630", "#fa6900"], ["#fe43
 let palette// = palettes[Math.floor(palettes.length * Math.random())].map(c => chroma(c).gl())
 let params
 palettes = palettes.sort((a, b) => maxContrast(a) - maxContrast(b)).slice(-80)
+
+let N, segments, relief
+
 function maxContrast(arr) {
   let mc = 0
   for (let i = 0; i < arr.length; i++) {
@@ -29,7 +32,7 @@ function maxContrast(arr) {
   }
   return mc
 }
-console.log(palettes)
+// console.log(palettes)
 
 const mousepos = [0, 0];
 let pause = false
@@ -55,6 +58,9 @@ const program = twgl.createProgramInfo(gl, [vShader, fShader])
 const positionObject = { position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComponents: 2 } };
 const positionBuffer = twgl.createBufferInfoFromArrays(gl, positionObject);
 
+let ar = [...Array(16)].map(d => [...Array(16)].fill(Math.random()))
+console.log(ar)
+
 mouseClicked()
 windowResized()
 function draw() {
@@ -70,6 +76,8 @@ function draw() {
     u_mouse: mousepos,
     params: params,
     viewbox: [0, 0, 1, 1],
+    segments: segments.flat(),
+    N: N,
   });
 
   twgl.bindFramebufferInfo(gl, null);
@@ -99,9 +107,9 @@ function draw() {
 function animate() {
   if (pause) return;
   let timeCurrent = +new Date()
-  time+=timeCurrent-timePrev
-  console.log(time)
-  timePrev=timeCurrent
+  time += timeCurrent - timePrev
+  // console.log(time)
+  timePrev = timeCurrent
   draw()
   requestAnimationFrame(animate)
 }
@@ -131,6 +139,85 @@ window.addEventListener('touchstart', mouseClicked)
 function mouseClicked() {
   palette = palettes[Math.floor(palettes.length * Math.random())].map(c => chroma(c).gl())
   params = [Math.random(), Math.random(), Math.random(), Math.random(),]
+
+
+  N = 8+Math.floor(16*Math.random());
+  relief = [...Array(N)].map((d) => [...Array(N)].map((d) => Math.random()));
+  segments = [...Array(N)].map((d) => [...Array(N)].fill(0));
+
+  function getRelief(i, j) {
+    i = i % N;
+    if (i < 0) i = (i + N) % N;
+    j = j % N;
+    if (j < 0) j = (j + N) % N;
+    return relief[i][j];
+  }
+
+  function indexToIJ(index) {
+    let i, j;
+    if (index == 0) {
+      i = 0;
+      j = 0;
+    } else if (index == 1) {
+      i = 0;
+      j = 0 - 1;
+    } else if (index == 2) {
+      i = 0 + 1;
+      j = 0;
+    } else if (index == 3) {
+      i = 0;
+      j = 0 + 1;
+    } else if (index == 4) {
+      i = 0 - 1;
+      j = 0;
+    }
+    return [i, j];
+  }
+
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < N; j++) {
+      if (segments[i][j] > 0) continue;
+      let n = [];
+      n[0] = getRelief(i, j);
+      n[1] = getRelief(i, j - 1);
+      n[2] = getRelief(i + 1, j);
+      n[3] = getRelief(i, j + 1);
+      n[4] = getRelief(i - 1, j);
+      let indexMin = 0;
+      for (let index = 1; index < 5; index++) {
+        if (n[index] < n[0]) indexMin = index;
+      }
+      if (indexMin == 0) {
+        segments[i][j] = Math.random();
+      } else {
+        segments[i][j] = -indexMin; // negative is for index
+      }
+    }
+  }
+
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < N; j++) {
+      let si = i,
+        sj = j;
+      while (segments[si][sj] < 0) {
+        let index = -segments[si][sj];
+        let [di, dj] = indexToIJ(index);
+        si += di;
+        sj += dj;
+        si = si % N;
+        if (si < 0) si = (si + N) % N;
+        sj = sj % N;
+        if (sj < 0) sj = (sj + N) % N;
+      }
+      segments[i][j] = segments[si][sj]
+    }
+  }
+
+
+
+
+
+
   draw()
 }
 
@@ -181,8 +268,8 @@ function keyPressed(key) {
 }
 
 function saveImage() {
-  
-  let size=parseInt(prompt('Width of image to download',10000))
+
+  let size = parseInt(prompt('Width of image to download', 10000))
   console.log(size)
 
   // size = saveImageSize
