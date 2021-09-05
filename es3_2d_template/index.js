@@ -145,7 +145,7 @@ function mouseClicked() {
   params = [Math.random(), Math.random(), Math.random(), Math.random(),]
 
 
-  N = 8 + Math.floor(16 * Math.random());
+  N = 4 + Math.floor(20 * Math.random()**2);
   relief = [...Array(N)].map((d) => [...Array(N)].map((d) => Math.random()));
   segments = [...Array(N)].map((d) => [...Array(N)].fill(0));
 
