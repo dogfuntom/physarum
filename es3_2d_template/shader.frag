@@ -45,14 +45,16 @@ void main() {
     vec2 uvf = floor(uv * 128.) / 128. + vec2(99., 999.);
     t += .5 * rnd(length(uvf) + fract(u_time));
 
-    uv*=rnd(params[3])*.5+.5;
-    uv/=dot(uv,uv);
-    uv.x+=params[2]*(params[0]*2.-1.);
-    uv.y+=params[2]*(params[1]*2.-1.);
-    uv/=dot(uv,uv);
+    uv.y+=t*.1;
+    uv*=pow(rnd(params[3]),8.)*.5+1.;
+    // uv/=dot(uv,uv);
+    // // uv.x+=params[2]*(params[0]*2.-1.);
+    // uv.y+=params[2]*(params[1]*2.-1.);
+    // uv/=dot(uv,uv);
     uv = uv * .5 + .5;
+    float id = rnd(length(floor(uv)));
     uv=fract(uv);
-    float id = segments[int(floor(uv.x * N) + N * floor(uv.y * N))];
+    id += segments[int(floor(uv.x * N) + N * floor(uv.y * N))];
 
     uv.y *= rnd(id + .3);
     uv.y += .01 * sin(uv.x * N / (rnd(id + .2) * .9 + .1) + t * .01 + id * 99.) + t * (rnd(id + .1) - .5) * .02 / rnd(id + .4);
