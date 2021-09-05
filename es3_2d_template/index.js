@@ -46,8 +46,12 @@ const canvas = document.getElementById('canvasgl')
 const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true })
 
 twgl.addExtensionsToContext(gl);
-console.log(gl.getExtension("OES_texture_float"))
-console.log(gl.getExtension("WEBGL_color_buffer_float"))
+// console.log(
+gl.getExtension("OES_texture_float")
+// )
+// console.log(
+gl.getExtension("WEBGL_color_buffer_float")
+// )
 
 const program = twgl.createProgramInfo(gl, [vShader, fShader])
 
@@ -59,7 +63,7 @@ const positionObject = { position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComp
 const positionBuffer = twgl.createBufferInfoFromArrays(gl, positionObject);
 
 let ar = [...Array(16)].map(d => [...Array(16)].fill(Math.random()))
-console.log(ar)
+// console.log(ar)
 
 mouseClicked()
 windowResized()
@@ -141,7 +145,7 @@ function mouseClicked() {
   params = [Math.random(), Math.random(), Math.random(), Math.random(),]
 
 
-  N = 8+Math.floor(16*Math.random());
+  N = 8 + Math.floor(16 * Math.random());
   relief = [...Array(N)].map((d) => [...Array(N)].map((d) => Math.random()));
   segments = [...Array(N)].map((d) => [...Array(N)].fill(0));
 
@@ -269,8 +273,8 @@ function keyPressed(key) {
 
 function saveImage() {
 
-  let size = parseInt(prompt('Width of image to download', 10000))
-  console.log(size)
+  let size = 10000//parseInt(prompt('Width of image to download', 10000))
+  // console.log(size)
 
   // size = saveImageSize
   // saveImageSize *= 2
@@ -307,7 +311,7 @@ function saveImage() {
 
       dynamicContext.drawImage(canvas, i * size, size - (j + step) * size);
 
-      console.log(i, j)
+      // console.log(i, j)
     }
   }
 
