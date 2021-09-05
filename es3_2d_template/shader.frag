@@ -42,7 +42,8 @@ void main() {
 
     // outColor += hsv(rnd(id),rnd(id+.1),rnd(id+.2));
     float t = u_time;
-    vec2 uvf = floor(uv * 128.) / 128. + vec2(99., 999.);
+    float sandRes = pow(2.,6.+params[3]*2.);
+    vec2 uvf = floor(uv * sandRes) / sandRes + vec2(99., 999.);
     t += .5 * rnd(length(uvf) + fract(u_time));
 
     uv.y+=t*.1;
