@@ -39,7 +39,7 @@ void main() {
 
     id = getId(uv);
     float shade = 1.;
-    if(id != getId(uv - vec2(1. / N, 0.)))
+    if(abs(id - getId(uv - vec2(1. / N, 0.)))>1e-6)
         shade *= step(params[0] * .8 + .1, fract(uv.x * N));
 
     uv.y *= rnd(id + .3);
