@@ -15,7 +15,8 @@
   },
   "scripts": {
     "start": "parcel serve ./index.html",
-    "build": "rm -rf ./dist; parcel build --no-source-maps --no-content-hash --public-url ./ ./index.html; cd dist; zip -r Archive.zip ./; mv Archive.zip ~/Downloads/"
+    "build": "rm -rf ./dist; parcel build --no-source-maps --no-content-hash --public-url ./ ./index.html; cd dist; zip -r Archive.zip ./; mv Archive.zip ~/Downloads/",
+    "copy": "rm -rf node_modules; cp ./ ../"
   },
   "glslify": {
     "transform": [
