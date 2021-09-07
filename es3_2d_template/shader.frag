@@ -44,24 +44,25 @@ void main() {
     //raymarching
     float i = 0., d = 0., e = .1, emin = 999.;
     vec3 p;
+    float radius = .5 + .1 * rnd(.2 + params[0]);
     for(; i++ < 50. && e > .001 && d < 10.;) {
         p = normalize(vec3(uv, 1)) * d;
         p.z -= 1.;
-        float s1 = 10. + 20. * params[3];
-        float s2 = 10. + 20. * params[2];
+        float s1 = 10. + 40. * params[3];
+        float s2 = 5. + 20. * params[2];
         vec3 pg = p * s1;
         pg += u_time;
         e = .5 * dot(sin(pg), cos(pg.zxy)) / s1;
         pg = p * s2;
         pg += u_time * .3;
         e = .5 * dot(sin(pg), cos(pg.zxy)) / s2;
-        e += length(p) - .6;
+        e += length(p) - radius;
         d += e;
         emin = min(emin, e);
     }
     // if(rnd(floor(d*16.)+id)>.5)
 
-    float blobLayers = 4. + 80. * params[1] * params[1] * params[1] * params[1];
+    float blobLayers = 16. + 64. * params[1] * params[1] * params[1] * params[1];
     float dd = d * (3. + blobLayers) + params[0];
     float idBlob = 1. - floor(d * blobLayers) / blobLayers;
     // // end of rm
@@ -71,12 +72,14 @@ void main() {
     ang += .03 * cos(length(uv) / (.1 + params[3] * 10.) - .1 * u_time);
     ang = fract(ang);
     // ang += u_time * 1. * (rnd(id + params[3]) - .5);
-    ang = ang * 155. * (id + params[1]); // var
+    ang = ang * (20. + 135. * (params[1])); // var
     vec2 angFloorFract = cicada(ang);
     ang = angFloorFract[1];
     float idRay = angFloorFract[0];
+    idRay = pow(idRay,params[3]*.8+.2);
+    idRay = idRay * .9 * radius;
 
-    id = rnd(max(idBlob, idRay * .5));
+    id = rnd(max(idBlob, idRay));
 
     outColor += id;
 
@@ -84,13 +87,20 @@ void main() {
     int i2 = (i1 + 1 + int(rnd(params[0] + id + .1) * 3.)) % 5;
     vec4 c1 = palette[i1];
     vec4 c2 = palette[i2];
-    float sand = rnd(length(floor((uvInit - 1.) * 243.) / 243.));
+    float sand = (rnd(length(floor((uvInit - 1.) * 128.) / 128.))*2.-1.)*.1;
 
-    if(idBlob > idRay * .5)
-        outColor = mix(c1, c2, fract(dd));
+    if(idBlob > idRay)
+        outColor = mix(c1, c2, fract(dd)+sand);
     else {
-        vec2 uvRay = vec2(fract(50. + 50. * rnd(idRay) * length(uv)) * 2. - 1., ang * 2. - 1.);
-        float shade = length(uvRay);
+    //     vec2 uvRay = vec2(fract(50. + 50. * rnd(idRay) * length(uv)) * 2. - 1., ang * 2. - 1.);
+        vec2 uvRay = vec2(50. * (.1 + rnd(idRay)) * length(uv) + u_time, ang * 2. - 1.);
+        vec2 uvFloorFract = cicada(uvRay.x + .1);
+        float shadeLines = uvFloorFract.y;
+        float shadeLines2 = uvRay.y / rnd(.1 + uvFloorFract.x);
+        float shadeCircles = step(.5, length(vec2(uvFloorFract.y * 2. - 1., uvRay.y)));
+        float shade = shadeLines2;// mix(shadeCircles, shadeLines, rnd(idRay + .1) < .5);
+        // ang = mix(ang, 1.-ang, step(.5,rnd(idRay + .1)));
+        // outColor = mix(c1, c2, ang);
         outColor = mix(c1, c2, ang) * shade;
     }
     // // outColor = mix(c1, c2, ang);
