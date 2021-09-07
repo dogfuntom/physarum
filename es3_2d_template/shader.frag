@@ -9,9 +9,6 @@ uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform vec4 palette[5];
 uniform vec4 viewbox;
-uniform float segments[576];
-uniform float N;
-
 uniform float params[4];
 
 // #pragma glslify: hsv = require(glsl-hsv2rgb) 
@@ -23,8 +20,14 @@ uniform float params[4];
 
 vec2 uv;
 
-float getId(vec2 p) {
-    return segments[int(floor(p.x * N + .00001) + N * floor(p.y * N))];
+vec2 cicada(float ang) {
+    float left, right;
+    float prime1 = 5., prime2 = 7., prime3 = 3.; // var
+    float idRay = rnd(floor(ang / prime1) + floor(ang / prime2) + floor(ang / prime3));
+    left = max(floor(ang / prime1) * prime1, max(floor(ang / prime2) * prime2, floor(ang / prime3) * prime3));
+    right = min(ceil(ang / prime1) * prime1, min(ceil(ang / prime2) * prime2, ceil(ang / prime3) * prime3));
+    ang = (ang - left) / (right - left);
+    return vec2(idRay, ang);
 }
 
 void main() {
@@ -33,22 +36,67 @@ void main() {
     uv *= viewbox.zw;
     uv += viewbox.xy;
     uv = uv * 2. - 1.;
-    uv = uv * .5 + .5;
+    // uv = uv * .5 + .5;
+    vec2 uvInit = uv;
 
-    float id = 0.;
+    float id = 0.1;
 
-    id = getId(uv);
-    float shade = 1.;
-    if(abs(id - getId(uv - vec2(1. / N, 0.)))>1e-6)
-        shade *= step(params[0] * .8 + .1, fract(uv.x * N));
+    //raymarching
+    float i = 0., d = 0., e = .1, emin = 999.;
+    vec3 p;
+    for(; i++ < 50. && e > .001 && d < 10.;) {
+        p = normalize(vec3(uv, 1)) * d;
+        p.z -= 1.;
+        float s1 = 10. + 20. * params[3];
+        float s2 = 10. + 20. * params[2];
+        vec3 pg = p * s1;
+        pg += u_time;
+        e = .5 * dot(sin(pg), cos(pg.zxy)) / s1;
+        pg = p * s2;
+        pg += u_time * .3;
+        e = .5 * dot(sin(pg), cos(pg.zxy)) / s2;
+        e += length(p) - .6;
+        d += e;
+        emin = min(emin, e);
+    }
+    // if(rnd(floor(d*16.)+id)>.5)
 
-    uv.y *= rnd(id + .3);
-    uv.y += .01 * sin(uv.x * N / (rnd(id + .2) * .9 + .1) + u_time * .01 + id * 99.) + u_time * (rnd(id + .1) - .5) * .02 / rnd(id + .4);
-    float col = smoothstep(0., 1., fract(uv.y * id + uv.y * N / (id * .5 + .5)));
+    float blobLayers = 4. + 80. * params[1] * params[1] * params[1] * params[1];
+    float dd = d * (3. + blobLayers) + params[0];
+    float idBlob = 1. - floor(d * blobLayers) / blobLayers;
+    // // end of rm
 
-    vec4 c1 = palette[int(rnd(id) * 5.)];
-    vec4 c2 = palette[int(rnd(id + .1) * 5.) % 5];
-    outColor = mix(c1, c2, col);
-    outColor *= shade;
-    outColor.a = 1.;
+    float ang = atan(uv.y, uv.x) / 2. / PI + .5;
+    ang += .01 * sin(length(uv) / (.1 + params[2]) + .3 * u_time);
+    ang += .03 * cos(length(uv) / (.1 + params[3] * 10.) - .1 * u_time);
+    ang = fract(ang);
+    // ang += u_time * 1. * (rnd(id + params[3]) - .5);
+    ang = ang * 155. * (id + params[1]); // var
+    vec2 angFloorFract = cicada(ang);
+    ang = angFloorFract[1];
+    float idRay = angFloorFract[0];
+
+    id = rnd(max(idBlob, idRay * .5));
+
+    outColor += id;
+
+    int i1 = int(rnd(params[0] + id) * 5.);
+    int i2 = (i1 + 1 + int(rnd(params[0] + id + .1) * 3.)) % 5;
+    vec4 c1 = palette[i1];
+    vec4 c2 = palette[i2];
+    float sand = rnd(length(floor((uvInit - 1.) * 243.) / 243.));
+
+    if(idBlob > idRay * .5)
+        outColor = mix(c1, c2, fract(dd));
+    else {
+        vec2 uvRay = vec2(fract(50. + 50. * rnd(idRay) * length(uv)) * 2. - 1., ang * 2. - 1.);
+        float shade = length(uvRay);
+        outColor = mix(c1, c2, ang) * shade;
+    }
+    // // outColor = mix(c1, c2, ang);
+    // // outColor = mix(c1, c2, fract(emin));
+    // // outColor = mix(c1, c2, sin(ang * 10. + sand));
+    // // outColor = mix(c1, c2, .5 + .5 * cos(length(uvInit) * 10. + u_time * (rnd(id) - .5)) + sand * .2);
+    // outColor.a = 1.;
+
 }
