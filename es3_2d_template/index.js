@@ -130,17 +130,68 @@ window.addEventListener('touchstart', mouseClicked)
 function mouseClicked() {
   // palette = palettes[Math.floor(palettes.length * Math.random())].map(c => chroma(c).gl())
   // palette munging
-  let col1 = chroma.random().set('lch.l',0)
-  let col2 = chroma.random().set('lch.l',50)
-  let col3 = chroma.random().set('lch.l',100)
-  palette = chroma.scale([col1, col2, col3]).mode('lch').colors(5).map(c=>chroma(c).gl())
-  // console.log(p)
+  // function smoothstep(min, max, value) {
+  //   var x = Math.max(0, Math.min(1, (value - min) / (max - min)));
+  //   return x * x * (3 - 2 * x);
+  // }
+  // function mix(a, b, percent) {
+  //   return a * (1 - percent) + b * percent;
+  // }
+  // function sfloor(x) {
+  //   return mix(Math.floor(x), Math.floor(x) + 1., smoothstep(0., .01, x % 1))
+  // }
+  // function randomColor() {
+  //   let l = 50//Math.random() * 150
+  //   let c = 100//Math.random() * 150
+  //   let h = 40+sfloor(Math.random() * 2) / 2 * 360
+  //   // let h = Math.random() * 360
+  //   return chroma.lch(l, c, h)
+  // }
+  // let col1 = randomColor()
+  // // chroma.random()//.set('lch.l',Math.random()*100)
+  // let col2 = randomColor()//chroma.random()//.set('lch.l',Math.random()*100)
+  // let col3 = randomColor()//chroma.random()//.set('lch.l',Math.random()*100)
+  // let col4 = randomColor()//chroma.random()//.set('lch.l',Math.random()*100)
+  // palette = chroma.scale([col1, col2, col3, col4]).mode('lch').colors(4)
+  let keyColors = [];
+  let h, l, c
+  h = 360 * Math.random()
+  let hSpan = 40 + 90 * Math.random()
+  l = 80
+  c = (Math.random()*40 +80)%100
+  keyColors.push(chroma.lch(l, c, h))
+  l = (Math.random()*40 +80)%100
+  c = 100-c
+  h += hSpan
+  keyColors.push(chroma.lch(l, c, h))
+  l = 100-l
+  h += hSpan
+  c = Math.random()*100
+  keyColors.push(chroma.lch(l, c, h))
+
+  palette = chroma.scale(keyColors).mode("lch").colors(5);
+  palette = palette.sort((a, b) => chroma(a).get('lch.l')-chroma(b).get('lch.l'))
+
+
+  console.clear()
+  // console.log(chroma('#f00').lch())
+  for (let i = 0; i < 5; i++)
+    console.log('%c' + palette[i], 'background:' + palette[i])
+
+  //test
+  // let  pp = [...Array(10000)].map(()=>randomColor()).sort((a,b)=>chroma(a).get('lch.h')-chroma(b).get('lch.h'))
+  // for (let i = 0; i < pp.length; i++)
+  // console.log('%c' + pp[i] + chroma(pp[i]).lch(), 'background:' + pp[i])
+
+
+  palette = palette.map(c => chroma(c).gl())
+  // palette = chroma.bezier([col1, col2, col3]).scale().mode('lch').colors(5).map(c=>chroma(c).gl())
+  // palette = palette.sort(() => Math.random())
 
   params = [Math.random(), Math.random(), Math.random(), Math.random(),]
   ////////////////////
   // CUSTOM CODE BELOW
   ////////////////////
-  palette = palette.sort((a, b) => Math.random())
 
 
 
