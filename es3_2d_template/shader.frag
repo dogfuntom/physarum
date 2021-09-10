@@ -19,7 +19,7 @@ uniform float params[5];
 #pragma glslify: random = require(glsl-random) 
 #define rnd(x) random(vec2(x))
 #define PI 3.14159265
-
+#define sabs(x) sqrt(pow(x,2.)+.1)
 vec2 uv;
 
 vec2 cicada(float x) {
@@ -50,40 +50,58 @@ void main() {
     uv = fract(uv) - .5;
 
     // uv/=dot(uv,uv);
-    uv = vec2(fract(atan(uv.y, uv.x) / 2. / PI + rnd(id + .6)), length(uv));
     vec2 uvInit = uv;
+    uv = vec2(fract(atan(uv.y, uv.x) / 2. / PI + rnd(id + .6)), length(uv));
     // uv.x *= 8.;
 
-    for(int i = 0; i < 3; i++) {
+    vec2 uvTile=vec2(.5,.5); // global coords
+
+    for(int i = 0; i < 4; i++) {
         float N = 2. + floor(10. * rnd(id + .2));
         // int dir = (i + 1) % 2;
         int dir = (rnd(id + .4) < .5) ? 0 : 1;
 
-        float t = u_time * (rnd(id + .4) - .5) * 8.;
+        float t = u_time * (rnd(id) - .5) * .1;
 
         // float idP = id;
         // id = mix(rnd(idP), rnd(idP + .1), step(idP, uv[dir]));
         // uv[dir] = mix(uv[dir]/idP, (uv[dir]-idP)/(1.-idP), step(idP, uv[dir]));
 
-        float k = 12. + 3. * floor(rnd(id) * 20.);
-        vec2 cic = cicada(uv[dir] * k + t);
-        id = cic.x;//rnd(id + floor(uv[dir] * N + t));
-        uv[dir] = cic.y;//fract(cic.y + t);//fract((uv[dir]) * N + t);
+        // float k = 12. + 3. * floor(rnd(id) * 20.);
+        // vec2 cic = cicada(uv[dir] * k + t);
+        // id = cic.x;//rnd(id + floor(uv[dir] * N + t));
+        // uv[dir] = cic.y;//fract(cic.y + t);//fract((uv[dir]) * N + t);
+
+        id = rnd(id + floor(fract(uv[dir] + t) * N));
+        uv[dir] = fract(fract(uv[dir] + t) * N);
+        // uv[dir] = 
 
         if(rnd(id + .7) < params[2] * .5)
             break;
     }
     vec2 uv1 = uv;
-    uv = uvInit;
     float id1 = id;
     id = idInit + .1;
 
+    uv = uvInit;
+    // uv.y=fract(uv.y)-.5;
+
+
+
+
+
+
+
+
+    uv.y=-sabs(uv.y);
+    uv.y+=1.;
+    uv = vec2(fract(atan(uv.y, uv.x) / 2. / PI + rnd(id + .6)), length(uv));
     for(int i = 0; i < 4; i++) {
-        float N = 2. + floor(50. * rnd(id + .2));
+        float N = 2. + floor(10. * rnd(id + .2));
         // int dir = (i + 1) % 2;
         int dir = (rnd(id + .4) < .5) ? 0 : 1;
 
-        float t = u_time * (rnd(id) - .5);
+        float t = u_time * (rnd(id) - .5) * .1;
 
         // float idP = id;
         // id = mix(rnd(idP), rnd(idP + .1), step(idP, uv[dir]));
@@ -91,14 +109,15 @@ void main() {
 
         // float k = 12. + 3. * floor(rnd(id) * 20.);
         // vec2 cic = cicada(uv[dir] * k+t);
-        id = rnd(id + floor(uv[dir] * N + t));
-        uv[dir] = fract((uv[dir]) * N + t);
+        id = rnd(id + floor(fract(uv[dir] + t) * N));
+        uv[dir] = fract(fract(uv[dir] + t) * N);
 
+        uv[1 - dir] = fract(uv[1 - dir] + id);
         if(rnd(id + .7) < params[1] * .5)
             break;
     }
 
-    if(rnd(id + id1) > .5) {
+    if(rnd(id + id1) > sin(length(uvInit)*8.+u_time)*.5+.5) {
         id = id1;
         uv = uv1;
     }
@@ -110,10 +129,8 @@ void main() {
     vec4 c2 = palette[i2];
 
     int dir = (rnd(id + .4) < .5) ? 0 : 1;
-    // outColor = c1;
     outColor = mix(c1, c2, uv[dir]) * id;
     // outColor.b += 1.;
-    // outColor.r=mix(1.,outColor.r,step(0.,outColor.r));
     // outColor.rg = uv;
     outColor.a = 1.;
 }
