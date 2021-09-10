@@ -56,10 +56,12 @@ void main() {
 
     vec2 uvTile=vec2(.5,.5); // global coords
 
+    vec2 size = vec2(1);
     for(int i = 0; i < 4; i++) {
         float N = 2. + floor(10. * rnd(id + .2));
         // int dir = (i + 1) % 2;
         int dir = (rnd(id + .4) < .5) ? 0 : 1;
+        if(size[dir]/N<.01) break;
 
         float t = u_time * (rnd(id) - .5) * .1;
 
@@ -74,6 +76,7 @@ void main() {
 
         id = rnd(id + floor(fract(uv[dir] + t) * N));
         uv[dir] = fract(fract(uv[dir] + t) * N);
+        size[dir]/=N;
         // uv[dir] = 
 
         if(rnd(id + .7) < params[2] * .5)
@@ -84,6 +87,7 @@ void main() {
     id = idInit + .1;
 
     uv = uvInit;
+    size=vec2(1);
     // uv.y=fract(uv.y)-.5;
 
 
@@ -93,13 +97,14 @@ void main() {
 
 
 
-    uv.y=-sabs(uv.y);
-    uv.y+=1.;
-    uv = vec2(fract(atan(uv.y, uv.x) / 2. / PI + rnd(id + .6)), length(uv));
+    // uv.y=-sabs(uv.y);
+    // uv.y+=1.;
+    // uv = vec2(fract(atan(uv.y, uv.x) / 2. / PI + rnd(id + .6)), length(uv));
     for(int i = 0; i < 4; i++) {
         float N = 2. + floor(10. * rnd(id + .2));
         // int dir = (i + 1) % 2;
         int dir = (rnd(id + .4) < .5) ? 0 : 1;
+        if(size[dir]/N<.01) break;
 
         float t = u_time * (rnd(id) - .5) * .1;
 
@@ -111,6 +116,7 @@ void main() {
         // vec2 cic = cicada(uv[dir] * k+t);
         id = rnd(id + floor(fract(uv[dir] + t) * N));
         uv[dir] = fract(fract(uv[dir] + t) * N);
+        size[dir]/=N;
 
         uv[1 - dir] = fract(uv[1 - dir] + id);
         if(rnd(id + .7) < params[1] * .5)
