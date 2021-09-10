@@ -54,34 +54,34 @@ void main() {
     vec2 uvInit = uv;
     // uv.x *= 8.;
 
-    for(int i = 0; i < 2; i++) {
+    for(int i = 0; i < 3; i++) {
         float N = 2. + floor(10. * rnd(id + .2));
-        int dir = (i + 1) % 2;
-        // int dir = (rnd(id + .4) < .5) ? 0 : 1;//(i+1) % 2;
+        // int dir = (i + 1) % 2;
+        int dir = (rnd(id + .4) < .5) ? 0 : 1;
 
-        float t = u_time * (rnd(id+.4) - .5)*8.;
+        float t = u_time * (rnd(id + .4) - .5) * 8.;
 
         // float idP = id;
         // id = mix(rnd(idP), rnd(idP + .1), step(idP, uv[dir]));
         // uv[dir] = mix(uv[dir]/idP, (uv[dir]-idP)/(1.-idP), step(idP, uv[dir]));
 
         float k = 12. + 3. * floor(rnd(id) * 20.);
-        vec2 cic = cicada(uv[dir] * k+t);
+        vec2 cic = cicada(uv[dir] * k + t);
         id = cic.x;//rnd(id + floor(uv[dir] * N + t));
         uv[dir] = cic.y;//fract(cic.y + t);//fract((uv[dir]) * N + t);
 
-        if(rnd(id + .7) > .5)
+        if(rnd(id + .7) < params[2] * .5)
             break;
     }
     vec2 uv1 = uv;
-    uv=uvInit;
+    uv = uvInit;
     float id1 = id;
-    id = idInit+.1;
+    id = idInit + .1;
 
-    for(int i = 0; i < 8; i++) {
+    for(int i = 0; i < 4; i++) {
         float N = 2. + floor(50. * rnd(id + .2));
-        int dir = (i + 1) % 2;
-        // int dir = (rnd(id + .4) < .5) ? 0 : 1;//(i+1) % 2;
+        // int dir = (i + 1) % 2;
+        int dir = (rnd(id + .4) < .5) ? 0 : 1;
 
         float t = u_time * (rnd(id) - .5);
 
@@ -94,12 +94,12 @@ void main() {
         id = rnd(id + floor(uv[dir] * N + t));
         uv[dir] = fract((uv[dir]) * N + t);
 
-        if(rnd(id + .7) > .5)
+        if(rnd(id + .7) < params[1] * .5)
             break;
     }
 
-    if(rnd(id+id1)>.5){
-        id=id1;
+    if(rnd(id + id1) > .5) {
+        id = id1;
         uv = uv1;
     }
 
