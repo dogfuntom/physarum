@@ -129,6 +129,7 @@ document.querySelector('canvas').addEventListener('click', mouseClicked)
 window.addEventListener('touchstart', mouseClicked)
 function mouseClicked() {
   palette = palettes[Math.floor(palettes.length * Math.random())].map(c => chroma(c).gl())
+  palette = palette.sort((a, b) => chroma(a).get('lch.l')-chroma(b).get('lch.l'))
   // palette munging
   // let keyColors = [];
   // let h, l, c
