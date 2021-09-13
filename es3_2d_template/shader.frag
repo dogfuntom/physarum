@@ -34,7 +34,7 @@ void main() {
 
     uv = uv * .5 + .5;
 
-    id = rnd(id + floor(id + .8));
+    id = rnd(id + floor(id + .8)) * .8 + .1;
     // uv = fract(uv) - .5;
 
     vec2 uvInit = uv;
@@ -42,10 +42,10 @@ void main() {
     vec2 size = vec2(1);
     vec2 uvTile = vec2(0);
 
-    for(int i = 0; i < 4; i++) {
-        float N = 2. + floor(10. * rnd(id + .2));
+    for(int i = 0; i < 8; i++) {
         int dir = i % 2;//(rnd(id + .4) < .5) ? 0 : 1;
-        // if(size[dir]/N<.001) break;
+        if(min(size[dir] * id, size[dir] * (1. - id)) < .01)
+            continue;
 
         // float t = 0.;//u_time * (rnd(id) - .5) * .1;
         // float fl = floor(fract(uv[dir] + t) * N);
@@ -55,19 +55,13 @@ void main() {
 
         float idP = id;
         id = mix(rnd(idP), rnd(idP + .1), step(idP, uv[dir]));
+        size[dir] *= mix(idP, 1. - idP, step(idP, uv[dir]));
         uv[dir] = mix(uv[dir] / idP, (uv[dir] - idP) / (1. - idP), step(idP, uv[dir]));
-        size[dir]*=mix(idP, 1. - idP, step(idP, uv[dir]));
 
         // if(rnd(id + .7) < params[2] * .5)
         //     break;
     }
     // uvTile += size / 2.;
-
-    // int i1 = int(pow(rnd(params[0] + id), 1.) * paletteN);
-    // int i2 = (i1 + 1 + int(pow(rnd(params[0] + id + .1), 1.) * (paletteN - 2.))) % int(paletteN);
-
-    // vec4 c1 = palette[i1];
-    // vec4 c2 = palette[i2];
 
     // int dir = (rnd(id + .4) < .5) ? 0 : 1;
     // float sand = .03*(rnd(floor(uv[1-dir]*1000.*size[1-dir]))*2.-1.);
@@ -75,7 +69,42 @@ void main() {
     // // outColor += ;
     // outColor.a = 1.;
 
-    // uv=abs(uv-.5);
-    outColor.rgb += step(.1*size.x,uv.x) * step(.1*size.y,uv.y);
+    vec2 uvFrame = uv * 2. - 1.;
+    uvFrame = abs(uvFrame);
+    uvFrame = -uvFrame;
+    uvFrame = uvFrame * .5 + .5;
+    float frameWidth = 3.*min(size.x, size.y);
+    float frame = min(uvFrame.x * size.x / frameWidth, uvFrame.y * size.y / frameWidth);
+    frame = floor(frame / frameWidth) * frameWidth;
+    // frame = pow(frame, .3);
+    frame -= .5 * frameWidth;
+
+    float wave = 999.;//floor((uv.y - sin(uv.x * 16. + u_time * 8. * (rnd(id + .1) - .5)) * size.y * .5 + .5) * 8.) / 8.;
+
+    // float depth;
+    float shade;
+    if(frame < wave) {
+        id = rnd(id + frame);
+        shade = 1.5 - pow(frame * 2., .5);
+
+        int i1 = int(pow(rnd(params[0] + id), 1.) * paletteN);
+        int i2 = (i1 + 1 + int(pow(rnd(params[0] + id + .1), 1.) * (paletteN - 2.))) % int(paletteN);
+
+        vec4 c1 = palette[i1];
+        vec4 c2 = palette[i2];
+
+        // vec4 waveCol = mix(c1, c2, step(.5,rnd(id)));
+        // vec4 frameCol = mix(c1, c2, step(.5,rnd(id)));
+
+        outColor = mix(c1, c2, step(.5, rnd(id))) * shade;
+    } else {
+        id = rnd(id + wave);
+        shade = 1. - wave;
+    }
+
+    // shade *= step(0., frame);
+
+    // outColor.b = 1.;
+    // outColor *= wave;
     outColor.a = 1.;
 }
