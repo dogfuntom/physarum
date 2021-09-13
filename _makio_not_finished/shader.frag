@@ -42,7 +42,7 @@ void main() {
     vec2 size = vec2(1);
     vec2 uvTile = vec2(0);
 
-    for(int i = 0; i < 2; i++) {
+    for(int i = 0; i < 4; i++) {
         float N = 2. + floor(10. * rnd(id + .2));
         int dir = i%2;//(rnd(id + .4) < .5) ? 0 : 1;
         // if(size[dir]/N<.001) break;
@@ -59,18 +59,15 @@ void main() {
     }
     uvTile+=size/2.;
 
-    // int i1 = int(pow(rnd(params[0] + id), 1.) * paletteN);
-    // int i2 = (i1 + 1 + int(pow(rnd(params[0] + id + .1), 1.) * (paletteN - 2.))) % int(paletteN);
+    int i1 = int(pow(rnd(params[0] + id), 1.) * paletteN);
+    int i2 = (i1 + 1 + int(pow(rnd(params[0] + id + .1), 1.) * (paletteN - 2.))) % int(paletteN);
 
-    // vec4 c1 = palette[i1];
-    // vec4 c2 = palette[i2];
+    vec4 c1 = palette[i1];
+    vec4 c2 = palette[i2];
 
-    // int dir = (rnd(id + .4) < .5) ? 0 : 1;
-    // float sand = .03*(rnd(floor(uv[1-dir]*1000.*size[1-dir]))*2.-1.);
-    // outColor = mix(c1, c2, uv[dir] + sand) * step(0.5,smoothstep(0.,1.,fract(length(uvTile-.5)+rnd(id)*.2+uv.x*.2+u_time)));
-    // // outColor += ;
-    // outColor.a = 1.;
-
-    outColor.rg=uv;
+    int dir = (rnd(id + .4) < .5) ? 0 : 1;
+    float sand = .03*(rnd(floor(uv[1-dir]*1000.*size[1-dir]))*2.-1.);
+    outColor = mix(c1, c2, uv[dir] + sand) * step(0.5,smoothstep(0.,1.,fract(length(uvTile-.5)+rnd(id)*.2+uv.x*.2+u_time)));
+    // outColor += ;
     outColor.a = 1.;
 }
