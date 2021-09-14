@@ -54,7 +54,7 @@ void main() {
     vec2 size = vec2(1);
     vec2 uvTile = vec2(0);
 
-    for(int i = 0; i < 16; i++) {
+    for(int i = 0; i < 8; i++) {
         int dir = i % 2;
         // int dir = (rnd(id + .4) < .5) ? 0 : 1;
         float splitP = split;
@@ -93,13 +93,11 @@ void main() {
     }
     // outColor = mix(outColor, vec4(isWhite), smoothstep(-.1, .5, d));
 
-    // float obj = -.1-smoothstep(.1,.2,length(uvTile)*min(size.x, size.y));//-pow((length(uvInit) * 16.) / 16.,8.);
-    float obj = -.1-pow((length(uvInit) * 16.) / 16.,8.);
+    float obj = .5-length(uvTile);//-pow((length(uvInit) * 16.) / 16.,8.);
     if((-p.z * 16.)/16. < obj) {
         outColor = vec4(1.);//-vec4(floor(length(uvInit) * 16.) / 16.);
         float depth = (length(uvInit) * 16.) / 16.;
-        // outColor = vec4(1);//mix(vec4(1),c1,smoothstep(1.,0.,depth));
-        outColor = mix(vec4(1),c1,smoothstep(1.,0.,depth));
+        outColor = vec4(1);//mix(vec4(1),c1,smoothstep(1.,0.,depth));
     } else {
     }
 
