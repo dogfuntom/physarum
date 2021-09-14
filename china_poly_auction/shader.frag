@@ -38,7 +38,6 @@ float sdf(vec3 p, float id, vec2 size) {
 void main() {
     uv = (gl_FragCoord.xy * 2. - u_resolution) / u_resolution.y;
     uv = uv * .5 + .5;
-
     uv *= viewbox.zw;
     uv += viewbox.xy;
     uv = uv * 2. - 1.;
@@ -85,23 +84,12 @@ void main() {
     vec4 c1 = palette[i1];
     vec4 c2 = palette[i2];
 
-    // float isWhite = sin(length(uvTile)*8.-u_time*4.)*.5+.5;
-    float isWhite = 1. - smoothstep(.6, .9, length(uvTile));
     outColor = c1;
     if(fract(p.z * 10. + u_time * 0.) < .5) {
         outColor = c2;
-        // outColor=vec4(1);
     }
-    // outColor = mix(outColor, vec4(isWhite), smoothstep(-.1, .5, d));
 
     outColor = mix(outColor, vec4(1), smoothstep(0.,.1+.8*pow(length(uvTile),8.),d));
-    // float obj = .5-length(uvTile);//-pow((length(uvInit) * 16.) / 16.,8.);
-    // if((-p.z * 16.)/16. < obj) {
-    //     outColor = vec4(1.);//-vec4(floor(length(uvInit) * 16.) / 16.);
-    //     float depth = (length(uvInit) * 16.) / 16.;
-    //     outColor = vec4(1);//mix(vec4(1),c1,smoothstep(1.,0.,depth));
-    // } else {
-    // }
 
     outColor.a = 1.;
 }
