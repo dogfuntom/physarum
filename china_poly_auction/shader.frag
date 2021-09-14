@@ -23,14 +23,14 @@ vec2 uv;
 
 int tex = 0;
 float sdf(vec3 p, float id, vec2 size) {
-    return -length(p.xy)+.05;
-    // vec3 pw = p;
-    // pw.xy = abs(pw.xy);
-    // pw.xy -= size;
-    // if(pw.x < pw.y)
-    //     pw.xy = pw.yx;
-    // float walls = -pw.x;
-    // return walls;
+    // return -length(p.xy)+.05;
+    vec3 pw = p;
+    pw.xy = abs(pw.xy);
+    pw.xy -= size;
+    if(pw.x < pw.y)
+        pw.xy = pw.yx;
+    float walls = -pw.x;
+    return walls;
 }
 
 #define f(x) (.5 + .3 * sin(x*PI*2. * (floor(id * 3.) + 3.) * .01 + (params[0] + id) * 99.))
