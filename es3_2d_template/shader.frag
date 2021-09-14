@@ -45,12 +45,12 @@ void main() {
     float id = params[0];
     float idInit = id;
 
+    vec2 uvInit = uv;
     uv = uv * .5 + .5;
 
     id = 1.;
     float split = f(u_time);
 
-    vec2 uvInit = uv;
 
     vec2 size = vec2(1);
     vec2 uvTile = vec2(0);
@@ -75,7 +75,7 @@ void main() {
     vec3 p;
     for(; i++ < 199. && e > .0001;) {
         p = normalize(vec3(uv, 1. + .0 * rnd(uv))) * d;
-        p.z -= 1.;
+        // p.z -= 1.;
         d += e = sdf(p, id, size);
     }
 
@@ -85,11 +85,19 @@ void main() {
     vec4 c1 = palette[i1];
     vec4 c2 = palette[i2];
 
+    // float isWhite = sin(length(uvTile)*8.-u_time*4.)*.5+.5;
     float isWhite = 1. - smoothstep(.6, .9, length(uvTile));
     outColor = c1;
-    if(fract(p.z * 10. + u_time * 2.) < .5)
+    if(fract(p.z * 10. + u_time * 2.) < .5) {
         outColor = c2;
-    outColor = mix(outColor, vec4(isWhite), smoothstep(-.1, .5, d));
-    
+    }
+    // outColor = mix(outColor, vec4(isWhite), smoothstep(-.1, .5, d));
+
+    float obj = .1+sqrt(floor(length(uvInit) * 16.)/16.);
+    if(floor(p.z*16.) < obj) {
+    } else {
+        outColor += obj;
+    }
+
     outColor.a = 1.;
 }
