@@ -51,13 +51,13 @@ float sdf(vec3 p, float id, vec2 size) {
     sp = (length(p) - .5) / s;
     // sp = mix(sp, (length(p) - .5) / s, fract(size * 10.));
 
-    // if(sp < walls) {
-        // tex = 1;
-        // return sp;
-    // } else {
+    if(sp < walls) {
+        tex = 1;
+        return sp;
+    } else {
     tex = 0;
     return walls;
-    // }
+    }
 }
 
 #define f(x) (.5 + .3 * sin(x*(floor(id*3.)+3.+id*99.)*.001+params[0]*100.))
@@ -83,16 +83,21 @@ void main() {
     vec2 uvInit = uv;
 
     vec2 size = vec2(1);
+    vec2 uvTile = vec2(0);
 
-    for(int i = 0; i < 4; i++) {
+    for(int i = 0; i < 12; i++) {
         int dir = i % 2;
         // int dir = (rnd(id + .4) < .5) ? 0 : 1;
         float splitP = split;
-        id = mix(rnd(id + .1), rnd(id + .2), step(splitP, uv[dir]));
-        split = mix(f(split * 8. + id * 99.), 1. - f(split * 8. - id * 99.), step(splitP, uv[dir]));
-        size[dir] *= mix(splitP, 1. - splitP, step(splitP, uv[dir]));
-        uv[dir] = mix(uv[dir] / splitP, (uv[dir] - splitP) / (1. - splitP), step(splitP, uv[dir]));
+        float condition = step(splitP, uv[dir]);
+        id = mix(rnd(id + .1), rnd(id + .2), condition);
+        split = mix(f(splitP * 8. + id * 99.), 1. - f(splitP * 8. - id * 99.), condition);
+        uvTile[dir] += mix(0., size[dir] * splitP, condition);
+        size[dir] *= mix(splitP, 1. - splitP, condition);
+        uv[dir] = mix(uv[dir] / splitP, (uv[dir] - splitP) / (1. - splitP), condition);
     }
+    uvTile += size / 2.;
+    uvTile = uvTile * 2. - 1.;
 
     uv = uv * 2. - 1.;
     uv *= size / (size.x + size.y) * 2.;
@@ -100,7 +105,7 @@ void main() {
     float i, d, e = 1.;
     vec3 p;
     for(; i++ < 199. && e > .0001;) {
-        p = normalize(vec3(uv, .98 + .02 * rnd(uv))) * d;
+        p = normalize(vec3(uv, 1. + .0 * rnd(uv))) * d;
         p.z -= 1.;
         d += e = sdf(p, id, size);
     }
@@ -111,12 +116,19 @@ void main() {
     vec4 c1 = palette[i1];
     vec4 c2 = palette[i2];
 
-    outColor += mix(c1, c2, float(tex));
-    if(tex == 0) {
-        if(fract(p.z * 10. + u_time * 2.) < .5)
-            outColor = vec4(1);
-    }
-    outColor *= mix(c2 * .8, c1, 3. / i) * 9. / i;
+    float isWhite = 1. - smoothstep(.6, .9, length(uvTile));
+    // float isWhite = floor(id * 2.);
+    // outColor += mix(c1, c2, float(tex));
+    outColor = c1;
+    // if(tex == 0) {
+    if(fract(p.z * 10. + u_time * 2.) < .5)
+        outColor = c2;
+    // }
+    // outColor = c2 * 3. / i;
+    // outColor *=sqrt(i/99.);
+    outColor = mix(outColor, vec4(isWhite), smoothstep(-.1, .5, d));
+    // outColor = vec4(length(uvTile)/sqrt(2.));
+    // outColor *= mix(c2 * .8, c1, 3. / i);// * 9. / i;
 
     // vec2 uvFrame = uv;
     // uvFrame = abs(uvFrame);
