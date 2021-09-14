@@ -23,13 +23,14 @@ vec2 uv;
 
 int tex = 0;
 float sdf(vec3 p, float id, vec2 size) {
-    vec3 pw = p;
-    pw.xy = abs(pw.xy);
-    pw.xy -= size;
-    if(pw.x < pw.y)
-        pw.xy = pw.yx;
-    float walls = -pw.x;
-    return walls;
+    return -length(p.xy)+.05;
+    // vec3 pw = p;
+    // pw.xy = abs(pw.xy);
+    // pw.xy -= size;
+    // if(pw.x < pw.y)
+    //     pw.xy = pw.yx;
+    // float walls = -pw.x;
+    // return walls;
 }
 
 #define f(x) (.5 + .3 * sin(x*PI*2. * (floor(id * 3.) + 3.) * .01 + (params[0] + id) * 99.))
@@ -54,13 +55,13 @@ void main() {
     vec2 size = vec2(1);
     vec2 uvTile = vec2(0);
 
-    for(int i = 0; i < 8; i++) {
+    for(int i = 0; i < 10; i++) {
         int dir = i % 2;
         // int dir = (rnd(id + .4) < .5) ? 0 : 1;
         float splitP = split;
         float condition = step(splitP, uv[dir]);
         id = mix(rnd(id + .1), rnd(id + .2), condition);
-        split = mix(f(splitP * 8. + id * 99.), 1. - f(splitP * 8. - id * 99.), condition);
+        split = mix(f(splitP*6. + id * 99.), 1. - f(splitP*6. - id * 99.), condition);
         uvTile[dir] += mix(0., size[dir] * splitP, condition);
         size[dir] *= mix(splitP, 1. - splitP, condition);
         uv[dir] = mix(uv[dir] / splitP, (uv[dir] - splitP) / (1. - splitP), condition);
@@ -93,13 +94,14 @@ void main() {
     }
     // outColor = mix(outColor, vec4(isWhite), smoothstep(-.1, .5, d));
 
-    float obj = .5-length(uvTile);//-pow((length(uvInit) * 16.) / 16.,8.);
-    if((-p.z * 16.)/16. < obj) {
-        outColor = vec4(1.);//-vec4(floor(length(uvInit) * 16.) / 16.);
-        float depth = (length(uvInit) * 16.) / 16.;
-        outColor = vec4(1);//mix(vec4(1),c1,smoothstep(1.,0.,depth));
-    } else {
-    }
+    outColor = mix(outColor, vec4(1), smoothstep(0.,.1+.8*pow(length(uvTile),8.),d));
+    // float obj = .5-length(uvTile);//-pow((length(uvInit) * 16.) / 16.,8.);
+    // if((-p.z * 16.)/16. < obj) {
+    //     outColor = vec4(1.);//-vec4(floor(length(uvInit) * 16.) / 16.);
+    //     float depth = (length(uvInit) * 16.) / 16.;
+    //     outColor = vec4(1);//mix(vec4(1),c1,smoothstep(1.,0.,depth));
+    // } else {
+    // }
 
     outColor.a = 1.;
 }
