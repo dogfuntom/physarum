@@ -24,40 +24,12 @@ vec2 uv;
 int tex = 0;
 float sdf(vec3 p, float id, vec2 size) {
     vec3 pw = p;
-    // pw.y += size.y * .3 * sin(u_time + pw.z);
-    // pw.x += size.x * .3 * sin(u_time + pw.z);
-    // pw.xy *= rot(pw.z * .1 * sin(u_time + id * 99.));
-    // pw.xy*=rot(u_mouse.x*2.-1.+  pw.z*.1*sin(u_time+id*99.));
     pw.xy = abs(pw.xy);
     pw.xy -= size;
     if(pw.x < pw.y)
         pw.xy = pw.yx;
     float walls = -pw.x;
-
-    // p.z -= min(size.x, size.y)*8.+1.;//sin(u_time + id * 99.) * .5 + .5 - .85;
-    float s = 1.;
-    float sp;
-    // for(float i = 0.; i < 7.; i++) {
-    //     // sp = (length(p) - .5) / s;
-    //     // if(i > size * 10.)
-    //     //     break;
-    //     p *= 2.3;
-    //     s *= 2.3;
-    //     p = abs(p);
-    //     p -= vec3(.5);
-    //     p.yz *= rot(1. - id * 99. + u_time + i * 2.);
-    //     p.xz *= rot(id * 99. + u_time + i * .1);
-    // }
-    sp = (length(p) - .5) / s;
-    // sp = mix(sp, (length(p) - .5) / s, fract(size * 10.));
-
-    if(sp < walls) {
-        tex = 1;
-        return sp;
-    } else {
-    tex = 0;
     return walls;
-    }
 }
 
 #define f(x) (.5 + .3 * sin(x*(floor(id*3.)+3.+id*99.)*.001+params[0]*100.))
@@ -75,10 +47,8 @@ void main() {
 
     uv = uv * .5 + .5;
 
-    // id = rnd(id + floor(id + .8)) * .8 + .1;
     id = 1.;
     float split = f(u_time);
-    // uv = fract(uv) - .5;
 
     vec2 uvInit = uv;
 
@@ -101,7 +71,6 @@ void main() {
 
     uv = uv * 2. - 1.;
     uv *= size / (size.x + size.y) * 2.;
-    // uv *= size/min(size.x,size.y);
     float i, d, e = 1.;
     vec3 p;
     for(; i++ < 199. && e > .0001;) {
@@ -117,26 +86,10 @@ void main() {
     vec4 c2 = palette[i2];
 
     float isWhite = 1. - smoothstep(.6, .9, length(uvTile));
-    // float isWhite = floor(id * 2.);
-    // outColor += mix(c1, c2, float(tex));
     outColor = c1;
-    // if(tex == 0) {
     if(fract(p.z * 10. + u_time * 2.) < .5)
         outColor = c2;
-    // }
-    // outColor = c2 * 3. / i;
-    // outColor *=sqrt(i/99.);
     outColor = mix(outColor, vec4(isWhite), smoothstep(-.1, .5, d));
-    // outColor = vec4(length(uvTile)/sqrt(2.));
-    // outColor *= mix(c2 * .8, c1, 3. / i);// * 9. / i;
-
-    // vec2 uvFrame = uv;
-    // uvFrame = abs(uvFrame);
-    // uvFrame = -uvFrame;
-    // uvFrame = uvFrame * .5 + .5;
-    // float frame = min(uvFrame.x * size.x, uvFrame.y * size.y);
-    // frame = smoothstep(.0, .001, frame);
-    // outColor*=frame;
-
+    
     outColor.a = 1.;
 }
