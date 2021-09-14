@@ -32,7 +32,7 @@ float sdf(vec3 p, float id, vec2 size) {
     return walls;
 }
 
-#define f(x) (.5 + .3 * sin(x * (floor(id * 3.) + 3.) * .01 + (params[0] + id) * 99.))
+#define f(x) (.5 + .3 * sin(x*PI*2. * (floor(id * 3.) + 3.) * .01 + (params[0] + id) * 99.))
 
 void main() {
     uv = (gl_FragCoord.xy * 2. - u_resolution) / u_resolution.y;
@@ -54,7 +54,7 @@ void main() {
     vec2 size = vec2(1);
     vec2 uvTile = vec2(0);
 
-    for(int i = 0; i < 12; i++) {
+    for(int i = 0; i < 16; i++) {
         int dir = i % 2;
         // int dir = (rnd(id + .4) < .5) ? 0 : 1;
         float splitP = split;
@@ -72,7 +72,7 @@ void main() {
     uv *= size / (size.x + size.y) * 2.;
     float i, d, e = 1.;
     vec3 p;
-    for(; i++ < 199. && e > .0001;) {
+    for(; i++ < 99. && e > .0001;) {
         p = normalize(vec3(uv, 1. + .0 * rnd(uv))) * d;
         // p.z -= 1.;
         d += e = sdf(p, id, size);
@@ -89,13 +89,16 @@ void main() {
     outColor = c1;
     if(fract(p.z * 10. + u_time * 0.) < .5) {
         outColor = c2;
+        // outColor=vec4(1);
     }
-    outColor = mix(outColor, vec4(isWhite), smoothstep(-.1, .5, d));
+    // outColor = mix(outColor, vec4(isWhite), smoothstep(-.1, .5, d));
 
-    float obj = -.03-pow((length(uvInit) * 16.) / 16.,8.);
+    // float obj = -.1-smoothstep(.1,.2,length(uvTile)*min(size.x, size.y));//-pow((length(uvInit) * 16.) / 16.,8.);
+    float obj = -.1-pow((length(uvInit) * 16.) / 16.,8.);
     if((-p.z * 16.)/16. < obj) {
         outColor = vec4(1.);//-vec4(floor(length(uvInit) * 16.) / 16.);
         float depth = (length(uvInit) * 16.) / 16.;
+        // outColor = vec4(1);//mix(vec4(1),c1,smoothstep(1.,0.,depth));
         outColor = mix(vec4(1),c1,smoothstep(1.,0.,depth));
     } else {
     }
