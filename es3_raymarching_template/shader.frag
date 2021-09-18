@@ -22,31 +22,61 @@ uniform float params[5];
 #pragma glslify: random = require(glsl-random) 
 #define rnd(x) random(vec2(x))
 #define PI 3.14159265
+#define sabs(x) sqrt(x*x+1e-2)
 
 vec2 uv;
 
-#define TEX_BLUE 1
-vec2 dist(vec3 p) {
+vec2 p2d(vec2 polar) {
+    float alpha = polar.x;
+    float R = polar.y;
+    float x = sin(alpha) * R;
+    float y = cos(alpha) * R;
+    return vec2(x, y);
+}
 
-    // p.xz*=rot(u_time);
+vec2 d2p(vec2 decart) {
+    float alpha = atan(decart.x, decart.y);
+    float R = length(decart);
+    return vec2(alpha, R);
+}
+
+vec2 snowflakeSymmetry(vec2 p, float rays){
+	vec2 ar = d2p(p);
+	float astep = 2. * 3.1415 / rays;
+	float a = ar.x, r = ar.y;
+	a = mod(a, astep);
+	a -= astep / 2.;
+	a = abs(a);
+	p = p2d(vec2(a, r));	
+	return p;
+}
+
+#define TEX_BLUE 1
+#define TEX_WALL 2
+vec2 dist(vec3 p) {
+    p.xz*=rot(sin(u_time));
+
+    vec2 wall = vec2(max(abs(p.z)-.01, -length(p.xy)+1.),TEX_WALL);
     vec2 po = vec2(atan(p.y+EPSILON, p.x)/2./PI+.5, length(p.xy));
 
     p.xy=po;
-    p.y-=1.5;
+    p.y-=1.;
 
     float s = 1.;
-    for(float i = 0.; i < 3.; i++) {
-        p.yz *= 2.;
-        s *=    2.;
-        p.yz = abs(p.yz);
-        p.yz -= vec2(.4);
-        p.yz *= rot(u_time*i + p.x * 2. * PI * 4.);
+    for(float i = 0.; i < 2.; i++) {
+        p.yz *= 3.+.5*sin(u_time);
+        s *=    3.+.5*sin(u_time);
+        // p.yz = sabs(p.yz);
+        p.yz = snowflakeSymmetry(p.yz,floor(3.+4.*rnd(i+.1)));
+        p.yz -= vec2(.2+.1*sin(u_time));
+        p.yz *= rot(u_time*i);
     }
 
     vec2 circle;
-    circle.x = (length(vec2(p.yz))-.9)/s;
+    p.yz -= clamp(p.yz,-.4,.7);
+    circle.x = (length(vec2(p.yz))-.01)/s;
     circle.y = float(TEX_BLUE);
-    return circle;
+    return circle.x<wall.x? circle: wall;
 }
 
 vec3 rayMarch(vec3 ro, vec3 rd) {
