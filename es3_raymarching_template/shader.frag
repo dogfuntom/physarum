@@ -3,39 +3,50 @@ precision mediump float;
 uniform sampler2D u_texture;
 out vec4 outColor;
 
-/*
-TODO
-
-Добавить тени
-Глобал иллюминейшон?
-Отражения
-Преломления
-
-*/
+#define paletteN 5.
+#define EPSILON .0001
+#define MAX_DIST 100.
+#define MAX_STEPS 100
 
 uniform float tick;
 uniform float u_time;
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
+uniform vec4 palette[5];
+uniform vec4 viewbox;
+uniform float params[5];
 
+// #pragma glslify: hsv = require(glsl-hsv2rgb) 
+// #pragma glslify: noise= require(glsl-noise/simplex/4d) 
 #pragma glslify: rot = require('../modules/math/rotate2D.glsl') 
 #pragma glslify: random = require(glsl-random) 
 #define rnd(x) random(vec2(x))
-#define MAX_STEPS 100
-#define MAX_DIST 100.
-#define EPSILON 1e-4
+#define PI 3.14159265
 
-// #pragma glslify: crystall = require('../modules/sdf/crystall')
-// #pragma glslify: cellular = require('../modules/math/cellularNoise3d') 
-// #pragma glslify: box = require('glsl-sdf-box') 
-// #pragma glslify: hsv = require(glsl-hsv2rgb) 
-// #pragma glslify: noise= require(glsl-noise/simplex/4d) 
-// #pragma glslify: torus = require(primitive-torus) 
+vec2 uv;
 
 #define TEX_BLUE 1
 vec2 dist(vec3 p) {
-    vec2 sphere = vec2(length(p)-1.,TEX_BLUE);
-    return sphere;
+
+    // p.xz*=rot(u_time);
+    vec2 po = vec2(atan(p.y+EPSILON, p.x)/2./PI+.5, length(p.xy));
+
+    p.xy=po;
+    p.y-=1.5;
+
+    float s = 1.;
+    for(float i = 0.; i < 2.; i++) {
+        p.yz *= 2.;
+        s *=    2.;
+        p.yz = abs(p.yz);
+        p.yz -= vec2(.8);
+        p.yz *= rot(u_time+p.x*2.*PI*4.+i*PI/8.);
+    }
+
+    vec2 circle;
+    circle.x = (length(vec2(p.yz))-.9)/s;
+    circle.y = float(TEX_BLUE);
+    return circle;
 }
 
 vec3 rayMarch(vec3 ro, vec3 rd) {
@@ -98,7 +109,13 @@ vec3 getColor(vec3 p) {
 }
 
 void main() {
-    vec2 uv = (gl_FragCoord.xy * 2. - u_resolution)/min(u_resolution.x, u_resolution.y);
+    uv = (gl_FragCoord.xy * 2. - u_resolution) / u_resolution.y;
+    uv = uv * .5 + .5;
+
+    uv *= viewbox.zw;
+    uv += viewbox.xy;
+    uv = uv * 2. - 1.;
+
     vec3 ro = vec3(0., 0., -6.);
     float zoom = 1.100;
 
@@ -109,17 +126,17 @@ void main() {
     float info = rm[1];
 
     vec3 colorBg = vec3(1);
-    vec3 color = colorBg;
+    vec3 color;// = colorBg;
     vec3 light = vec3(50, 20, 50);
     vec3 p = ro + rd * d;
     if(d < MAX_DIST) {
         vec3 n = getNormal(p);
-        vec3 dirToLight = normalize(light - p);
-        vec3 rayMarchLight = rayMarch(p + dirToLight * .06, dirToLight);
-
+        // vec3 dirToLight = normalize(light - p);
+        // vec3 rayMarchLight = rayMarch(p + dirToLight * .06, dirToLight);
         // reflection
-        vec3 ref = reflect(rd, n);
-        color = getColor(ref * .5 + .5);// + pow(dot(n, vec3(1,1,-1)) * .5 + .5, 40.);
+        // vec3 ref = reflect(rd, n);
+        // color = getColor(ref * .5 + .5);// + pow(dot(n, vec3(1,1,-1)) * .5 + .5, 40.);
+        color += n*.5+.5;
     }
 
     outColor = vec4(color, 1);
