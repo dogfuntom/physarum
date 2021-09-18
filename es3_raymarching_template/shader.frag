@@ -35,12 +35,12 @@ vec2 dist(vec3 p) {
     p.y-=1.5;
 
     float s = 1.;
-    for(float i = 0.; i < 2.; i++) {
+    for(float i = 0.; i < 3.; i++) {
         p.yz *= 2.;
         s *=    2.;
         p.yz = abs(p.yz);
-        p.yz -= vec2(.8);
-        p.yz *= rot(u_time+p.x*2.*PI*4.+i*PI/8.);
+        p.yz -= vec2(.4);
+        p.yz *= rot(u_time*i + p.x * 2. * PI * 4.);
     }
 
     vec2 circle;
