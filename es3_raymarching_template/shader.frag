@@ -54,19 +54,16 @@ vec2 snowflakeSymmetry(vec2 p, float rays){
 #define TEX_BLUE 1
 #define TEX_WALL 2
 vec2 dist(vec3 p) {
-    p.xz*=rot(sin(u_time));
-
     vec2 wall = vec2(max(abs(p.z)-.01, -length(p.xy)+1.),TEX_WALL);
     vec2 po = vec2(atan(p.y+EPSILON, p.x)/2./PI+.5, length(p.xy));
 
     p.xy=po;
-    p.y-=1.;
+    p.y-=1.; 
 
     float s = 1.;
     for(float i = 0.; i < 2.; i++) {
         p.yz *= 3.+.5*sin(u_time);
         s *=    3.+.5*sin(u_time);
-        // p.yz = sabs(p.yz);
         p.yz = snowflakeSymmetry(p.yz,floor(3.+4.*rnd(i+.1)));
         p.yz -= vec2(.2+.1*sin(u_time));
         p.yz *= rot(u_time*i);
@@ -115,28 +112,20 @@ vec3 getRayDir(vec2 uv, vec3 p, vec3 l, float z) {
     return d;
 }
 
-vec3 getColorByIndex(int index) {
-    if (index == 0) return #ffc93c;
-    if (index == 1) return #dbf6e9;
-    if (index == 2) return #9ddfd3;
-    if (index == 3) return #31326f;
-    return #FFFFFF;
-}
+// vec3 getColor(vec3 p) {
+//     p.y += sin(p.y) * 10.;
+//     float pixel = rnd(length(floor(p*1000. + vec3(100, 200, 300))));
+//     float id = floor(p.y + pixel * 1.2);
+//     float fr = fract(p.y + pixel * 1.2);
 
-vec3 getColor(vec3 p) {
-    p.y += sin(p.y) * 10.;
-    float pixel = rnd(length(floor(p*1000. + vec3(100, 200, 300))));
-    float id = floor(p.y + pixel * 1.2);
-    float fr = fract(p.y + pixel * 1.2);
+//     int colIndex1 = int(floor(4. * rnd(id)));
+//     int colIndex2 = int(floor(4. * rnd(id)));
 
-    int colIndex1 = int(floor(4. * rnd(id)));
-    int colIndex2 = int(floor(4. * rnd(id)));
-
-    vec3 col1 = getColorByIndex(colIndex1);
-    vec3 col2 = getColorByIndex(colIndex2);
-    float mixer = fract(fr);
-    return mix(col1, col2, mixer);
-}
+//     vec3 col1 = getColorByIndex(colIndex1);
+//     vec3 col2 = getColorByIndex(colIndex2);
+//     float mixer = fract(fr);
+//     return mix(col1, col2, mixer);
+// }
 
 void main() {
     uv = (gl_FragCoord.xy * 2. - u_resolution) / u_resolution.y;
@@ -157,16 +146,20 @@ void main() {
 
     vec3 colorBg = vec3(1);
     vec3 color;// = colorBg;
-    vec3 light = vec3(50, 20, 50);
+    vec3 light = vec3(0, 50, -30);
+    // light.xz *= rot(u_time);
     vec3 p = ro + rd * d;
     if(d < MAX_DIST) {
         vec3 n = getNormal(p);
-        // vec3 dirToLight = normalize(light - p);
-        // vec3 rayMarchLight = rayMarch(p + dirToLight * .06, dirToLight);
+        vec3 dirToLight = normalize(light - p);
+        vec3 rayMarchLight = rayMarch(p + dirToLight * .06, dirToLight);
         // reflection
         // vec3 ref = reflect(rd, n);
         // color = getColor(ref * .5 + .5);// + pow(dot(n, vec3(1,1,-1)) * .5 + .5, 40.);
-        color += n*.5+.5;
+        color += dot(n, dirToLight)*.5+.5;
+        // if(rayMarchLight.x<10.){
+        color*=smoothstep(.0,.4,rayMarchLight.z);
+        // }
     }
 
     outColor = vec4(color, 1);
