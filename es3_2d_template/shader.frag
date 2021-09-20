@@ -21,24 +21,54 @@ uniform vec4 viewbox;
 #define PI 3.14159265
 vec2 uv;
 
+#define f(x) (.5 + .31 * sin(x * PI * 2. * ceil(rnd(id + .5 + 5.) * 3.) + (id + 2.) * PI * 2.))
+
 void main() {
     uv = (gl_FragCoord.xy * 2. - u_resolution) / u_resolution.y;
     uv = uv * .5 + .5;
-
     uv *= viewbox.zw;
     uv += viewbox.xy;
-    uv = uv * 2. - 1.;
+    // uv = uv * 2. - 1.;
 
-    for(float i = 1.; i < 50.; i++) {
-        float width = rnd(i) * .2 + .8;
-        uv -= u_mouse.x * .4 - .2;
-        uv.y += smoothstep(-width * .5, width * .5, uv.x) * sin(u_time * .13 + 3. + i) * .5;
-        uv += u_mouse.x * .4 - .2;
-        uv *= rot(i);
+    // uv*=.5;
+    // uv = normalize(uv)/pow(length(uv),.15);
+    // uv = fract(uv);
+
+    float id = 1.;
+    float idS = 0.;
+    float idK = 1.;
+    float t = u_time * .01;// - pow(rnd(uv - fract(u_time) + a), 4.) * .01;
+    float split = f(t);
+
+    vec2 size = vec2(1);
+    vec2 uvTile = vec2(0);
+
+    for(int i = 0; i < 13; i++) {
+        int dir = 1 - i % 2;
+        // if(i == 0)
+        //     uv[dir] = mix(uv[dir], uv[dir] * split, u_mouse.x);
+        float shift = .01 * t;//u_mouse.x;//.0 * sin(t * 2. * PI + id * 99.);
+        // float shift = t * sign(id-.5);
+        // uv[dir] = fract(uv[dir] + shift);
+    // int dir = (rnd(id + .4) < .5) ? 0 : 1;
+        float splitP = split;
+        float condition = step(splitP, uv[dir]);
+        idS += mix(0., 1., condition) / pow(2., float(i));
+        id = mix(rnd(id + .1), rnd(id + .2), condition);
+        split = mix(f(splitP * 6. + id * 99.), 1. - f(splitP * 6. - id * 99.), condition);
+        uvTile[dir] += mix(0., size[dir] * splitP, condition);
+        // uvTile[dir] = fract(uvTile[dir] + mix(0., size[dir] * splitP, condition) + shift * size[dir] * splitP);
+        size[dir] *= mix(splitP, 1. - splitP, condition);
+
+        uv[dir] = mix(uv[dir] / splitP, (uv[dir] - splitP) / (1. - splitP), condition);
     }
+    uvTile += size / 2.;
+    uvTile = uvTile * 2. - 1.;
 
-    outColor.rgb = -sin((length(uv) * .5 - u_time*.1 + u_mouse.y + vec3(0, .13, .66) + 10.) * 2. * PI) * vec3(.5, .2, .2) + vec3(.5, .5, .5);
-    outColor *= smoothstep(4., 0., pow(length(uv), .7)) * 1.8;
-    outColor = clamp(outColor, 0., 1.);
+    uv *= size / min(size.x, size.y);
+    uv = uv * 2. - 1.;
+    outColor += smoothstep(.99, .5, length(uv));
+    // outColor += fract(idS);
+
     outColor.a = 1.;
 }

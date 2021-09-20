@@ -37,27 +37,46 @@ void main() {
     id = rnd(id + floor(id + .8));
     // uv = fract(uv) - .5;
 
-    vec2 uvInit = uv;
+    vec2 uvI = uv;
+
+    uv = uv * 2. - 1.;
+    // uv.y+=;
+    float sc = 1.;//mix(.63,1.,min(1.,abs(uv.x)));
+    uv.y = mix(uv.y, (uv.y * sc - min(0., abs(uv.x) * 1.25 - .37)), step(0., uv.y));
+    uv = abs(uv);
+    if(uv.y < uv.x)
+        uv.xy = uv.yx;
+    uv.x /= uv.y;
+    float M = smoothstep(.8, 1.2, uv.y * 2.);
+    uv.y = fract(uv.y * 2.);
+
+    // outColor.rg = uv * M;
+    // outColor.b = M;
+    // outColor.a += 1.;
 
     vec2 size = vec2(1);
     vec2 uvTile = vec2(0);
 
-    for(int i = 0; i < 4; i++) {
-        float N = 2. + floor(10. * rnd(id + .2));
-        int dir = i%2;//(rnd(id + .4) < .5) ? 0 : 1;
-        // if(size[dir]/N<.001) break;
+    for(int i = 0; i < 6; i++) {
+        float N = 2. + floor(3. * rnd(id + .2));
+        int dir = (rnd(id + .4) < params[1]) ? 0 : 1;
+        if(i == 0)
+            dir = 0;
+        // int dir = i % 2;//(rnd(id + .4) < .5) ? 0 : 1;
+        if(size[dir] / N < .01)
+            break;
 
-        float t = 0.;//u_time * (rnd(id) - .5) * .1;
+        float t = u_time * (rnd(id) - .5);
         float fl = floor(fract(uv[dir] + t) * N);
         id = rnd(id + fl);
         uv[dir] = fract(fract(uv[dir] + t) * N);
-        uvTile[dir] += fl/N*size[dir];
-        size[dir]/=N;
+        uvTile[dir] += fl / N * size[dir];
+        size[dir] /= N;
 
-        // if(rnd(id + .7) < params[2] * .5)
-        //     break;
+        if(i > 1 && rnd(id + .7) < params[2])
+            break;
     }
-    uvTile+=size/2.;
+    uvTile += size / 2.;
 
     int i1 = int(pow(rnd(params[0] + id), 1.) * paletteN);
     int i2 = (i1 + 1 + int(pow(rnd(params[0] + id + .1), 1.) * (paletteN - 2.))) % int(paletteN);
@@ -66,8 +85,8 @@ void main() {
     vec4 c2 = palette[i2];
 
     int dir = (rnd(id + .4) < .5) ? 0 : 1;
-    float sand = .03*(rnd(floor(uv[1-dir]*1000.*size[1-dir]))*2.-1.);
-    outColor = mix(c1, c2, uv[dir] + sand) * step(0.5,smoothstep(0.,1.,fract(length(uvTile-.5)+rnd(id)*.2+uv.x*.2+u_time)));
-    // outColor += ;
+    float sand = .03 * (rnd(floor(uv[1 - dir] * 1000. * size[1 - dir])) * 2. - 1.);
+    outColor = mix(c1, c2, uv[dir] + sand) * step(0.5, M * smoothstep(0., 1., fract(uvTile.y * floor(1. + 2. * params[0]) * .5 + params[2] + rnd(id) * params[3] + uv.y * .2 - u_time * 4. * (id - .5))));
+    outColor *= id * .5 + .5;
     outColor.a = 1.;
 }
