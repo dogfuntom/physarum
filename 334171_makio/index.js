@@ -182,9 +182,11 @@ function mouseClicked() {
 
 window.addEventListener('resize', windowResized)
 function windowResized() {
-  let winMinSize = Math.min(window.innerWidth, window.innerHeight)
-  canvas.width = canvas.height = winMinSize * window.devicePixelRatio
-  document.querySelector('canvas').style.width = document.querySelector('canvas').style.heigth = winMinSize + 'px'
+  // let winMinSize = Math.min(window.innerWidth, window.innerHeight)
+  canvas.width = window.innerWidth * window.devicePixelRatio
+  canvas.height = window.innerHeight * window.devicePixelRatio
+  document.querySelector('canvas').style.width = window.innerWidth + 'px'
+  document.querySelector('canvas').style.heigth = window.innerHeight + 'px'
 }
 
 let blink = () => {
