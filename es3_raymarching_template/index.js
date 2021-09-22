@@ -103,7 +103,6 @@ function animate() {
   timePrev = timeCurrent
   draw()
   requestAnimationFrame(animate)
-  pause=true
 }
 animate()
 
@@ -184,7 +183,7 @@ function mouseClicked() {
 window.addEventListener('resize', windowResized)
 function windowResized() {
   let winMinSize = Math.min(window.innerWidth, window.innerHeight)
-  canvas.width = canvas.height = winMinSize * window.devicePixelRatio / 2.
+  canvas.width = canvas.height = winMinSize * window.devicePixelRatio  / 4.
   document.querySelector('canvas').style.width = document.querySelector('canvas').style.heigth = winMinSize + 'px'
 }
 
@@ -227,7 +226,7 @@ function keyPressed(key) {
 
 function saveImage() {
 
-  let size = 3000
+  let size = 10000
   let splits = Math.ceil(size / 512)
   let step = 1 / splits
   let splitSize = size / splits

@@ -22,74 +22,36 @@ uniform float params[5];
 #pragma glslify: random = require(glsl-random) 
 #define rnd(x) random(vec2(x))
 #define PI 3.14159265
-#define sabs(x) sqrt(x*x+1e-2)
+// #define sabs(x) sqrt(x*x+1e-2)
 
 vec2 uv;
-
-vec2 p2d(vec2 polar) {
-    float alpha = polar.x;
-    float R = polar.y;
-    float x = sin(alpha) * R;
-    float y = cos(alpha) * R;
-    return vec2(x, y);
-}
-
-vec2 d2p(vec2 decart) {
-    float alpha = atan(decart.x, decart.y);
-    float R = length(decart);
-    return vec2(alpha, R);
-}
-
-vec2 snowflakeSymmetry(vec2 p, float rays) {
-    vec2 ar = d2p(p);
-    float astep = 2. * 3.1415 / rays;
-    float a = ar.x, r = ar.y;
-    a = mod(a, astep);
-    a -= astep / 2.;
-    a = abs(a);
-    p = p2d(vec2(a, r));
-    return p;
-}
 
 #define TEX_BLUE 1
 #define TEX_WALL 2
 
-#define f(x) (.5 + \
-                (.3 + .1*rnd(params[1])) * \
-                sin( \
-                    (x*.01) * PI * 2. * ceil(rnd(id + params[3]) * 3.) + \
-                    (id + 2. + params[4] + u_mouse[0]*id) * PI * 2.))
+#define f(x) (.5 + (.3 + .1 * rnd(params[1])) * sin((x * .01) * PI * 2. * ceil(rnd(id + params[3]) * 3.) + (id + 2. + params[4] + u_mouse[0] * id) * PI * 2.))
+
+#define sabs(p)sqrt(p*p+1e-2)
+
+vec2 sfold(vec2 p) {
+    vec2 v = normalize(vec2(1, -1));
+    float g = dot(p, v);
+    return p - (g - sabs(g)) * v;
+}
 
 vec2 dist(vec3 p) {
-    // p.xz *= rot(u_mouse.x*2.*PI);
-    // vec3 sizeW = vec3(2., 2., .5);
-    // vec3 pw = p - clamp(-sizeW / 2., sizeW / 2., p);
-    // vec2 wall = vec2(length(pw) - .01, TEX_WALL);
 
-    // p.xy/=dot(p.xy, p.xy);
+    // p.z -= 8.;
 
-    // p.xy *= rot(p.z * .1);
-    // p.z = sin(p.z*(params[0]*.5+.5)+params[4]);
-
-    // p.yx = vec2(atan(p.y + EPSILON, p.x) / 2. / PI + .5, length(p.xy));
-    // p.x = mod(p.x, 8.);
-    // p.y += 1.9;// - 2. * params[2];
-
-    // p.xz *= rot(p.y * 2. * PI * floor(4.*params[3])) * sign(rnd(params[1])-.5);
-    p.xz*=1.;
-    p.y*=.1;
-    p.zy = p.yz;
     float id = 1.;
-    // float idS = 0.;
-    // float idK = 1.;
-    float t = p.z;// - pow(rnd(uv - fract(u_time) + a), 4.) * .01;
+    float t = u_time * .001;
     float split = f(t);
 
     vec2 size = vec2(1);
     // vec2 uvTile = vec2(0);
     p.xy = p.xy * .5 + .5;
 
-    for(int i = 0; i < 5 + int(4. * params[1]); i++) {
+    for(int i = 0; i < 4 + int(8. * params[1]); i++) {
         int dir = 1 - i % 2;
         // if(size[dir] < .01)
         //     break;
@@ -111,34 +73,20 @@ vec2 dist(vec3 p) {
     // uvTile += size / 2.;
     // uvTile = uvTile * 2. - 1.;
 
-    p.xy *= size / min(size.x, size.y);
+    // p.xy *= size;// / min(size.x, size.y);
     p.xy = p.xy * 2. - 1.;
 
-    vec2 holes = vec2((length(p.xy) - .25) * .3 / 4. * min(size.x, size.y), id);
+    // float radius = .01;
+    // p.xy-=clamp(-1.+radius/size, 1.-radius/size, p.xy);
+    // vec2 cubes = vec2((length(p) - radius), id);
+    p = abs(p) - vec3(1., 1., 1.);
+    p.xz = sfold(p.xz);
+    p.yz = sfold(p.yz);
+    p.xy = sfold(p.xy);
 
-    return holes;
-    // return wall.x > holes.x ? wall : holes;
+    vec2 cubes = vec2(p.x * min(size.x, size.y), id);
 
-    // vec2 wall = vec2(max(abs(p.z)-.01, -length(p.xy)+1.),TEX_WALL);
-    // vec2 po = vec2(atan(p.y+EPSILON, p.x)/2./PI+.5, length(p.xy));
-
-    // p.xy=po;
-    // p.y-=1.; 
-
-    // float s = 1.;
-    // for(float i = 0.; i < 2.; i++) {
-    //     p.yz *= 3.+.5*sin(u_time);
-    //     s *=    3.+.5*sin(u_time);
-    //     p.yz = snowflakeSymmetry(p.yz,floor(3.+4.*rnd(i+.1)));
-    //     p.yz -= vec2(.2+.1*sin(u_time));
-    //     p.yz *= rot(u_time*i);
-    // }
-
-    // vec2 circle;
-    // p.yz -= clamp(p.yz,-.4,.7);
-    // circle.x = (length(vec2(p.yz))-.01)/s;
-    // circle.y = float(TEX_BLUE);
-    // return circle.x<wall.x? circle: wall;
+    return cubes;
 }
 
 vec3 rayMarch(vec3 ro, vec3 rd) {
@@ -177,21 +125,6 @@ vec3 getRayDir(vec2 uv, vec3 p, vec3 l, float z) {
     return d;
 }
 
-// vec3 getColor(vec3 p) {
-//     p.y += sin(p.y) * 10.;
-//     float pixel = rnd(length(floor(p*1000. + vec3(100, 200, 300))));
-//     float id = floor(p.y + pixel * 1.2);
-//     float fr = fract(p.y + pixel * 1.2);
-
-//     int colIndex1 = int(floor(4. * rnd(id)));
-//     int colIndex2 = int(floor(4. * rnd(id)));
-
-//     vec3 col1 = getColorByIndex(colIndex1);
-//     vec3 col2 = getColorByIndex(colIndex2);
-//     float mixer = fract(fr);
-//     return mix(col1, col2, mixer);
-// }
-
 void main() {
     uv = (gl_FragCoord.xy * 2. - u_resolution) / u_resolution.y;
     uv = uv * .5 + .5;
@@ -200,10 +133,10 @@ void main() {
     uv += viewbox.xy;
     uv = uv * 2. - 1.;
 
-    vec3 ro = vec3(0., 0., -6.);
-    float zoom = 1.100;
+    vec3 ro = vec3(0., 0., -2.);
+    float zoom = 1.;
 
-    vec3 rd = getRayDir(uv, ro, vec3(0), 4.)*(rnd(uv)*.2+.8);
+    vec3 rd = getRayDir(uv, ro, vec3(0), zoom);// * (rnd(uv) * .2 + .8);
 
     vec3 rm = rayMarch(ro, rd);
     float d = rm[0];
@@ -226,17 +159,17 @@ void main() {
         // if(rayMarchLight.x<10.){
         color *= smoothstep(.0, .4, rayMarchLight.z);
         // }
+        int colIndex1 = int(floor(5. * rnd(rm.y)));
+        int colIndex2 = int(floor(5. * rnd(rm.y - .1)));
+
+        vec4 col1 = palette[colIndex1];
+        vec4 col2 = palette[colIndex2];
+        float mixer = n.x * .5 + .5;
+        // outColor.rgb += dot(n, vec3(-1)) * .5 + .5;
+        outColor = mix(col1, col2, mixer);
+        // outColor.rgb *= n.x * .5 + .5;
     }
 
-    int colIndex1 = int(floor(5. * rnd(rayMarchLight.y)));
-    int colIndex2 = int(floor(5. * rnd(rayMarchLight.y-.1)));
-
-    vec4 col1 = palette[colIndex1];
-    vec4 col2 = palette[colIndex2];
-    float mixer = color.r;
-    outColor = mix(col1, col2, mixer);
-    outColor.rgb *= n.x*.5+.5;
-
     outColor.a = 1.;
-    // outColor = vec4(color, 1);
+// outColor = vec4(1, 0, 1, 1);
 }
