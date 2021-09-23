@@ -45,7 +45,7 @@ void main() {
     vec2 size = vec2(1);
     vec2 uvTile = vec2(0);
 
-    for(int i = 0; i < 4 + int(8. * params[2]*params[2]*params[2]*params[2]); i++) {
+    for(int i = 0; i < 4 + int(4. * params[2] * params[2] * params[2] * params[2]); i++) {
         int dir = 1 - i % 2;
         // if(i == 0)
         //     uv[dir] = mix(uv[dir], uv[dir] * split, u_mouse.x);
@@ -53,6 +53,8 @@ void main() {
         // float shift = t * sign(id-.5);
         // uv[dir] = fract(uv[dir] + shift);
         // int dir = (rnd(id + .4) < .5) ? 0 : 1;
+        if(size[dir] < .5*rnd(length(size)))
+            break;
         float splitP = split;
         float condition = step(splitP, uv[dir]);
         idS += mix(0., 1., condition) / pow(2., float(i));
@@ -67,23 +69,26 @@ void main() {
     uvTile += size / 2.;
     uvTile = uvTile * 2. - 1.;
 
-    uvI *= 4.;
-    vec3 p = vec3(uvI, u_time * .1 + id);
+    vec2 uvII = uvI;
+    uvI *= 2. + 2. * id;
+    vec3 p = vec3(uvI, u_time * .01 + floor(id * 8.));
     p += snoise3D(p) * .1;
     uv = uv * 2. - 1.;
-    outColor.rgb += smoothstep(-.3, abs(snoise3D(p)), (snoise3D(p * .3) * (.8 + .2 * sin(u_time + uvI.y)) +
-        snoise3D(p) * (.9 + .2 * sin(u_time + 1. + uvI.x)) +
-        snoise3D(p * 1.3) * (.5 * sin(u_time * .2 + length(uvI))) +
+    float frame = length(uv * uv * uv * uv);
+    outColor.rgb += smoothstep(-.5, -.5+1.5*abs(snoise3D(p)), (snoise3D(p * .3) * (.8 + .2 * sin(u_time*.1 + uvI.y)) +
+        snoise3D(p) * (.9 + .2 * sin(u_time*.01 + 1. + uvI.x)) +
+        snoise3D(p * 1.3) * (.5 * sin(u_time * .02 + length(uvI))) +
         snoise3D(p * 2.3) * .3 +
         snoise3D(p * 3.3) * .2 +
         snoise3D(p * 5.3) * .1 +
         snoise3D(p * 10.3) * .05 +
-        snoise2D(uvI * 60.3) * .1 +
+        // snoise2D(uvII * 160.3) * .01 +
+        -id*params[3]+
         // smoothstep(0.,.2,uv.x*uv.y)*smoothstep(0.,.2,(1.-uv.x)*(1.-uv.y))+
-        // (1. - length(uv * uv * uv * uv)/id) +
-        0.)*(length(uv * uv * uv * uv)/id));
+        (0. - frame*frame*2.) +
+        0.));
     // outColor *= 0.;
-    // outColor += ;
+    outColor = pow(outColor, vec4(.1+params[1]*params[1]*4.));
 
     outColor.a = 1.;
 }
