@@ -13,11 +13,19 @@ precision highp float;
 #define smax(a,b) (a+b+sabs(a-b))*.5
 
 varying v uv;
-uniform V positions[BLOCKS_NUMBER_MAX];
-uniform V sizes[BLOCKS_NUMBER_MAX];
-uniform ivec3 colors[BLOCKS_NUMBER_MAX];
-uniform int types[BLOCKS_NUMBER_MAX];
-uniform float rotations[BLOCKS_NUMBER_MAX];
+// uniform V positions[BLOCKS_NUMBER_MAX];
+// uniform V sizes[BLOCKS_NUMBER_MAX];
+// uniform ivec3 colors[BLOCKS_NUMBER_MAX];
+// uniform int types[BLOCKS_NUMBER_MAX];
+// uniform float rotations[BLOCKS_NUMBER_MAX];
+
+vec3 positions[BLOCKS_NUMBER_MAX];
+vec3 sizes[BLOCKS_NUMBER_MAX];
+float rotations[BLOCKS_NUMBER_MAX];
+
+ivec3 colors[BLOCKS_NUMBER_MAX];
+int types[BLOCKS_NUMBER_MAX];
+
 uniform V palette[20];
 uniform sampler2D b;
 uniform float t;
@@ -53,6 +61,7 @@ v random2f() {
 int eye;
 
 float dist(V p) {
+    ${uniforms}
     colIds = ivec3(0, 0, -1);
     p.x = abs(p.x);
     float res = p.y + 1.; // floor plane
@@ -177,6 +186,7 @@ V norm(V p) {
 }
 
 void main() {
+    ${uniforms}
     gl = 0.;
     float d = 0., e = 1e9, ep, j;
     v uv_ = (uv*u_res/min(u_res.x,u_res.y)) + random2f() * 1.5 / u_res;
