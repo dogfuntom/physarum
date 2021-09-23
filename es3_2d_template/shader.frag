@@ -15,7 +15,8 @@ uniform bool dartTheme;
 uniform float params[5];
 
 // #pragma glslify: hsv = require(glsl-hsv2rgb) 
-// #pragma glslify: noise= require(glsl-noise/simplex/4d) 
+#pragma glslify: snoise3D= require(./node_modules/glsl-noise/simplex/3d.glsl) 
+#pragma glslify: snoise2D= require(./node_modules/glsl-noise/simplex/2d.glsl) 
 // #pragma glslify: rot = require('../modules/math/rotate2D.glsl') 
 #pragma glslify: random = require(glsl-random) 
 #define rnd(x) random(vec2(x))
@@ -32,19 +33,19 @@ void main() {
     // uv = uv * 2. - 1.;
     vec2 uvI = uv;
 
-    float shift = rnd(floor(uv.y*1024.)+fract(u_time))-.5;
-    uv.x+=pow(shift,4.+params[2]*8.)*sign(shift)*6.*params[2];
+    // float shift = rnd(floor(uv.y * 1024.) + fract(u_time)) - .5;
+    // uv.x += pow(shift, 4. + params[2] * 8.) * sign(shift) * 6. * params[2];
 
     float id = 1.;
     float idS = 0.;
     float idK = 1.;
-    float t = u_time * .03 * params[3] + length(u_mouse.x + u_mouse.y) * .1;// - pow(rnd(uv - fract(u_time) + a), 4.) * .01;
+    float t = 0.;//u_time * .03 * params[3] + length(u_mouse.x + u_mouse.y) * .1;// - pow(rnd(uv - fract(u_time) + a), 4.) * .01;
     float split = f(t);
 
     vec2 size = vec2(1);
     vec2 uvTile = vec2(0);
 
-    for(int i = 0; i < 8 + int(5. * params[2]); i++) {
+    for(int i = 0; i < 4 + int(8. * params[2]*params[2]*params[2]*params[2]); i++) {
         int dir = 1 - i % 2;
         // if(i == 0)
         //     uv[dir] = mix(uv[dir], uv[dir] * split, u_mouse.x);
@@ -66,22 +67,23 @@ void main() {
     uvTile += size / 2.;
     uvTile = uvTile * 2. - 1.;
 
-    float msize = min(size.x, size.y);
+    uvI *= 4.;
+    vec3 p = vec3(uvI, u_time * .1 + id);
+    p += snoise3D(p) * .1;
     uv = uv * 2. - 1.;
-    uv *= size / msize;
-    uv = uv * .5 + .5;
-    uv = uv * 2. - 1.;
-
-    outColor += smoothstep(.99, .99 - .005 / msize, length(uv));
-    vec2 dir = normalize(u_mouse * 2. - 1. - uvTile);
-    float holeR = params[1] * 1. + .2;//sin(99.*(id+params[1])+u_time*(id+.5))*.3+1.1;
-    // float holeR = params[1]*1.5;//sin(99.*(id+params[1])+u_time*(id+.5))*.3+1.1;
-    holeR = mix(holeR, 4., 1. - smoothstep(.9, .85, length(uvTile)));
-    outColor -= smoothstep(holeR, holeR - .005 / msize, length(uv - dir * .5 * pow(length(u_mouse * 2. - 1. - uvTile), .3)) * 1.5);// * step(.1, abs(fract(u_time * id + uv.y) * 2. - 1.));
-    outColor = clamp(outColor, 0., 1.);
-    // outColor *= pow(sin(uvI.y * 256.*2.*PI)*.5+.5, .2);
-
-    if(!dartTheme) outColor=1.-outColor;
+    outColor.rgb += smoothstep(-.3, abs(snoise3D(p)), (snoise3D(p * .3) * (.8 + .2 * sin(u_time + uvI.y)) +
+        snoise3D(p) * (.9 + .2 * sin(u_time + 1. + uvI.x)) +
+        snoise3D(p * 1.3) * (.5 * sin(u_time * .2 + length(uvI))) +
+        snoise3D(p * 2.3) * .3 +
+        snoise3D(p * 3.3) * .2 +
+        snoise3D(p * 5.3) * .1 +
+        snoise3D(p * 10.3) * .05 +
+        snoise2D(uvI * 60.3) * .1 +
+        // smoothstep(0.,.2,uv.x*uv.y)*smoothstep(0.,.2,(1.-uv.x)*(1.-uv.y))+
+        // (1. - length(uv * uv * uv * uv)/id) +
+        0.)*(length(uv * uv * uv * uv)/id));
+    // outColor *= 0.;
+    // outColor += ;
 
     outColor.a = 1.;
 }
