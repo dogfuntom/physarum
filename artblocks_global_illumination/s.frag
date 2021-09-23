@@ -28,7 +28,6 @@ float gl;
 float camDist = 400.;
 v u_res = v(${width}, ${height})*${pixelDensity()+1e-6};
 
-
 float cyl(V p, V s, float cornerR) {
     // s.x — height
     // s.y — thickness
