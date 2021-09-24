@@ -17,11 +17,14 @@ uniform float params[5];
 // #pragma glslify: hsv = require(glsl-hsv2rgb) 
 #pragma glslify: snoise3D= require(./node_modules/glsl-noise/simplex/3d.glsl) 
 #pragma glslify: snoise2D= require(./node_modules/glsl-noise/simplex/2d.glsl) 
-// #pragma glslify: rot = require('../modules/math/rotate2D.glsl') 
+#pragma glslify: rot = require('../modules/math/rotate2D.glsl') 
 #pragma glslify: random = require(glsl-random) 
 #define rnd(x) random(vec2(x))
 #define PI 3.14159265
 vec2 uv;
+#define sabs(p) sqrt((p)*(p)+1.)
+#define smin(a,b) (a+b-sabs(a-b))*.5
+#define smax(a,b) (a+b+sabs(a-b))*.5
 
 #define f(x) (.5 + .31 * sin(x * PI * 2. * ceil(rnd(id + .5 + 5.) * 3.) + (id + 2. + params[3]) * PI * 2.))
 
@@ -36,10 +39,10 @@ void main() {
     // float shift = rnd(floor(uv.y * 1024.) + fract(u_time)) - .5;
     // uv.x += pow(shift, 4. + params[2] * 8.) * sign(shift) * 6. * params[2];
 
-    float id = 1.;
+    float id = params[3];
     float idS = 0.;
     float idK = 1.;
-    float t = 0.;//u_time * .03 * params[3] + length(u_mouse.x + u_mouse.y) * .1;// - pow(rnd(uv - fract(u_time) + a), 4.) * .01;
+    float t = params[0];//u_time * .03 * params[3] + length(u_mouse.x + u_mouse.y) * .1;// - pow(rnd(uv - fract(u_time) + a), 4.) * .01;
     float split = f(t);
 
     vec2 size = vec2(1);
@@ -71,24 +74,34 @@ void main() {
 
     vec2 uvII = uvI;
     uvI *= 2. + 2. * id;
+    uvI += 999.*(id+params[0]);
     vec3 p = vec3(uvI, u_time * .01 + floor(id * 8.));
     p += snoise3D(p) * .1;
     uv = uv * 2. - 1.;
     float frame = length(uv * uv * uv * uv);
-    outColor.rgb += smoothstep(-.5, -.5+1.5*abs(snoise3D(p)), (snoise3D(p * .3) * (.8 + .2 * sin(u_time*.1 + uvI.y)) +
+    float col = smoothstep(-1.5, .5*abs(snoise3D(p)), (snoise3D(p * .3) * (.8 + .2 * sin(u_time*.1 + uvI.y)) +
         snoise3D(p) * (.9 + .2 * sin(u_time*.01 + 1. + uvI.x)) +
         snoise3D(p * 1.3) * (.5 * sin(u_time * .02 + length(uvI))) +
         snoise3D(p * 2.3) * .3 +
         snoise3D(p * 3.3) * .2 +
         snoise3D(p * 5.3) * .1 +
         snoise3D(p * 10.3) * .05 +
+        abs(pow(snoise3D(p*(vec2(1., 3.+4.*rnd(id+.4)) * rot(id*2.*PI)).xyx * (8.+8.*rnd(id+.3))),.3))*.1+
+        abs(pow(snoise3D(99.+p*(vec2(1., 3.+3.*rnd(id+.4)) * rot(id*2.*PI)).xyx * (8.+8.*rnd(id+.3))),.3))*.1+
+        abs(pow(snoise3D(999.+p*(vec2(1., 3.+1.4*rnd(id+.4)) * rot(id*2.*PI)).xyx * (8.+8.*rnd(id+.3))),.3))*.1+
+        // pow(abs(snoise3D(p * (4.+3.*rnd(id+.3)))),.4) * .3*rnd(id+.2) +
         // snoise2D(uvII * 160.3) * .01 +
         -id*params[3]+
         // smoothstep(0.,.2,uv.x*uv.y)*smoothstep(0.,.2,(1.-uv.x)*(1.-uv.y))+
         (0. - frame*frame*2.) +
         0.));
     // outColor *= 0.;
-    outColor = pow(outColor, vec4(.1+params[1]*params[1]*4.));
+    // outColor = pow(outColor, vec4(.1+params[1]*params[1]*4.));
 
+    // col = smax(.75-pow((col-.9)*64.,2.),col);
+    col=col*col;
+    
+
+    outColor.rgb+=col;
     outColor.a = 1.;
 }
