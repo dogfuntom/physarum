@@ -481,15 +481,24 @@ function setup() {
 
     findViewBox()
 
+    // u_sizes = blocks.map(b => b.size).flat()
+    // u_positions = blocks.map(b => b.pos).flat()
     u_palette = palette.map(c => color(c).levels.slice(0, 3)).flat().map(d => d / 255)
     u_colors = blocks.map(b => [b.color, b.color2, b.texture]).flat()
+    // u_types = blocks.map(b => b.type)
+    // u_rotations = blocks.map(b => b.rot)
 
-    let uniforms = 
-    blocks.map((b,i) => `positions[${i}]=vec3(${b.pos[0]},${b.pos[1]},${b.pos[2]});`).join('') +
-    blocks.map((b,i) => `sizes[${i}]=vec3(${b.size[0]},${b.size[1]},${b.size[2]});`).join('') +
-    blocks.map((b,i) => `colors[${i}]=ivec3(${b.color},${b.color2},${b.texture});`).join('') +
-    blocks.map((b,i) => `types[${i}]=${b.type};`).join('') +
-    blocks.map((b,i) => `rotations[${i}]=float(${b.rot});`).join('')
+    let uniforms = ``
+    uniforms += blocks.map((b,i) => 
+    `positions[${i}]=vec3(${b.pos[0]},${b.pos[1]},${b.pos[2]});`).join('')
+    uniforms += blocks.map((b,i) => 
+    `sizes[${i}]=vec3(${b.size[0]},${b.size[1]},${b.size[2]});`).join('')
+    uniforms += blocks.map((b,i) => 
+    `colors[${i}]=ivec3(${b.color},${b.color2},${b.texture});`).join('')
+    uniforms += blocks.map((b,i) => 
+    `types[${i}]=${b.type};`).join('')
+    uniforms += blocks.map((b,i) => 
+    `rotations[${i}]=float(${b.rot});`).join('')
     // console.log(uniforms)
 
 
@@ -781,6 +790,11 @@ function setup() {
 }
 
 
+
+
+
+
+
 function draw() {
     b.clear();
     b.image(canvas, width * -0.5, height * -0.5, width, height);
@@ -788,7 +802,12 @@ function draw() {
     shader(s);
     s.setUniform('b', b)
     s.setUniform('t', u_tick)
+    // s.setUniform('positions', u_positions)
+    // s.setUniform('sizes', u_sizes)
+    // s.setUniform('rotations', u_rotations)
+    // s.setUniform('colors', u_colors)
     s.setUniform('palette', u_palette)
+    // s.setUniform('types', u_types)
     rect(0, 0, width, height)
 
     console.log(u_tick)
