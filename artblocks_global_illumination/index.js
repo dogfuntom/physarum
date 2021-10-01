@@ -1,6 +1,6 @@
-if (window.location.hash) {
-    tokenData.hash = window.location.hash.slice(1)
-}
+// if (window.location.hash) {
+//     tokenData.hash = window.location.hash.slice(1)
+// }
 // arr = arr.slice(0, 10)
 // tokenData.hash = `0xdcd026a018e190fd7810fe5bc5f8af8c885ce6327af142fe2c960547edb1987a`
 
@@ -12,7 +12,6 @@ let S, ss, R, t, RL, SH
 let M = Math
 
 let rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
-
 
 let preloader, preloaderSize
 const typeBlock = 0, typeCyl = 1, typeBall = 2, typeBeak2x2 = 3, typeBeak2x2Flipped = 4,
@@ -33,44 +32,9 @@ let vertices
 let palette
 let u_tick
 let viewBox
-// let viewBox ={}
-
-/*
-Баги
-- Пингвинчик!
-- Прелоудер
-- На айфоне чтобы работало
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-- Скачивалку в большом размере
-- Скачивалку JSON файла
-
-✓ beak пофиксить: точно резать + пипки не обрезать.
-✓ Попробовать клюв с цилиндром
-✓ Кодгольфнуть вершины
-✓ В цветовые схемы добавить 7 цветов. Можно на бумажке ещё раз записать, какие буду схемы и фичи
-✓ Попробовать запретить текстуры для больших
-✓ Решить, текстуры будут меняться в зависимости от цветовой схемы? Например, будет ли цветовая схема «без»
-✓ Правильный подсчёт блоков
-✓ Радуга чтобы ресайзилась под размер модельки
-✓ Убрать мышиную крутилку
-✓ На мобиле чтобы работало
-✓ Пофиксить глаза раскосые
-✓ Аватар фит (квадратные штуки слишком большие)
-✓ Студшейп
-✓ глаза!
-✓ нижняя цеплялка не работает
-✓ bg переделать на что-то типа глоу. Чтобы не было глючного засвета
-✓ рефакторнуть глсл main
-✓ вернуть арку
-✓ рефакторнуть глсл SDF
-✓ убрать шафлы
-✓ сделать 10 разных вариантов рендеринга, выбрать лучший.
-✓ Набор удачных пресетов
-*/
-
 
 let init = () => {
-    console.log(tokenData.hash)
+    // console.log(tokenData.hash)
     S = Uint32Array.from([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
     RL = (ar, p) => ar[ar.length * R() ** (p || 1) | 0]
     SH = (ar) => { return ar.sort(() => R() - 0.5) }
@@ -81,21 +45,22 @@ let init = () => {
 
     u_tick = 1e-6 // so not to turn into int
     features = {
-        symmetry: R() ** 4. * 2 | 0,
-        studs: R() ** 8 * 2 | 0,
-        palette: 0,
+        Symmetry: R() ** 4. * 2 | 0,
+        Studs: R() ** 8 * 2 | 0,
+        Palette: 0,
         // 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
-        colorScheme: (1 - R() ** .2) * 5 | 0,
-        layout: 0,
-        height: 0,
-        eyes: 0,
-        aerials: 0,
-        blocksNumber: 0,
-        bgType: RL([2, 1], .5),
-        bgLight: R() * 3 - 1 | 0,
+        ColorScheme: (1 - R() ** .2) * 5 | 0,
+        Layout: 0,
+        Height: 0,
+        Eyes: 0,
+        Aerials: 0,
+        BlocksNumber: 0,
+        BackgroundType: RL([2, 1], .5),
+        BackgroundLight: (R() * 3 | 0) - 1,
     }
+    // console.log('BackgroundLight', features.BackgroundLight)
 
-    u_camAngXZ = ((features.symmetry) - .5) * 3.1415 / 2 - 3.1415
+    u_camAngXZ = ((features.Symmetry) - .5) * 3.1415 / 2 - 3.1415
 
     let presets = [
         {
@@ -135,13 +100,14 @@ let init = () => {
         },
     ];
 
-    features.layout = R() ** .3 * presets.length | 0;
+    features.Layout = R() ** .3 * presets.length | 0;
 
-    ({ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra } = presets[features.layout])
+    ({ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra } = presets[features.Layout])
     numberOfBlockTypes = 2 + R() * 2 | 0
 
     blocks = [];
-    palette = RL([
+    features.Palette=R()**.5*8 | 0
+    palette = [
         // // GOOD
         ["#ddd", "#888", "#555", "#222", "#aaa"],
         ["#f26b21", "#f78e31", "#fbb040", "#cbdb47", "#99ca3c", "#208b3a", "#fcec52"], // green orange
@@ -153,11 +119,11 @@ let init = () => {
         ["#540d6e", "#ee4266", "#f3fcf0", "#1f271b", "#ffd23f"],
         ["#e4572e", "#29335c", "#a8c686", "#669bbc", "#f3a712"],
 
-    ], .5)
+    ][features.Palette]
     let badColor = palette.pop()
     palette = SH(palette)
     palette.push(badColor)
-    if (features.colorScheme == 2) palette = palette.slice(0, 2)
+    if (features.ColorScheme == 2) palette = palette.slice(0, 2)
 }
 
 function placeBlocks() {
@@ -239,7 +205,7 @@ function placeBlocks() {
         let bvt
         let isExtra = false
         let bvtInitial = RL(blocksVariants)
-        if (n >= blocksNumber - extra && features.colorScheme != 4)
+        if (n >= blocksNumber - extra && features.ColorScheme != 4)
             bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6, maxTry = 6, isExtra = true
         // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
         // тот, что лучше подходит под критерий.
@@ -254,7 +220,7 @@ function placeBlocks() {
             bvt.color = R() * (palette.length - 1 | 0) + 1
             bvt.color2 = R() * (palette.length - 1 | 0) + 1
             bvt.texture = R() * 4 | 0
-            if (features.colorScheme == 1) bvt.texture = 0
+            if (features.ColorScheme == 1) bvt.texture = 0
             // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
             // надо или его копию делать, или ещё чего.
 
@@ -378,7 +344,8 @@ function placeBlocks() {
             bv.pos[1] = maxHeight + bv.size[1] / 2;
             if (bv.pos[1]) {
                 if (isExtra && bv.pos[1] - bv.span[1] / 2 == 0) {
-                    console.log('extra on the floor!'); continue
+                    // console.log('extra on the floor!'); 
+                    continue
                 } // eyes on the froor are prohibited
                 let xx = Array(bv.span[0]).fill().map((d, i) => bv.pos[0] + i - (bv.span[0] - 1.) / 2)
                 let zz = Array(bv.span[2]).fill().map((d, i) => bv.pos[2] + i - (bv.span[2] - 1.) / 2)
@@ -405,20 +372,20 @@ function placeBlocks() {
                     ])
                 }
 
-                features.blocksNumber++
-                if (bv.type == typeEye) features.eyes++
-                if (bv.type == typePillar) features.aerials++
+                features.BlocksNumber++
+                if (bv.type == typeEye) features.Eyes++
+                if (bv.type == typePillar) features.Aerials++
                 if (bv.pos[0] > 0) {
-                    features.blocksNumber++
-                    if (bv.type == typeEye) features.eyes++
-                    if (bv.type == typePillar) features.aerials++
+                    features.BlocksNumber++
+                    if (bv.type == typeEye) features.Eyes++
+                    if (bv.type == typePillar) features.Aerials++
                 }
-            } else console.log('bv.pos.y is NaN')
-        } else console.log('bv not defined')
+            }// else console.log('bv.pos.y is NaN')
+        }// else console.log('bv not defined')
     }
-    console.log('N BLOCKS', blocks.length, '\n==============================')
-    console.log(blocks)
-    features.height = M.max(...disallowedHeightMap.flat())
+    // console.log('N BLOCKS', blocks.length, '\n==============================')
+    // console.log(blocks)
+    features.Height = M.max(...disallowedHeightMap.flat())
     // console.log('height_', height_)
     // console.log('features', features)
     // blocks=[]
@@ -457,10 +424,10 @@ let findViewBox = () => {
 
 
 
-function preload() {
-    sf = loadStrings('s.frag')
-    sv = loadStrings('s.vert')
-}
+// function preload() {
+//     sf = loadStrings('s.frag')
+//     sv = loadStrings('s.vert')
+// }
 
 function setup() {
 
@@ -607,7 +574,7 @@ function setup() {
                 ps.xz += (l - 1.) / 2.;
                 ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
                 float h = .24;
-                float stud = (${features.studs} == 1) ? abs(length(ps.xz) - .28 + .05) - .05 : length(ps.xz) - .28;
+                float stud = (${features.Studs} == 1) ? abs(length(ps.xz) - .28 + .05) - .05 : length(ps.xz) - .28;
                 stud = max(stud, abs(ps.y - sizes[i].y / 2. - h / 2.) - h / 2.);
                 block = min(stud, block);
             }
@@ -737,8 +704,8 @@ function setup() {
                     col = col2;
     
             // pride
-            if(${features.colorScheme} == 3)
-                col = sin(length(p) / max(float(${gs}), float(${features.height})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+            if(${features.ColorScheme} == 3)
+                col = sin(length(p) / max(float(${gs}), float(${features.Height})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
                 // p*=.3;
                 // col = sin(8.*dot(sin(p), cos(p.zxy))  - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
     
@@ -753,11 +720,11 @@ function setup() {
             if(colIds.z == -1) {
                 o = palette[0];
                 if(length(o) > .4)
-                    o *= smoothstep(5., 0., length(uv_ + v(${features.bgLight}, -1)));
-                if(${features.colorScheme} == 3)
+                    o *= smoothstep(5., 0., length(uv_ + v(${features.BackgroundLight}, -1)));
+                if(${features.ColorScheme} == 3)
                     // o = V(o.r*.5);
                     o = V(.2);
-                if(sin(length(pow(abs(uv_), v(${features.bgType}))) * 32.) > 0.)
+                if(sin(length(pow(abs(uv_), v(${features.BackgroundType}))) * 32.) > 0.)
                     o *= .95;
             } else {
                 // shading
@@ -768,25 +735,40 @@ function setup() {
         }
     
         // gazya
-        if(${features.colorScheme} == 4)
+        if(${features.ColorScheme} == 4)
             o = (V(10. / j));
     
         gl_FragColor = mix(texture2D(b, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (t + 1.));
         // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
     }`)
 
-    preloaderSize = document.querySelector('canvas').getBoundingClientRect()
-    console.log(preloaderSize)
-    preloader = document.body.appendChild(document.createElement('div'))
-    preloader.style.position = 'absolute'
-    preloader.style.left = preloaderSize.x
-    preloader.style.top = preloaderSize.bottom - preloaderSize.height / 100
-    preloader.style.height = preloaderSize.height / 100
-    preloader.style.width = 0
-    preloader.style.background = '#fff9'
+    // preloaderSize = document.querySelector('canvas').getBoundingClientRect()
+    // // console.log(preloaderSize)
+    // preloader = document.body.appendChild(document.createElement('div'))
+    // preloader.style.position = 'absolute'
+    // preloader.style.left = preloaderSize.x
+    // preloader.style.top = preloaderSize.bottom - preloaderSize.height / 100
+    // preloader.style.height = preloaderSize.height / 100
+    // preloader.style.width = 0
+    // preloader.style.background = '#fff9'
 
     loop()
-    console.log('features', features)
+    
+    console.log(features)
+ 
+    features.BackgroundLight={'1':'Left','0':'Center','-1':'Right'}[features.BackgroundLight]
+    if(features.ColorScheme==4/*gaz*/ || features.ColorScheme==3/*ranibow*/) features.BackgroundLight=0
+    features.BackgroundType={'1':'Circle','2':'Squircle'}[features.BackgroundType]
+    features.Studs={'0':'Convex','1':'Concave'}[features.Studs]
+    if(features.ColorScheme==4/*gaz*/) features.BackgroundType='Empty'
+    features.Palette={'0': 'Black and white', '1': 'Summer', '2': 'Colorful', '3': 'Magenta blue', '4': 'Plastic', '5': 'Winter', '6': 'Spring', '7': 'Vivid', '8': 'Eighth'}[features.Palette]
+    if(features.ColorScheme==4/*gaz*/) features.Palette='Gaz'
+    if(features.ColorScheme==3/*rainbow*/) features.Palette='Rainbow'
+    features.Layout={'0': 'Cage', '1': 'Mushroom', '2': 'Cutie', '3': 'Compact', '4': 'Random'}[features.Layout]        
+    features.Symmetry={'0':'Z','1':'X'}[features.Symmetry]
+    features.ColorScheme={'0': 'Textured', '1': 'Not textured', '2': 'Monochrome', '3': 'Rainbow', '4': 'Gaz'}[features.ColorScheme]
+
+    console.log(features)
 }
 
 
@@ -802,19 +784,13 @@ function draw() {
     shader(s);
     s.setUniform('b', b)
     s.setUniform('t', u_tick)
-    // s.setUniform('positions', u_positions)
-    // s.setUniform('sizes', u_sizes)
-    // s.setUniform('rotations', u_rotations)
-    // s.setUniform('colors', u_colors)
     s.setUniform('palette', u_palette)
-    // s.setUniform('types', u_types)
     rect(0, 0, width, height)
 
-    console.log(u_tick)
-    preloader.style.width = preloaderSize.width * u_tick / 5e1
+    // preloader.style.width = preloaderSize.width * u_tick / 5e1
 
-    if (u_tick++ > 5e0) {
-        preloader.remove()
+    if (u_tick++ > 1) {
+        // preloader.remove()
         noLoop()
         // save(`${tokenData.hash}.png`)
         // let gl = canvas.getContext('webgl')
