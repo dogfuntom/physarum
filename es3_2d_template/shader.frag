@@ -35,24 +35,25 @@ void main() {
     uv += viewbox.xy;
     vec2 uvI = uv;
 
-    float scale = 2.;
-    float tileSize = 8.;
+    float id = 1.;
+    for(float i = 0.; i < 4.; i++) {
+        uv=uvI;
 
-    uv = fract(uv * scale);
-    vec2 cr = floor(uv * tileSize);
-    uv = fract(uv * tileSize) - .5;
-    // vec2 crId = vec2(snoise2D(vec2(cr.x+params[0]+99.,cr.y+uvI.x*.1+u_time*.1)), snoise2D(vec2(cr.y+params[0],cr.x+u_time*.1+uvI.y*.1)));
+        float scale = ceil(rnd(params[2]+i+id)*4.);
+        scale=mix(1.,scale,min(i,1.));
+        float tileSize = ceil(rnd(params[1]+i+id)*8.);
 
-    // vec2 crId = vec2(
-    //     snoise2D(vec2(cr.x+99.*params[0]+99.,cr.y+log(length(uv*uv))*.01+u_time*.1)),
-    //     snoise2D(vec2(cr.y+99.*params[0],cr.x+log(length(uv*uv))*.01+u_time*.1))
-    // );
-    // float id = mix(crId.x, crId.y, step(crId.x,crId.y));
-    // outColor=palette[int(id*5.)];
+        uv = fract(uv * scale);
+        vec2 cr = floor(uv * tileSize);
+        uv = fract(uv * tileSize) - .5;
 
-    vec2 crId = vec2(rnd(cr.x + params[0]), rnd(cr.y + params[0] + .1));
-    float cond = step(snoise2D(vec2(cr.x + params[0] + 00., cr.x + log(length(uv * uv)) * .01 + u_time * .1)), snoise2D(vec2(cr.y + params[0] + 99., cr.y + log(length(uv * uv)) * .01 + u_time * .1)));
-    float id = mix(crId.x, crId.y, cond);
+        vec2 crId = vec2(rnd(cr.x + params[0] + id), rnd(cr.y + params[0] + .1 + id));
+
+        float cond = step(snoise2D(vec2(cr.x + params[0] + 00., cr.x + log(length(uv * uv)) * .01 + u_time * .1)), snoise2D(vec2(cr.y + params[0] + 99., cr.y + log(length(uv * uv)) * .01 + u_time * .1)));
+        id = mix(crId.x, crId.y, cond);
+
+    }
+
     outColor = palette[int(id * 5.)];
 
     outColor.a = 1.;
