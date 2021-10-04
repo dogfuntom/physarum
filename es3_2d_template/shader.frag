@@ -29,19 +29,25 @@ vec2 uv;
 #define f(x) (.5 + .31 * sin(x * PI * 2. * ceil(rnd(id + .5 + 5.) * 3.) + (id + 2. + params[3]) * PI * 2.))
 
 void main() {
-    uv = (gl_FragCoord.xy * 2. - u_resolution) / u_resolution.y;
+    uv = (gl_FragCoord.xy * 2. - u_resolution) / min(u_resolution.y, u_resolution.x);
     uv = uv * .5 + .5;
     uv *= viewbox.zw;
     uv += viewbox.xy;
     vec2 uvI = uv;
 
+    // uv=abs(uv);
+    uv += 1e-4;
     float id = 1.;
-    for(float i = 0.; i < 4.; i++) {
-        uv=uvI;
+    float shadow = 1.;
+    for(float i = 0.; i < 3.; i++) {
+        uv = uvI;
 
-        float scale = ceil(rnd(params[2]+i+id)*4.);
-        scale=mix(1.,scale,min(i,1.));
-        float tileSize = ceil(rnd(params[1]+i+id)*8.);
+        if(rnd(id)<.5 && i > 1.)break;
+
+        float scale = i + ceil(rnd(params[2] + i + id) * 4.);
+        scale = mix(1., scale, min(i, 1.));
+        float tileSize = i + ceil(rnd(params[1] + i + id) * 8.);
+        tileSize = mix(1., tileSize, min(i, 1.));
 
         uv = fract(uv * scale);
         vec2 cr = floor(uv * tileSize);
@@ -49,12 +55,21 @@ void main() {
 
         vec2 crId = vec2(rnd(cr.x + params[0] + id), rnd(cr.y + params[0] + .1 + id));
 
-        float cond = step(snoise2D(vec2(cr.x + params[0] + 00., cr.x + log(length(uv * uv)) * .01 + u_time * .1)), snoise2D(vec2(cr.y + params[0] + 99., cr.y + log(length(uv * uv)) * .01 + u_time * .1)));
+        uv*=rot(u_time*(id-.5)+id*99.);
+        float frame = log(length(uv * uv)) * .1 / scale + u_time * .1 * (id-.5) + id * 99.;
+        shadow *= min(frame, 1.);
+        float cond = step(snoise2D(vec2(cr.x + params[0] + 00., cr.x + frame)), snoise2D(vec2(cr.y + params[0] + 99., cr.y + frame)));
         id = mix(crId.x, crId.y, cond);
-
     }
 
-    outColor = palette[int(id * 5.)];
+    int i1 = int(rnd(params[0] + id) * 3.);
+    int i2 = (i1 + 1 + int(rnd(params[0] + id + .1) * 1.)) % 3;
+    vec4 c1 = palette[i1];
+    vec4 c2 = palette[i2];
+
+    float sand = rnd(length(floor((uvI - 1.) * 512.) / 512.) + fract(u_time)) * .2;
+
+    outColor = mix(c1, c2, uv.x * .5 + .5 + sand) * shadow;
 
     outColor.a = 1.;
 }
