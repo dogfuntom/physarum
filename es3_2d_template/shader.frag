@@ -45,19 +45,17 @@ vec3 add = vec3(0.938, 0.328, 0.718);
     float id = .1;
     float shadow = 1.;
     int dir;
-    for(float i = 0.; i < 4.; i++) {
+    for(float i = 0.; i < 2.; i++) {
         // uv = uvI;
-
-        // if(rnd(id)<.5 && i > 1.)break;
 
         float scale = 1.;//ceil(rnd(params[2] + i + id) * 4.)+1.;
         // scale = mix(1., scale, min(i, 1.));
-        float tileSize = ceil(rnd(params[1] + i + id) * 4.) + 1.;
+        float tileSize = 4.;//ceil(rnd(params[1] + i + id) * 4.) + 1.;
         // if(id < params[3])
         //     tileSize.xy = tileSize.yx;
         // tileSize = mix(1., tileSize, min(i, 1.));
 
-        uv = fract(uv * scale);
+        // uv = fract(uv * scale);
         vec2 cr = floor(uv * tileSize);
         uv = fract(uv * tileSize) - .5;
 
@@ -68,6 +66,8 @@ vec3 add = vec3(0.938, 0.328, 0.718);
         float cond = step(snoise2D(vec2(cr.x + params[0] + 00., cr.x + frame)), snoise2D(vec2(cr.y + params[0] + 99., cr.y + frame)));
         id = mix(crId.x, crId.y, cond);
         dir = int(mix(0., 1., cond));
+
+        if(rnd(id)<.5)break;
     }
 
     int i1 = int(rnd(params[0] + id) * 3.);
@@ -80,6 +80,8 @@ vec3 add = vec3(0.938, 0.328, 0.718);
     float sand = rnd(length(floor((uvI - 1.) * 512.) / 512.) + fract(u_time)) * .2;
 
     outColor = mix(c1, c2, uv[dir] * .5 + .5 + sand) * shadow;
+
+    if(id<.2)outColor*=sin(uv[dir]*8. + u_time + rnd(uv[1-dir]+u_time)*.3)*1.+1.;
 
     outColor.a = 1.;
 }
