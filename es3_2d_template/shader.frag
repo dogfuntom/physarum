@@ -28,7 +28,13 @@ vec2 uv;
 
 // #define f(x) (.5 + .31 * sin(x * PI * 2. * ceil(rnd(id + .5 + 5.) * 3.) + (id + 2. + params[3]) * PI * 2.))
 
+#define col(c) cos((c*fr + off) * 2. * PI) * mul + add
+
 void main() {
+vec3 off = vec3(2.538, params[2], 0.168);
+vec3 fr = vec3(0.388, 0.388, 0.296);
+vec3 mul = vec3(0.659, 0.438, 0.328);
+vec3 add = vec3(0.938, 0.328, 0.718);
     uv = (gl_FragCoord.xy * 2. - u_resolution) / min(u_resolution.y, u_resolution.x);
     uv = uv * .5 + .5;
     uv *= viewbox.zw;
@@ -36,17 +42,20 @@ void main() {
     vec2 uvI = uv;
 
     uv += 1e-4;
-    float id = 1.;
+    float id = .1;
     float shadow = 1.;
-    for(float i = 0.; i < 3.; i++) {
-        uv = uvI;
+    int dir;
+    for(float i = 0.; i < 4.; i++) {
+        // uv = uvI;
 
-        if(rnd(id)<.5 && i > 1.)break;
+        // if(rnd(id)<.5 && i > 1.)break;
 
-        float scale = i + ceil(rnd(params[2] + i + id) * 4.);
-        scale = mix(1., scale, min(i, 1.));
-        float tileSize = i + ceil(rnd(params[1] + i + id) * 4.);
-        tileSize = mix(1., tileSize, min(i, 1.));
+        float scale = 1.;//ceil(rnd(params[2] + i + id) * 4.)+1.;
+        // scale = mix(1., scale, min(i, 1.));
+        float tileSize = ceil(rnd(params[1] + i + id) * 4.) + 1.;
+        // if(id < params[3])
+        //     tileSize.xy = tileSize.yx;
+        // tileSize = mix(1., tileSize, min(i, 1.));
 
         uv = fract(uv * scale);
         vec2 cr = floor(uv * tileSize);
@@ -54,20 +63,23 @@ void main() {
 
         vec2 crId = vec2(rnd(cr.x + params[0] + id), rnd(cr.y + params[0] + .1 + id));
 
-        float frame = log(length(uv * uv)) * .1 / scale + u_time * .1 * (id-.5) + (id+params[3]) * 99.;
-        shadow *= min(pow(1.-(fract(frame)),.2), 1.);
+        float frame = .1;//log(length(uv * uv)) * .1 / scale + u_time * .1 * (id-.5) + (id+params[3]) * 99.;
+        // shadow *= min(pow(1.-(fract(frame)),.2), 1.);
         float cond = step(snoise2D(vec2(cr.x + params[0] + 00., cr.x + frame)), snoise2D(vec2(cr.y + params[0] + 99., cr.y + frame)));
         id = mix(crId.x, crId.y, cond);
+        dir = int(mix(0., 1., cond));
     }
 
     int i1 = int(rnd(params[0] + id) * 3.);
     int i2 = (i1 + 1 + int(rnd(params[0] + id + .1) * 1.)) % 3;
-    vec4 c1 = palette[i1];
-    vec4 c2 = palette[i2];
+    vec4 c1 = vec4(col(rnd(id)), 1.);
+    vec4 c2 = vec4(col(rnd(id + .1)), 1.);
+    // vec4 c1 = palette[i1];
+    // vec4 c2 = palette[i2];
 
     float sand = rnd(length(floor((uvI - 1.) * 512.) / 512.) + fract(u_time)) * .2;
 
-    outColor = mix(c1, c2, uv.x * .5 + .5 + sand) * shadow;
+    outColor = mix(c1, c2, uv[dir] * .5 + .5 + sand) * shadow;
 
     outColor.a = 1.;
 }
