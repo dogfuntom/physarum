@@ -22,7 +22,7 @@ const blocksNumMax = 60
 const maxMaxTry = 30
 let u_camAngYZ = .95532, u_camAngXZ
 // let gs, blocksNumber, fitnessFunctionNumber, maxTry, extra
-let s, sf, sv, b, canvas
+let s, sf, sv, b, canvas, su
 let u_palette, u_colors, u_rotations, u_positions, u_sizes, u_types
 let gs, blocksNumber, fitnessFunctionNumber, maxTry, extra, numberOfBlockTypes
 let features
@@ -106,7 +106,7 @@ let init = () => {
     numberOfBlockTypes = 2 + R() * 2 | 0
 
     blocks = [];
-    features.Palette=R()**.5*8 | 0
+    features.Palette = R() ** .5 * 8 | 0
     palette = [
         // // GOOD
         ["#ddd", "#888", "#555", "#222", "#aaa"],
@@ -455,17 +455,19 @@ function setup() {
     // u_types = blocks.map(b => b.type)
     // u_rotations = blocks.map(b => b.rot)
 
+
+    console.log(blocks.map(b=>b.type))
+    console.log(blocks.filter(b=>b.type==7))
+
     let uniforms = ``
-    uniforms += blocks.map((b,i) => 
-    `positions[${i}]=vec3(${b.pos[0]},${b.pos[1]},${b.pos[2]});`).join('')
-    uniforms += blocks.map((b,i) => 
-    `sizes[${i}]=vec3(${b.size[0]},${b.size[1]},${b.size[2]});`).join('')
-    uniforms += blocks.map((b,i) => 
-    `colors[${i}]=ivec3(${b.color},${b.color2},${b.texture});`).join('')
-    uniforms += blocks.map((b,i) => 
-    `types[${i}]=${b.type};`).join('')
-    uniforms += blocks.map((b,i) => 
-    `rotations[${i}]=float(${b.rot});`).join('')
+    uniforms += blocks.map((b, i) =>
+        `positions[${i}]=vec3(${b.pos[0]},${b.pos[1]},${b.pos[2]});`).join('')
+    uniforms += blocks.map((b, i) =>
+        `sizes[${i}]=vec3(${b.size[0]},${b.size[1]},${b.size[2]});`).join('')
+    uniforms += blocks.map((b, i) =>
+        `colors[${i}]=ivec3(${b.color},${b.color2},${b.texture});`).join('')
+    uniforms += blocks.map((b, i) =>
+        `roty[${i}]=vec2(${b.rot},${b.type});`).join('')
     // console.log(uniforms)
 
 
@@ -475,7 +477,19 @@ function setup() {
       vec4 positionVec4 = vec4(aPosition, 1.0);
       uv = positionVec4.xy = positionVec4.xy * 2.0 - 1.0;
       gl_Position = positionVec4;
-    }`, `precision highp float;
+
+
+
+
+
+
+
+
+
+
+
+      
+    }`, /*glsl*/`precision highp float;
     #define BLOCKS_NUMBER_MAX 60
     #define PI 3.1415
     #define S smoothstep
@@ -492,9 +506,8 @@ function setup() {
     varying v uv;
     vec3 positions[BLOCKS_NUMBER_MAX];
     vec3 sizes[BLOCKS_NUMBER_MAX];
-    float rotations[BLOCKS_NUMBER_MAX];
+    vec2 roty[BLOCKS_NUMBER_MAX];
     ivec3 colors[BLOCKS_NUMBER_MAX];
-    int types[BLOCKS_NUMBER_MAX];
     
     uniform V palette[20];
     uniform sampler2D b;
@@ -503,7 +516,7 @@ function setup() {
     ivec3 colIds;
     float gl;
     float camDist = 400.;
-    v u_res = v(${width}, ${height})*${pixelDensity()+1e-6};
+    v u_res = v(${width}, ${height})*${pixelDensity() + 1e-6};
     
     float cyl(V p, V s, float cornerR) {
         // s.x — height
@@ -520,8 +533,8 @@ function setup() {
         v rn = v(rnd(length(uv) - t), rnd(length(uv) - t - .1));
         float k = .5;
         v a;
-        a.x = .5 * pow(2.0 * ((rn.x < 0.5) ? rn.x : 1.0 - rn.x), k);
-        a.y = .5 * pow(2.0 * ((rn.y < 0.5) ? rn.y : 1.0 - rn.y), k);
+        a.x = .5 * pow(abs(2.0 * ((rn.x < 0.5) ? rn.x : 1.0 - rn.x)), k);
+        a.y = .5 * pow(abs(2.0 * ((rn.y < 0.5) ? rn.y : 1.0 - rn.y)), k);
         rn.x = (rn.x < 0.5) ? a.x : 1.0 - a.x;
         rn.y = (rn.y < 0.5) ? a.y : 1.0 - a.y;
         return rn * 2. - 1.;
@@ -530,6 +543,7 @@ function setup() {
     int eye;
     
     float dist(V p) {
+
         colIds = ivec3(0, 0, -1);
         p.x = abs(p.x);
         float res = p.y + 1.; // floor plane
@@ -539,28 +553,29 @@ function setup() {
                 break;
             V pb = p;
             pb -= positions[i];
-            pb.xz *= rot(rotations[i] * PI / 2.);
+            pb.xz *= rot(roty[i].x * PI / 2.);
     
             // box
             float cornerR = .01;//.025;//.05;
             float gap = .008;
             float block;
-            if(types[i] == 0 || types[i] == 3 || types[i] == 4 || types[i] == 5 || types[i] == 6 || types[i] == 7) {
+
+            if(roty[i].y == 0. || roty[i].y == 3. || roty[i].y == 4. || roty[i].y == 5. || roty[i].y == 6.) {
                 block = box(pb, sizes[i] - 2. * (cornerR + gap));
-            } else if(types[i] == 1) { // cyl
+            } else if(roty[i].y == 1.) { // cyl
                 block = max(length(pb.xz) - .5, abs(pb.y) - .5);
-            } else if(types[i] == 2) { // ball
+            } else if(roty[i].y == 2.) { // ball
                 block = length(pb) - .52;
             }
     
-            if(types[i] == 5) {
+            if(roty[i].y == 5.) {
                 float cyl = length(pb.zy) - .5;
                 float box = max(abs(pb.z) - .5, abs(pb.y + sizes[i].y / 2.) - 1.);
                 float hole = min(cyl, box);
                 block = max(block, -hole);
             }
     
-            if(types[i] == 6) { // pillar
+            if(roty[i].y == 6.) { // pillar
                 float cyl_ = length(pb.zx) - .15;
                 float sph = cyl(pb + V(0, sizes[i].y - .5, 0) / 2., V(.2, .25, .2), cornerR);
                 // float sph = length(pb) - .45;
@@ -568,7 +583,7 @@ function setup() {
             }
     
             // studs
-            if(types[i] != 6) {
+            if(roty[i].y != 6.) {
                 V ps = pb;
                 v l = sizes[i].xz;
                 ps.xz += (l - 1.) / 2.;
@@ -618,16 +633,12 @@ function setup() {
             //     }
             // }
     
-            if(pb.z<0.15 && (types[i] == 3 || types[i] == 4)) { // beak
-                block = smax(block, (-pb.z*.8-(types[i] == 3 ? -1. : 1.)*pb.y-.5)/1.4142);
+            if(pb.z<0.15 && (roty[i].y == 3. || roty[i].y == 4.)) { // beak
+                block = smax(block, (-pb.z*.8-(roty[i].y == 3. ? -1. : 1.)*pb.y-.5)/1.4142);
             }
     
     
-            if(types[i] == 7) { // eye
-                // pb.z -= .5;
-                // block = box(pb - V(0, 0, .5), V(1));
-                // pb.zy *= rot(PI / 2.);
-                // pb.y+=.25;
+            if(roty[i].y == 7.) { // eye
                 float eye_ = cyl(pb, V(.2, .25, .2), cornerR);
                 block = eye_;
                 if(eye_ < EPS) {
@@ -635,6 +646,10 @@ function setup() {
                     eye = 1;
                     //-int(min(step(-.3,-),step(.3,)));
                 }
+                    // pb.z -= .5;
+                // block = box(pb - V(0, 0, .5), V(1));
+                // pb.zy *= rot(PI / 2.);
+                // pb.y+=.25;
                 // block = max(block, min(cyl, sph));
             }
     
@@ -699,41 +714,41 @@ function setup() {
             if(colIds.z == 1)
                 if(sin(p.y * PI * 3.) > 0.)
                     col = col2;
-            if(colIds.z == 2)
-                if(sin((p.x + fract(positions[0].x - sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
+                    if(colIds.z == 2)
+                    if(sin((p.x + fract(positions[0].x - sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
                     col = col2;
-    
-            // pride
-            if(${features.ColorScheme} == 3)
-                col = sin(length(p) / max(float(${gs}), float(${features.Height})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
-                // p*=.3;
-                // col = sin(8.*dot(sin(p), cos(p.zxy))  - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
-    
-            if(eye == 1) {
-                col = V(0);
-                V pe = p + fract(${gs}. / 2.);
-                pe = fract(pe) - .5;
-                col += step(.3, length(pe.xz));
-                col += step(-.1, -length(pe.xz + .1));
-            }
-    
-            if(colIds.z == -1) {
-                o = palette[0];
-                if(length(o) > .4)
+                    
+                    // pride
+                    if(${features.ColorScheme} == 3)
+                    col = sin(length(p) / max(float(${gs}), float(${features.Height})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+                    // p*=.3;
+                    // col = sin(8.*dot(sin(p), cos(p.zxy))  - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+                    
+                    if(eye == 1) {
+                        col = V(0);
+                        V pe = p + fract(${gs}. / 2.);
+                        pe = fract(pe) - .5;
+                        col += step(.3, length(pe.xz));
+                        col += step(-.1, -length(pe.xz + .1));
+                    }
+                    
+                if(colIds.z == -1) {
+                    o = palette[0];
+                    if(length(o) > .4)
                     o *= smoothstep(5., 0., length(uv_ + v(${features.BackgroundLight}, -1)));
-                if(${features.ColorScheme} == 3)
-                    // o = V(o.r*.5);
+                    if(${features.ColorScheme} == 3)
                     o = V(.2);
-                if(sin(length(pow(abs(uv_), v(${features.BackgroundType}))) * 32.) > 0.)
+                    if(sin(length(pow(abs(uv_), v(${features.BackgroundType}))) * 32.) > 0.)
                     o *= .95;
-            } else {
-                // shading
-                o = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(V(0, 1, 1))) * .2 + .8) * col;
-                // glare
-                o += pow(dot(norm(p), normalize(V(0, 3, 1))), 40.);
+                } else {
+                    // shading
+                    o = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(V(0, 1, 1))) * .2 + .8) * col;
+                    // glare
+                    o += pow(abs(dot(norm(p), normalize(V(0., 3., 1.)))), 40.);
+                    // o.r = 1.;
+                }
             }
-        }
-    
+            
         // gazya
         if(${features.ColorScheme} == 4)
             o = (V(10. / j));
@@ -741,6 +756,8 @@ function setup() {
         gl_FragColor = mix(texture2D(b, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (t + 1.));
         // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
     }`)
+
+    console.log(s)
 
     // preloaderSize = document.querySelector('canvas').getBoundingClientRect()
     // // console.log(preloaderSize)
@@ -753,20 +770,20 @@ function setup() {
     // preloader.style.background = '#fff9'
 
     loop()
-    
+
     console.log(features)
- 
-    features.BackgroundLight={'1':'Left','0':'Center','-1':'Right'}[features.BackgroundLight]
-    if(features.ColorScheme==4/*gaz*/ || features.ColorScheme==3/*ranibow*/) features.BackgroundLight=0
-    features.BackgroundType={'1':'Circle','2':'Squircle'}[features.BackgroundType]
-    features.Studs={'0':'Convex','1':'Concave'}[features.Studs]
-    if(features.ColorScheme==4/*gaz*/) features.BackgroundType='Empty'
-    features.Palette={'0': 'Black and white', '1': 'Summer', '2': 'Colorful', '3': 'Magenta blue', '4': 'Plastic', '5': 'Winter', '6': 'Spring', '7': 'Vivid', '8': 'Eighth'}[features.Palette]
-    if(features.ColorScheme==4/*gaz*/) features.Palette='Gaz'
-    if(features.ColorScheme==3/*rainbow*/) features.Palette='Rainbow'
-    features.Layout={'0': 'Cage', '1': 'Mushroom', '2': 'Cutie', '3': 'Compact', '4': 'Random'}[features.Layout]        
-    features.Symmetry={'0':'Z','1':'X'}[features.Symmetry]
-    features.ColorScheme={'0': 'Textured', '1': 'Not textured', '2': 'Monochrome', '3': 'Rainbow', '4': 'Gaz'}[features.ColorScheme]
+
+    features.BackgroundLight = { '1': 'Left', '0': 'Center', '-1': 'Right' }[features.BackgroundLight]
+    if (features.ColorScheme == 4/*gaz*/ || features.ColorScheme == 3/*ranibow*/) features.BackgroundLight = 0
+    features.BackgroundType = { '1': 'Circle', '2': 'Squircle' }[features.BackgroundType]
+    features.Studs = { '0': 'Convex', '1': 'Concave' }[features.Studs]
+    if (features.ColorScheme == 4/*gaz*/) features.BackgroundType = 'Empty'
+    features.Palette = { '0': 'Black and white', '1': 'Summer', '2': 'Colorful', '3': 'Magenta blue', '4': 'Plastic', '5': 'Winter', '6': 'Spring', '7': 'Vivid', '8': 'Eighth' }[features.Palette]
+    if (features.ColorScheme == 4/*gaz*/) features.Palette = 'Gaz'
+    if (features.ColorScheme == 3/*rainbow*/) features.Palette = 'Rainbow'
+    features.Layout = { '0': 'Cage', '1': 'Mushroom', '2': 'Cutie', '3': 'Compact', '4': 'Random' }[features.Layout]
+    features.Symmetry = { '0': 'Z', '1': 'X' }[features.Symmetry]
+    features.ColorScheme = { '0': 'Textured', '1': 'Not textured', '2': 'Monochrome', '3': 'Rainbow', '4': 'Gaz' }[features.ColorScheme]
 
     console.log(features)
 }

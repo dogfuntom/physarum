@@ -2,16 +2,25 @@
   "name": "artblocks_global_illumination",
   "version": "1.0.0",
   "description": "",
-    "scripts": {
-      "start": "export NODE_ENV=production && parcel build index.js",
-      "v": "parcel --version"
+  "scripts": {
+    "start": "serve",
+    "build": "node build.js",
+    "start2": "export NODE_ENV=production && parcel build index.js",
+    "v": "parcel --version"
   },
   "optimizers": {
-    "*.js": ["@parcel/optimizer-terser"]
+    "*.js": [
+      "@parcel/optimizer-terser"
+    ]
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "parcel": "*"
+    "parcel": "*",
+    "terser": "^5.9.0",
+    "webpack-glsl-minify": "^1.4.2"
+  },
+  "dependencies": {
+    "serve": "^12.0.1"
   }
 }
