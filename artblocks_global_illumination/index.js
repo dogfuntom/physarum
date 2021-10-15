@@ -1,8 +1,13 @@
+/*begin features*/
+function calculateFeatures(tokenData) {
+/*end features*/
+
+
 // if (window.location.hash) {
 //     tokenData.hash = window.location.hash.slice(1)
 // }
 // arr = arr.slice(0, 10)
-// tokenData.hash = `0xdcd026a018e190fd7810fe5bc5f8af8c885ce6327af142fe2c960547edb1987a`
+// tokenData.hash = `0x19983dc66d38fbcd2444401326a327a2da8f37687f0e87a829b2c78283831e0b`
 
 // console.clear();
 let S, ss, R, t, RL, SH
@@ -10,6 +15,14 @@ let S, ss, R, t, RL, SH
 //     tokenData.hash = window.location.hash.slice(1)
 // }
 let M = Math
+
+/*begin features*/
+let min = M.min
+let max = M.max
+let floor = M.floor
+let abs = M.abs
+/*end features*/
+
 
 let rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
 
@@ -107,19 +120,23 @@ let init = () => {
 
     blocks = [];
     features.Palette = R() ** .5 * 8 | 0
-    palette = [
-        // // GOOD
-        ["#ddd", "#888", "#555", "#222", "#aaa"],
-        ["#f26b21", "#f78e31", "#fbb040", "#cbdb47", "#99ca3c", "#208b3a", "#fcec52"], // green orange
-        ["#9b5de5", "#f15bb5", "#00bbf9", "#00f5d4", "#fee440"], // colorful
-        ["#f1faee", "#a8dadc", "#457b9d", "#1d3557", "#e63946"], // magenta blue
-        ["#50514f", "#f25f5c", "#247ba0", "#70c1b3", "#ffe066"], // lego
-        ["#541388", "#d90368", "#f1e9da", "#2e294e", "#ffd400"],
-        ["#1f2041", "#4b3f72", "#119da4", "#19647e", "#ffc857"],
-        ["#540d6e", "#ee4266", "#f3fcf0", "#1f271b", "#ffd23f"],
-        ["#e4572e", "#29335c", "#a8c686", "#669bbc", "#f3a712"],
+    // palette = [
+    //     ["#dddddd", "#888888", "#555555", "#222222", "#aaaaaa"],
+    //     ["#f26b21", "#fbb040",, "#99ca3c", "#208b3a", "#fcec52"],
+    //     //["#f26b21", "#f78e31", "#fbb040", "#cbdb47", "#99ca3c", "#208b3a", "#fcec52"], // green orange
+    //     ["#9b5de5", "#f15bb5", "#00bbf9", "#00f5d4", "#fee440"], // colorful
+    //     ["#f1faee", "#a8dadc", "#457b9d", "#1d3557", "#e63946"], // magenta blue
+    //     ["#50514f", "#f25f5c", "#247ba0", "#70c1b3", "#ffe066"], // lego
+    //     ["#541388", "#d90368", "#f1e9da", "#2e294e", "#ffd400"],
+    //     ["#1f2041", "#4b3f72", "#119da4", "#19647e", "#ffc857"],
+    //     ["#540d6e", "#ee4266", "#f3fcf0", "#1f271b", "#ffd23f"],
+    //     ["#e4572e", "#29335c", "#a8c686", "#669bbc", "#f3a712"],
+    // ][features.Palette]
 
-    ][features.Palette]
+    palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
+        .match(/(.{30})/g).map(d=>d.match(/(.{6})/g).map(v=>'#'+v))[features.Palette]
+
+
     let badColor = palette.pop()
     palette = SH(palette)
     palette.push(badColor)
@@ -372,6 +389,7 @@ function placeBlocks() {
                     ])
                 }
 
+                /*begin features*/
                 features.BlocksNumber++
                 if (bv.type == typeEye) features.Eyes++
                 if (bv.type == typePillar) features.Aerials++
@@ -380,12 +398,19 @@ function placeBlocks() {
                     if (bv.type == typeEye) features.Eyes++
                     if (bv.type == typePillar) features.Aerials++
                 }
+                /*end features*/
+
+
             }// else console.log('bv.pos.y is NaN')
         }// else console.log('bv not defined')
     }
     // console.log('N BLOCKS', blocks.length, '\n==============================')
     // console.log(blocks)
+
+    /*begin features*/
     features.Height = M.max(...disallowedHeightMap.flat())
+    /*end features*/
+    
     // console.log('height_', height_)
     // console.log('features', features)
     // blocks=[]
@@ -400,6 +425,7 @@ function placeBlocks() {
     // })
 }
 
+/*begin render*/
 let findViewBox = () => {
     viewBox = { top: -1e9, bottom: 1e9, left: 1e9, right: -1e9 }
     let rot = (x, y, a) => [x * cos(a) - y * sin(a), x * sin(a) + y * cos(a)]
@@ -417,9 +443,7 @@ let findViewBox = () => {
     viewBox.scale = max(viewBox.width / 1.8, viewBox.height / 1.8, 1)
     viewBox.offset = { x: viewBox.left + viewBox.width / 2, y: viewBox.bottom + viewBox.height / 2 }
 }
-
-
-
+/*end render*/
 
 
 
@@ -429,23 +453,27 @@ let findViewBox = () => {
 //     sv = loadStrings('s.vert')
 // }
 
+/*begin render*/
 function setup() {
-
     let size = min(windowHeight, windowWidth)
     canvas = createCanvas(size, size, WEBGL)
     b = createGraphics(width, height, WEBGL)
     // tokenData.hash=arr.pop().hash
-
     // Below part needs changing if hash changes
-
     // pixelDensity(1)
+    
+    
+    /*end render*/
 
     init()
 
+    /*begin render*/
     background(palette[0])
+    /*end render*/
 
     placeBlocks()
 
+    /*begin render*/
     findViewBox()
 
     // u_sizes = blocks.map(b => b.size).flat()
@@ -761,6 +789,7 @@ function setup() {
 
     }`/*glsl*/)
 
+    /*end render*/
 
 
 
@@ -779,6 +808,7 @@ function setup() {
 
 
 
+    /*begin features*/
 
     console.log(s)
 
@@ -792,7 +822,7 @@ function setup() {
     // preloader.style.width = 0
     // preloader.style.background = '#fff9'
 
-    loop()
+    // loop()
 
     console.log(features)
 
@@ -804,11 +834,14 @@ function setup() {
     features.Palette = { '0': 'Black and white', '1': 'Summer', '2': 'Colorful', '3': 'Magenta blue', '4': 'Plastic', '5': 'Winter', '6': 'Spring', '7': 'Vivid', '8': 'Eighth' }[features.Palette]
     if (features.ColorScheme == 4/*gaz*/) features.Palette = 'Gaz'
     if (features.ColorScheme == 3/*rainbow*/) features.Palette = 'Rainbow'
-    features.Layout = { '0': 'Cage', '1': 'Mushroom', '2': 'Cutie', '3': 'Compact', '4': 'Random' }[features.Layout]
+    features.Layout = { '0': 'Cage', '1': 'Mushroom', '2': 'Tiny', '3': 'Compact', '4': 'Random' }[features.Layout]
     features.Symmetry = { '0': 'Z', '1': 'X' }[features.Symmetry]
     features.ColorScheme = { '0': 'Textured', '1': 'Not textured', '2': 'Monochrome', '3': 'Rainbow', '4': 'Gaz' }[features.ColorScheme]
 
     console.log(features)
+    return features
+    /*end features*/
+
 }
 
 
@@ -816,6 +849,7 @@ function setup() {
 
 
 
+/*begin render*/
 
 function draw() {
     b.clear();
@@ -829,7 +863,7 @@ function draw() {
 
     // preloader.style.width = preloaderSize.width * u_tick / 5e1
 
-    if (u_tick++ > 50) {
+    if (++u_tick > 50) {
         // preloader.remove()
         noLoop()
         // save(`${tokenData.hash}.png`)
@@ -839,4 +873,6 @@ function draw() {
         // document.querySelector('canvas').getContext('webgl').getExtension('WEBGL_lose_context').loseContext()
         // setTimeout(setup, 500)
     }
+    window.document.title = 50-u_tick > 0 ? floor(50-u_tick) : '👾'
 }
+/*end render*/
