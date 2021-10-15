@@ -14,7 +14,7 @@ try {
       dataGlsl = result.sourceCode
       dataGlsl = dataGlsl.replaceAll('gl_z_', '')
       data = dataJs1 + '`' + dataGlsl + '`' + dataJs2
-      // console.log(data.slice(0,100))
+      console.log(dataGlsl)
 
       let code = minifyJs(
         data,
@@ -47,8 +47,9 @@ try {
           },
         }
       ).then((c) => {
-        console.log(c.code)
+        // console.log(c.code)
         fs.writeFileSync("dist/script.js", c.code);
+        fs.writeFileSync("dist/glsl.js", dataGlsl);
     })
 
     });

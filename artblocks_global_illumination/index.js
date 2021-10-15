@@ -495,23 +495,23 @@ function setup() {
     #define S smoothstep
     #define V vec3
     #define v vec2
-    #define rnd(x) fract(54321.987 * sin(987.12345 * mod(x,12.34567)))
-    #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
+    float rnd(float x) {return fract(54321.987 * sin(987.12345 * mod(x,12.34567)));}
+    mat2 rot(float a) {return mat2(cos(a),-sin(a),sin(a),cos(a));}
     #define STEPS 4e2
     #define EPS .001
     // #define box(p,s) (length(p - clamp(p, -(s)/2., (s)/2.)) - cornerR * 1.4)
-    #define sabs(p) sqrt(abs(p)*abs(p)+5e-5)
-    #define smax(a,b) (a+b+sabs(a-b))*.5
+    float sabs(float p) {return sqrt(abs(p)*abs(p)+5e-5);}
+    float smax(float a, float b) {return (a+b+sabs(a-b))*.5;}
     
-    varying v uv;
-    vec3 positions[BLOCKS_NUMBER_MAX];
-    vec3 sizes[BLOCKS_NUMBER_MAX];
-    vec2 roty[BLOCKS_NUMBER_MAX];
-    ivec3 colors[BLOCKS_NUMBER_MAX];
+    varying vec2 uv;
+    vec3 gl_z_positions[BLOCKS_NUMBER_MAX];
+    vec3 gl_z_sizes[BLOCKS_NUMBER_MAX];
+    vec2 gl_z_roty[BLOCKS_NUMBER_MAX];
+    ivec3 gl_z_colors[BLOCKS_NUMBER_MAX];
     
-    uniform V palette[20];
-    uniform sampler2D b;
-    uniform float t;
+    uniform V gl_z_palette[20];
+    uniform sampler2D gl_z_backbuffer;
+    uniform float gl_z_tick;
     
     ivec3 colIds;
     float gl;
@@ -530,7 +530,7 @@ function setup() {
     }
     
     v random2f() {
-        v rn = v(rnd(length(uv) - t), rnd(length(uv) - t - .1));
+        vec2 rn = vec2(rnd(length(uv) - gl_z_tick), rnd(length(uv) - gl_z_tick - .1));
         float k = .5;
         v a;
         a.x = .5 * pow(abs(2.0 * ((rn.x < 0.5) ? rn.x : 1.0 - rn.x)), k);
@@ -538,6 +538,7 @@ function setup() {
         rn.x = (rn.x < 0.5) ? a.x : 1.0 - a.x;
         rn.y = (rn.y < 0.5) ? a.y : 1.0 - a.y;
         return rn * 2. - 1.;
+        // return v(0);
     }
     
     int eye;
@@ -552,56 +553,56 @@ function setup() {
             if(i >= ${blocks.length})
                 break;
             V pb = p;
-            pb -= positions[i];
-            pb.xz *= rot(roty[i].x * PI / 2.);
+            pb -= gl_z_positions[i];
+            pb.xz *= rot(gl_z_roty[i].x * PI / 2.);
     
             // box
             float cornerR = .01;//.025;//.05;
             float gap = .008;
             float block;
 
-            if(roty[i].y == 0. || roty[i].y == 3. || roty[i].y == 4. || roty[i].y == 5. || roty[i].y == 6.) {
-                V s = sizes[i] - 2. * (cornerR + gap);
+            if(gl_z_roty[i].y == 0. || gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4. || gl_z_roty[i].y == 5. || gl_z_roty[i].y == 6.) {
+                V s = gl_z_sizes[i] - 2. * (cornerR + gap);
                 block = length(pb - clamp(pb, -(s)/2., (s)/2.)) - cornerR * 1.4;
-            } else if(roty[i].y == 1.) { // cyl
+            } else if(gl_z_roty[i].y == 1.) { // cyl
                 block = max(length(pb.xz) - .5, abs(pb.y) - .5);
-            } else if(roty[i].y == 2.) { // ball
+            } else if(gl_z_roty[i].y == 2.) { // ball
                 block = length(pb) - .52;
             }
     
-            if(roty[i].y == 5.) {
+            if(gl_z_roty[i].y == 5.) {
                 float cyl = length(pb.zy) - .5;
-                float box = max(abs(pb.z) - .5, abs(pb.y + sizes[i].y / 2.) - 1.);
+                float box = max(abs(pb.z) - .5, abs(pb.y + gl_z_sizes[i].y / 2.) - 1.);
                 float hole = min(cyl, box);
                 block = max(block, -hole);
             }
     
-            if(roty[i].y == 6.) { // pillar
+            if(gl_z_roty[i].y == 6.) { // pillar
                 float cyl_ = length(pb.zx) - .15;
-                float sph = cyl(pb + V(0, sizes[i].y - .5, 0) / 2., V(.2, .25, .2), cornerR);
+                float sph = cyl(pb + V(0, gl_z_sizes[i].y - .5, 0) / 2., V(.2, .25, .2), cornerR);
                 // float sph = length(pb) - .45;
                 block = max(block, min(cyl_, sph));
             }
     
             // studs
-            if(roty[i].y != 6.) {
+            if(gl_z_roty[i].y != 6.) {
                 V ps = pb;
-                v l = sizes[i].xz;
+                v l = gl_z_sizes[i].xz;
                 ps.xz += (l - 1.) / 2.;
                 ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
                 float h = .24;
                 float stud = (${features.Studs} == 1) ? abs(length(ps.xz) - .28 + .05) - .05 : length(ps.xz) - .28;
-                stud = max(stud, abs(ps.y - sizes[i].y / 2. - h / 2.) - h / 2.);
+                stud = max(stud, abs(ps.y - gl_z_sizes[i].y / 2. - h / 2.) - h / 2.);
                 block = min(stud, block);
             }
     
             // // rounded slopes
             // if (pb.z<0.){
             //     if(types[i] == 3) { // beak
-            //         block=max(block, length(pb.zy+v(0,sizes[i].y/2.))-1.);
+            //         block=max(block, length(pb.zy+v(0,gl_z_sizes[i].y/2.))-1.);
             //     }
             //     if(types[i] == 4) { // beak down
-            //         block=max(block, length(pb.zy-v(0,sizes[i].y/2.))-1.);
+            //         block=max(block, length(pb.zy-v(0,gl_z_sizes[i].y/2.))-1.);
             //     }
             // }
     
@@ -634,12 +635,12 @@ function setup() {
             //     }
             // }
     
-            if(pb.z<0.15 && (roty[i].y == 3. || roty[i].y == 4.)) { // beak
-                block = smax(block, (-pb.z*.8-(roty[i].y == 3. ? -1. : 1.)*pb.y-.5)/1.4142);
+            if(pb.z<0.15 && (gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4.)) { // beak
+                block = smax(block, (-pb.z*.8-(gl_z_roty[i].y == 3. ? -1. : 1.)*pb.y-.5)/1.4142);
             }
     
     
-            if(roty[i].y == 7.) { // eye
+            if(gl_z_roty[i].y == 7.) { // eye
                 float eye_ = cyl(pb, V(.2, .25, .2), cornerR);
                 block = eye_;
                 if(eye_ < EPS) {
@@ -656,7 +657,7 @@ function setup() {
     
             if(block < res) {
                 res = block;
-                colIds = colors[i];
+                colIds = gl_z_colors[i];
             }
             if(res < EPS)
                 break;
@@ -702,9 +703,9 @@ function setup() {
             V col1, col2;
             for(int j = 0; j < 20; j++) {
                 if(colIds[0] == j)
-                    col1 = palette[j];
+                    col1 = gl_z_palette[j];
                 if(colIds[1] == j)
-                    col2 = palette[j];
+                    col2 = gl_z_palette[j];
             }
     
             V col = col1;
@@ -716,7 +717,7 @@ function setup() {
                 if(sin(p.y * PI * 3.) > 0.)
                     col = col2;
                     if(colIds.z == 2)
-                    if(sin((p.x + fract(positions[0].x - sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
+                    if(sin((p.x + fract(gl_z_positions[0].x - gl_z_sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
                     col = col2;
                     
                     // pride
@@ -734,7 +735,7 @@ function setup() {
                     }
                     
                 if(colIds.z == -1) {
-                    o = palette[0];
+                    o = gl_z_palette[0];
                     if(length(o) > .4)
                     o *= smoothstep(5., 0., length(uv_ + v(${features.BackgroundLight}, -1)));
                     if(${features.ColorScheme} == 3)
@@ -754,8 +755,10 @@ function setup() {
         if(${features.ColorScheme} == 4)
             o = (V(10. / j));
     
-        gl_FragColor = mix(texture2D(b, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (t + 1.));
+        gl_FragColor = mix(texture2D(gl_z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (gl_z_tick + 1.));
         // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
+        // gl_FragColor=vec4(1,0,0,1);
+
     }`/*glsl*/)
 
 
@@ -819,14 +822,14 @@ function draw() {
     b.image(canvas, width * -0.5, height * -0.5, width, height);
     clear();
     shader(s);
-    s.setUniform('b', b)
-    s.setUniform('t', u_tick)
+    s.setUniform('backbuffer', b)
+    s.setUniform('tick', u_tick)
     s.setUniform('palette', u_palette)
     rect(0, 0, width, height)
 
     // preloader.style.width = preloaderSize.width * u_tick / 5e1
 
-    if (u_tick++ > 1) {
+    if (u_tick++ > 50) {
         // preloader.remove()
         noLoop()
         // save(`${tokenData.hash}.png`)
