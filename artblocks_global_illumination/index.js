@@ -499,8 +499,8 @@ function setup() {
     #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
     #define STEPS 4e2
     #define EPS .001
-    #define box(p,s) (length(p - clamp(p, -(s)/2., (s)/2.)) - cornerR * 1.4)
-    #define sabs(p) sqrt(abs(p)*abs(p)+.00005)
+    // #define box(p,s) (length(p - clamp(p, -(s)/2., (s)/2.)) - cornerR * 1.4)
+    #define sabs(p) sqrt(abs(p)*abs(p)+5e-5)
     #define smax(a,b) (a+b+sabs(a-b))*.5
     
     varying v uv;
@@ -561,7 +561,8 @@ function setup() {
             float block;
 
             if(roty[i].y == 0. || roty[i].y == 3. || roty[i].y == 4. || roty[i].y == 5. || roty[i].y == 6.) {
-                block = box(pb, sizes[i] - 2. * (cornerR + gap));
+                V s = sizes[i] - 2. * (cornerR + gap);
+                block = length(pb - clamp(pb, -(s)/2., (s)/2.)) - cornerR * 1.4;
             } else if(roty[i].y == 1.) { // cyl
                 block = max(length(pb.xz) - .5, abs(pb.y) - .5);
             } else if(roty[i].y == 2.) { // ball
@@ -755,7 +756,26 @@ function setup() {
     
         gl_FragColor = mix(texture2D(b, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (t + 1.));
         // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
-    }`)
+    }`/*glsl*/)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     console.log(s)
 
