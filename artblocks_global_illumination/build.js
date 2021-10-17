@@ -14,11 +14,13 @@ const minifyOptions = {
     passes: 5,
     booleans_as_integers: true,
     ecma: 2015,
+    // pure_getters: true,
   },
   mangle: {
     eval: true,
     properties: {
       reserved: ['image', 'setUniform']
+      // regex: /^(size|span)$/,
     },
     keep_classnames: false,
     keep_fnames: /^(setup|draw)$/,
