@@ -1,0 +1,21 @@
+{
+  "name": "natasha-rozhok",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "parcel serve ./index.html",
+    "build": "rm -rf ./dist; parcel build --no-source-maps --no-content-hash --public-url ./ ./index.html; cd dist; zip -r Archive.zip ./; mv Archive.zip ~/Downloads/",
+    "copy": "rm -rf node_modules; cp -R ./ "
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "parcel": "^2.0.0"
+  },
+  "dependencies": {
+    "curve-interpolator": "^2.0.8",
+    "d3": "^7.1.1",
+    "svg-catmull-rom-spline": "^0.0.1"
+  }
+}
