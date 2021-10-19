@@ -26,13 +26,12 @@ let abs = M.abs
 
 let rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
 
-let preloader, preloaderSize
-const typeBlock = 0, typeCyl = 1, typeBall = 2, typeBeak2x2 = 3, typeBeak2x2Flipped = 4,
+const typeBlock = 0, typeBeak2x2 = 3, typeBeak2x2Flipped = 4,
     typeArc = 5, typePillar = 6, typeEye = 7
 const maxMaxTry = 30
 let u_camAngYZ = .95532, u_camAngXZ
 // let gs, blocksNumber, fitnessFunctionNumber, maxTry, extra
-let s, sf, sv, b, canvas, su
+let s, b, canvas
 let u_palette
 let gs, blocksNumber, fitnessFunctionNumber, maxTry, extra
 let features
@@ -408,19 +407,7 @@ function placeBlocks() {
     /*begin features*/
     features.Height = M.max(...disallowedHeightMap.flat())
     /*end features*/
-    
-    // console.log('height_', height_)
-    // console.log('features', features)
-    // blocks=[]
-    // blocks.push({
-    //     type: 0,
-    //     size:[1,2,3],
-    //     pos: [0,0,0],
-    //     rot: 0,
-    //     color: 1,
-    //     color2: 1,
-    //     texture: 1,
-    // })
+
 }
 
 /*begin render*/
@@ -443,13 +430,6 @@ let findViewBox = () => {
 }
 /*end render*/
 
-
-
-
-// function preload() {
-//     sf = loadStrings('s.frag')
-//     sv = loadStrings('s.vert')
-// }
 
 /*begin render*/
 function setup() {
@@ -474,12 +454,8 @@ function setup() {
     /*begin render*/
     findViewBox()
 
-    // u_sizes = blocks.map(b => b.size).flat()
-    // u_positions = blocks.map(b => b.pos).flat()
     u_palette = palette.map(c => color(c).levels.slice(0, 3)).flat().map(d => d / 255)
     u_colors = blocks.map(b => [b.color, b.color2, b.texture]).flat()
-    // u_types = blocks.map(b => b.type)
-    // u_rotations = blocks.map(b => b.rot)
 
 
     console.log(blocks.map(b=>b.type))
@@ -497,25 +473,8 @@ function setup() {
     // console.log(uniforms)
 
 
-    s = createShader(`attribute vec3 aPosition;
-    varying vec2 uv;
-    void main() {
-      vec4 positionVec4 = vec4(aPosition, 1.0);
-      uv = positionVec4.xy = positionVec4.xy * 2.0 - 1.0;
-      gl_Position = positionVec4;
-
-
-
-
-
-
-
-
-
-
-
-      
-    }`, /*glsl*/`precision highp float;
+    s = createShader(`attribute vec3 aPosition;varying vec2 uv;void main(){uv=(gl_Position=vec4(aPosition,1.)*2.-1.).xy;}`,
+    /*glsl*/`precision highp float;
     #define BLOCKS_NUMBER_MAX 60
     #define PI 3.1415
     #define S smoothstep
@@ -525,7 +484,6 @@ function setup() {
     mat2 rot(float a) {return mat2(cos(a),-sin(a),sin(a),cos(a));}
     #define STEPS 4e2
     #define EPS .001
-    // #define box(p,s) (length(p - clamp(p, -(s)/2., (s)/2.)) - cornerR * 1.4)
     float sabs(float p) {return sqrt(abs(p)*abs(p)+5e-5);}
     float smax(float a, float b) {return (a+b+sabs(a-b))*.5;}
     
@@ -541,7 +499,7 @@ function setup() {
     
     ivec3 colIds;
     float gl;
-    float camDist = 400.;
+    float camDist = 1e2;
     v u_res = v(${width}, ${height})*${pixelDensity() + 1e-6};
     
     float cyl(V p, V s, float cornerR) {
@@ -564,7 +522,6 @@ function setup() {
         rn.x = (rn.x < 0.5) ? a.x : 1.0 - a.x;
         rn.y = (rn.y < 0.5) ? a.y : 1.0 - a.y;
         return rn * 2. - 1.;
-        // return v(0);
     }
     
     int eye;
@@ -583,7 +540,7 @@ function setup() {
             pb.xz *= rot(gl_z_roty[i].x * PI / 2.);
     
             // box
-            float cornerR = .01;//.025;//.05;
+            float cornerR = .01;
             float gap = .008;
             float block;
 
@@ -606,7 +563,6 @@ function setup() {
             if(gl_z_roty[i].y == 6.) { // pillar
                 float cyl_ = length(pb.zx) - .15;
                 float sph = cyl(pb + V(0, gl_z_sizes[i].y - .5, 0) / 2., V(.2, .25, .2), cornerR);
-                // float sph = length(pb) - .45;
                 block = max(block, min(cyl_, sph));
             }
     
@@ -622,45 +578,6 @@ function setup() {
                 block = min(stud, block);
             }
     
-            // // rounded slopes
-            // if (pb.z<0.){
-            //     if(types[i] == 3) { // beak
-            //         block=max(block, length(pb.zy+v(0,gl_z_sizes[i].y/2.))-1.);
-            //     }
-            //     if(types[i] == 4) { // beak down
-            //         block=max(block, length(pb.zy-v(0,gl_z_sizes[i].y/2.))-1.);
-            //     }
-            // }
-    
-            // old slopes
-            // if(types[i] == 3 || types[i] == 4) { // beak
-            //     // pb.z *= -1.;
-            //     V pe = pb;
-            //     pe.z += .55;
-            //     pe.yz *= rot(PI * .26);
-            //     // if(types[i] == 3)
-            //     //     pe.yz *= rot(-PI / 2.);
-            //     block = max(block, -pe.z);
-            // }
-    
-            // if(types[i] == 3 || types[i] == 4) { // beak
-            //     if (pb.z<0.){
-            //         // pb*=1.0;
-            //         float s = 1.4142;
-            //         pb.zy+=vec2(1,.5);
-            //         pb.zy*=rot(-PI/4.);
-            //         vec2 n=vec2(0,1)*rot(-PI/8.);
-            //         // vec2 n=vec2(.3827,.9238);
-            //         pb.zy-=2.*min(.0,dot(pb.zy,n))*n;
-            //         pb.zy.x-=s;
-            //         n*=rot(-PI*1.5);
-            //         pb.zy-=2.*min(.0,dot(pb.zy,n))*n;
-            //         pb.zy-=clamp(pb.zy,-s,0.);
-            //         block = max(length(pb.zy)/2., block);
-            //         // block = length(pb.zy);
-            //     }
-            // }
-    
             if(pb.z<0.15 && (gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4.)) { // beak
                 block = smax(block, (-pb.z*.8-(gl_z_roty[i].y == 3. ? -1. : 1.)*pb.y-.5)/1.4142);
             }
@@ -670,15 +587,8 @@ function setup() {
                 float eye_ = cyl(pb, V(.2, .25, .2), cornerR);
                 block = eye_;
                 if(eye_ < EPS) {
-                    // eye = int(step(.3, length(pb.xz) - length(pb.xz * 2. - v(2)) / 3.));
                     eye = 1;
-                    //-int(min(step(-.3,-),step(.3,)));
                 }
-                    // pb.z -= .5;
-                // block = box(pb - V(0, 0, .5), V(1));
-                // pb.zy *= rot(PI / 2.);
-                // pb.y+=.25;
-                // block = max(block, min(cyl, sph));
             }
     
             if(block < res) {
@@ -702,7 +612,7 @@ function setup() {
         float d = 0., e = 1e9, ep, j;
         v uv_ = (uv*u_res/min(u_res.x,u_res.y)) + random2f() * 1.5 / u_res;
         V p, ro = V(uv_ * float(${viewBox.scale}) + 
-        v(${viewBox.offset.x}, 
+        v(${viewBox.offset.x},
         ${viewBox.offset.y}), -camDist), 
         rd = V(0, 0, .9 + .1 * rnd(length(uv_))), o;
         bool outline = false;
@@ -719,9 +629,6 @@ function setup() {
                 break;
             }
             ep = e;
-            // if(colIds.x > 0) { // if not floor, glow!
-            //     // gl +=  pow(.0000001 * e, .4);
-            // }
             if(e < EPS || e > camDist*2.)
                 break;
         }
@@ -809,19 +716,6 @@ function setup() {
     /*begin features*/
 
     console.log(s)
-
-    // preloaderSize = document.querySelector('canvas').getBoundingClientRect()
-    // // console.log(preloaderSize)
-    // preloader = document.body.appendChild(document.createElement('div'))
-    // preloader.style.position = 'absolute'
-    // preloader.style.left = preloaderSize.x
-    // preloader.style.top = preloaderSize.bottom - preloaderSize.height / 100
-    // preloader.style.height = preloaderSize.height / 100
-    // preloader.style.width = 0
-    // preloader.style.background = '#fff9'
-
-    // loop()
-
     console.log(features)
 
     features.BackgroundLight = { '1': 'Left', '0': 'Center', '-1': 'Right' }[features.BackgroundLight]
@@ -839,7 +733,6 @@ function setup() {
     console.log(features)
     return features
     /*end features*/
-
 }
 
 
