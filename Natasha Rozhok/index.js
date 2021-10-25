@@ -3,7 +3,13 @@ let SVGCatmullRomSpline = require('svg-catmull-rom-spline')
 // let curve = require('curve-interpolator')
 import { CurveInterpolator } from 'curve-interpolator';
 
-let points = [...Array(3)].map(()=>[Math.random()*100, Math.random()*100]);
+let points = [...Array(9)].map((p,i)=>{
+  let a = Math.PI*2/3*i + Math.random()
+  let r = 20 + 20 * Math.random()
+  return [r*Math.sin(a)+50, r*Math.cos(a)+50]
+});
+
+
 
 const interp = new CurveInterpolator(points, { tension: -.8, closed: true });
 const segments = 1000;
@@ -18,7 +24,7 @@ pts.forEach(p => {
 
 let pathStr = pathObj.toString()
 
-console.log(pathStr)
+// console.log(pathStr)
 
 // // // makes spline path out of array of points [[x, y], [x, y], [x, y], ]
 // // // second param tells if path should be closed or not
@@ -73,7 +79,7 @@ console.log(pathStr)
 // console.log(pointsToSplinePath(points,false))
 
 
-let colors = ['#E1D1DB','#ECE6B3','#C3C2D7','#E6C5C4','#F0D8C6','#F3C9A9','#F5DAD9','#F3D0D0']
+let colors = ['#E1D1DB','#000','#ECE6B3','#C3C2D7','#E6C5C4','#F0D8C6','#F3C9A9','#F5DAD9','#F3D0D0']
 
 const svg = d3.select('body').append('svg')
 
@@ -86,9 +92,9 @@ let blob = svg.selectAll('path')
   .data([pathStr])
   // .data([pointsToSplinePath(points,false)])
   .join('path')
-  .attr('stroke', 'none')
-  // .attr('stroke-width', '2')
-  .attr('fill', colors[Math.floor(colors.length*Math.random())])
+  .attr('fill', 'none')
+  .attr('stroke-width', '2')
+  .attr('stroke', colors[Math.floor(colors.length*Math.random())])
   .attr('d', d => d)
 
 

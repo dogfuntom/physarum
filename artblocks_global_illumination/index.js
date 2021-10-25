@@ -132,7 +132,6 @@ let init = () => {
     palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
         .match(/(.{30})/g).map(d=>d.match(/(.{6})/g).map(v=>'#'+v))[features.Palette]
 
-
     let badColor = palette.pop()
     palette = SH(palette)
     palette.push(badColor)
@@ -496,11 +495,12 @@ function setup() {
     uniform V gl_z_palette[20];
     uniform sampler2D gl_z_backbuffer;
     uniform float gl_z_tick;
+    uniform vec2 u_res;
     
     ivec3 colIds;
     float gl;
     float camDist = 1e2;
-    v u_res = v(${width}, ${height})*${pixelDensity() + 1e-6};
+    // v u_res = v(${width}, ${height})*${pixelDensity() + 1e-6};
     
     float cyl(V p, V s, float cornerR) {
         // s.x — height
@@ -750,6 +750,7 @@ function draw() {
     s.setUniform('backbuffer', b)
     s.setUniform('tick', u_tick)
     s.setUniform('palette', u_palette)
+    s.setUniform('u_res', size)
     rect(0, 0, width, height)
 
     // preloader.style.width = preloaderSize.width * u_tick / 5e1
