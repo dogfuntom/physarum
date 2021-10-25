@@ -1,9 +1,17 @@
 {
   "dependencies": {
-    "d3": "^6.6.2",
-    "matter-js": "^0.16.1",
-    "pathseg": "^1.2.0",
+    "d3": "^6.7.0",
+    "matter-js": "^0.17.1",
+    "p5": "^1.4.0",
+    "pathseg": "^1.2.1",
     "poly-decomp": "^0.3.0",
+    "reload": "^3.2.0",
     "svg-catmull-rom-spline": "0.0.1"
+  },
+  "devDependencies": {
+    "parcel": "^2.0.0"
+  },
+  "scripts": {
+    "start": "npx parcel serve index.html"
   }
 }
