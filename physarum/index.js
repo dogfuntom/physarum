@@ -14,6 +14,12 @@ const m = n
 let size = 600
 const fftResolution = 256
 
+let WebMidi = require('webmidi')
+let midi = Array(64).fill(0)
+
+
+
+
 
 // DAT GUI
 const gui = new dat.GUI()
@@ -77,7 +83,7 @@ gui.add(obj, 'RESPAWN_RADIUS').min(0).max(4.).step(.000001).listen()
 gui.add(obj, 'REFLECT_RADIUS').min(0.01).max(4.).step(.000001).listen()
 // gui.add(obj, 'DIFFUSE_RADIUS').min(0).max(10).step(1).listen()
 gui.add(obj, 'LIGHTNESS').min(1).max(50).step(0.01).listen()
-gui.add(obj, 'FREQ_PEAKER').min(0).max(fftResolution/2).step(1).listen()
+gui.add(obj, 'FREQ_PEAKER').min(0).max(fftResolution / 2).step(1).listen()
 // gui.add(obj, 'record')
 gui.add(obj, 'randomize')
 function updateRes() {
@@ -88,56 +94,126 @@ function updateRes() {
 
 
 
-// OSC
-var socket = new WebSocket("ws://127.0.0.1:8080");
-socket.onopen = function () {
-  console.log("Connected!");
-};
-socket.onclose = function (event) {
-  if (event.wasClean) {
-    console.log('Connection was closed and its okay');
-  } else {
-    console.log('Connection closed. Anything alright?'); // for example websocket server offline
+// // OSC
+// var socket = new WebSocket("ws://127.0.0.1:8080");
+// socket.onopen = function () {
+//   console.log("Connected!");
+// };
+// socket.onclose = function (event) {
+//   if (event.wasClean) {
+//     console.log('Connection was closed and its okay');
+//   } else {
+//     console.log('Connection closed. Anything alright?'); // for example websocket server offline
+//   }
+//   console.log('Code: ' + event.code + ' Reason: ' + event.reason);
+// };
+// socket.onmessage = function (event) {
+//   try {
+//     const data = JSON.parse(event.data);
+
+//     let name = data.address.split('/').pop()
+//     let value = data.args[0].value
+//     console.log("OSC", name, value)
+//     console.log(obj)
+
+//     // if this control has its peer in gui, we set min-max values form there
+//     let guiControllersFiltered = gui.__controllers.filter(c => c.property == name)
+//     console.log('osc giu', guiControllersFiltered)
+//     if (guiControllersFiltered.length > 0) {
+//       value *= guiControllersFiltered[0].__max - guiControllersFiltered[0].__min
+//       value += guiControllersFiltered[0].__min
+//     }
+
+//     if (name == 'RESET') {
+//       console.log('reset')
+//       tick = 0
+//       timeStart = new Date() / 1000
+//     }
+//     // add only if this exist in obj
+//     if (Object.keys(obj).includes(name)) { obj[name] = value } else { console.log(`no "${name}" key in obj`, Object.keys(obj)) }
+//     console.log(Object.keys(obj).includes(name), 'osc')
+
+//     // if (name == 'RES') {
+//     // updateRes()
+//     // }
+//   } catch (e) {
+//     // console.error('Can\'t recognize. Is data an object?', e);
+//   }
+// };
+// socket.onerror = function (error) {
+//   console.log("Error " + error.message);
+// };
+
+WebMidi.enable(function (err) {
+  if (err) {
+    console.log("WebMidi could not be enabled.", err);
   }
-  console.log('Code: ' + event.code + ' Reason: ' + event.reason);
-};
-socket.onmessage = function (event) {
-  try {
-    const data = JSON.parse(event.data);
+  var input = WebMidi.inputs[0];
 
-    let name = data.address.split('/').pop()
-    let value = data.args[0].value
-    console.log("OSC", name, value)
-    console.log(obj)
-
-    // if this control has its peer in gui, we set min-max values form there
-    let guiControllersFiltered = gui.__controllers.filter(c => c.property == name)
-    console.log('osc giu', guiControllersFiltered)
-    if (guiControllersFiltered.length > 0) {
-      value *= guiControllersFiltered[0].__max - guiControllersFiltered[0].__min
-      value += guiControllersFiltered[0].__min
+  input.addListener('noteon', "all",
+    function (e) {
+      console.log("Received 'noteon' message (" + e.note.name + e.note.octave + ").");
     }
+  );
 
-    if (name == 'RESET') {
-      console.log('reset')
-      tick = 0
-      timeStart = new Date() / 1000
+  let names = [
+    'LOOKUP_DIST',
+    'LOOKUP_DIST_SPREAD',
+    'STEP_SIZE',
+    'FRICTION',
+    'LOOKUP_ANGLE',
+    'LOOKUP_ANGLE_SPREAD',
+    'TURN_ANGLE',
+    'ANGLE_SPREAD',
+    'DEPOSITE',
+    'DECAY',
+    'BEAT_MULT',
+    'RES',
+    'RESPAWN_P',
+    'RESPAWN_RADIUS',
+    'REFLECT_RADIUS',
+    'LIGHTNESS',
+    'FREQ_PEAKER',
+  ]
+  input.addListener('controlchange', "all",
+    function (e) {
+      console.log("Received 'controlchange' message.", e);
+      let [code, id, value] = Array.from(e.data);
+      value = value / 127
+      console.log(code, id, value);
+      if (code == 176) {
+        // midi[id] = value, console.log(midi)
+        let name = names[id]
+        console.log(name)
+    
+        // if this control has its peer in gui, we set min-max values form there
+        let guiControllersFiltered = gui.__controllers.filter(c => c.property == name)
+        console.log('osc giu', guiControllersFiltered)
+        if (guiControllersFiltered.length > 0) {
+          value *= guiControllersFiltered[0].__max - guiControllersFiltered[0].__min
+          value += guiControllersFiltered[0].__min
+        }
+        obj[name] = value
+      }
     }
-    // add only if this exist in obj
-    if (Object.keys(obj).includes(name)) { obj[name] = value } else { console.log(`no "${name}" key in obj`, Object.keys(obj)) }
-    console.log(Object.keys(obj).includes(name), 'osc')
+  );
 
-    // if (name == 'RES') {
-    // updateRes()
-    // }
-  } catch (e) {
-    // console.error('Can\'t recognize. Is data an object?', e);
-  }
-};
-socket.onerror = function (error) {
-  console.log("Error " + error.message);
-};
-
+  // Listen to NRPN message on all channels
+  input.addListener('nrpn', "all",
+    function (e) {
+      if (e.controller.type === 'entry') {
+        console.log("Received 'nrpn' 'entry' message.", e);
+      }
+      if (e.controller.type === 'decrement') {
+        console.log("Received 'nrpn' 'decrement' message.", e);
+      }
+      if (e.controller.type === 'increment') {
+        console.log("Received 'nrpn' 'increment' message.", e);
+      }
+      console.log("message value: " + e.controller.value + ".", e);
+    }
+  );
+});
 
 
 
@@ -308,8 +384,8 @@ function init() {
       // webgl FFT stuff
       analyser.getByteFrequencyData(dataArrayAlt);
 
-      let beatArray = Array.from(dataArrayAlt).map(v => (v / 256)**4)
-      let beat = beatArray[Math.floor(obj.FREQ_PEAKER)]*256.+.1
+      let beatArray = Array.from(dataArrayAlt).map(v => (v / 256) ** 4)
+      let beat = beatArray[Math.floor(obj.FREQ_PEAKER)] * 256. + .1
       // let beat = beatArray.reduce((a, b) => a + b) / fttResolution + .1
       // if(isNaN(beat)){
       console.log(beat, beatArray, Math.floor(obj.FREQ_PEAKER))
