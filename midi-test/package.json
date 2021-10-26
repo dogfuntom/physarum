@@ -1,0 +1,18 @@
+{
+  "name": "midi-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "parcel serve index.html --port=1234"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "webmidi": "^2.5.3"
+  },
+  "devDependencies": {
+    "parcel": "^2.0.0"
+  }
+}
