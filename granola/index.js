@@ -31,6 +31,7 @@ Matter.Common.setDecomp(require('poly-decomp'))
 const data = Object.values(require('./n.json').n);
 
 import { Pebble } from "./pebble.js"
+import { image } from 'd3-fetch'
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -46,22 +47,64 @@ document.addEventListener("DOMContentLoaded", () => {
     world.gravity.y = 0.0
 
     const numberOfPebbles = data.length
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
+    // data.shift()
 
 
     let tPrev
 
     const s = (s) => {
+
+        let img
+        s.preload = () => {
+            img = s.loadImage('/n.png')
+        };
+
         s.setup = () => {
             s.createCanvas(600, 600);
-            s.fill(0)
-            s.noStroke()
-
+            // s.fill(0)
+            s.noFill()
+            // s.noStroke()
 
             for (let i = 0; i < numberOfPebbles; i++) {
                 let points = data[i].points.map(p => p[0])
+                let imgRect = {x: data[i].x, y: data[i].y, width: data[i].width, height: data[i].height}
                 let pebble = new Pebble({
                     x: s.random(-1000,1000),//data[i].centroid[0],
                     y: s.random(-1000,1000),//data[i].centroid[1],
+                    imgRect: imgRect,
                     world, points
                 })
                 Composite.add(world, pebble.body)
@@ -73,6 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         s.draw = () => {
             s.background(255);
+            // s.image(img,0,0)
             s.translate(s.width / 2, s.height / 2);
             s.scale(.8)
             
@@ -96,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
             })
 
             tPrev = t
-            pebbles.forEach(p => p.draw(s))
+            pebbles.forEach(p => p.draw(s,img))
         };
     };
 
