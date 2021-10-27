@@ -47,41 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
     world.gravity.y = 0.0
 
     const numberOfPebbles = data.length
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-    // data.shift()
-
 
     let tPrev
 
@@ -100,17 +65,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
             for (let i = 0; i < numberOfPebbles; i++) {
                 let points = data[i].points.map(p => p[0])
-                let imgRect = {x: data[i].x, y: data[i].y, width: data[i].width, height: data[i].height}
+                let imgRect = { x: data[i].x, y: data[i].y, width: data[i].width, height: data[i].height }
+                let pebbleMask = s.createGraphics(data[i].width, data[i].height)
+                let pebbleImg = s.createGraphics(data[i].width, data[i].height)
+
+                pebbleImg.image(img, 0, 0, pebbleImg.width, pebbleImg.height,
+                    imgRect.x, imgRect.y, imgRect.width, imgRect.height);
+
+                // pebbleImg.fill('green')
+                // pebbleMask.fill(0)
+
+                pebbleMask.beginShape()
+                // pebbleImg.beginShape()
+                points.forEach(v => {
+                    pebbleMask.vertex(v[0] - data[i].x, v[1] - data[i].y)
+                    // pebbleImg.vertex(v[0] - data[i].x, v[1] - data[i].y)
+                    // console.log(v[0]-data[i].x, v[1]-data[i].y)
+                })
+                pebbleMask.endShape(s.CLOSE)
+                // pebbleImg.endShape(s.CLOSE)
+
+                ;(pebbleImg = pebbleImg.get()).mask(pebbleMask)
                 let pebble = new Pebble({
-                    x: s.random(-1000,1000),//data[i].centroid[0],
-                    y: s.random(-1000,1000),//data[i].centroid[1],
+                    x: s.random(-1000, 1000),//data[i].centroid[0],
+                    y: s.random(-1000, 1000),//data[i].centroid[1],
+                    world,
+                    points,
+                    centroid: data[i].centroid,
                     imgRect: imgRect,
-                    world, points
+                    img: pebbleImg,
                 })
                 Composite.add(world, pebble.body)
                 pebbles.push(pebble)
             }
-        
+
 
         };
 
@@ -119,13 +107,13 @@ document.addEventListener("DOMContentLoaded", () => {
             // s.image(img,0,0)
             s.translate(s.width / 2, s.height / 2);
             s.scale(.8)
-            
+
             let t = Number(new Date())
             Engine.update(engine, (t - tPrev) * .2)
 
-            world.bodies.forEach((b,i) => {
+            world.bodies.forEach((b, i) => {
                 let pos = { x: b.position.x, y: b.position.y }
-                if(i==0) console.log(b)
+                if (i == 0) console.log(b)
                 let dist = (Math.hypot(pos.x, pos.y) + 50) / 512
                 dist = Math.min(dist, 1)
                 let target = {
@@ -140,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
             })
 
             tPrev = t
-            pebbles.forEach(p => p.draw(s,img))
+            pebbles.forEach(p => p.draw(s))
         };
     };
 
