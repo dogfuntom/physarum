@@ -23,11 +23,6 @@ import * as Matter from "matter-js"
 Matter.Common.setDecomp(require('poly-decomp'))
 
 
-
-
-
-
-
 const data = Object.values(require('./n.json').n);
 
 import { Pebble } from "./pebble.js"
@@ -40,7 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
     var Engine = Matter.Engine,
         Composite = Matter.Composite,
         Bodies = Matter.Bodies;
-
 
     let engine = Engine.create()
     let world = engine.world
