@@ -345,8 +345,8 @@ function init() {
       twgl.setUniforms(programClear, {
         u_tick: tick,
       });
-      twgl.bindFramebufferInfo(gl, draw1);
-      twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
+      twgl.bindFramebufferInfo(gl, draw1)
+      twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN)
     }
 
     {  // clear ONCE
