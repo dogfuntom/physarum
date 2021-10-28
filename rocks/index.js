@@ -26,21 +26,21 @@ console.log(gl.getExtension("WEBGL_color_buffer_float"));
 const programCell = twgl.createProgramInfo(gl, [vCell, fCell]);
 const programDraw = twgl.createProgramInfo(gl, [vCell, fDraw]);
 
-const n = 256;
-const m = n;
+const m = 256;
+const n = m;
 const attachments = [{ format:gl.RGBA, type:gl.FLOAT, minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }];
-let cell1 = twgl.createFramebufferInfo(gl, attachments, n, m);
-let cell2 = twgl.createFramebufferInfo(gl, attachments, n, m);
-let feromone1 = twgl.createFramebufferInfo(gl, attachments, n, m);
-let feromone2 = twgl.createFramebufferInfo(gl, attachments, n, m);
+let cell1 = twgl.createFramebufferInfo(gl, attachments, m, n);
+let cell2 = twgl.createFramebufferInfo(gl, attachments, m, n);
+let feromone1 = twgl.createFramebufferInfo(gl, attachments, m, n);
+let feromone2 = twgl.createFramebufferInfo(gl, attachments, m, n);
 const positionObject = { position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComponents: 2 } };
 const positionBuffer = twgl.createBufferInfoFromArrays(gl, positionObject);
 
 const pointData = [];
-for (let i = 0; i < n; i++) {
-  for (let j = 0; j < m; j++) {
-    pointData.push(i / (n - 1));
-    pointData.push(j / (m - 1));
+for (let i = 0; i < m; i++) {
+  for (let j = 0; j < n; j++) {
+    pointData.push(i / (m - 1));
+    pointData.push(j / (n - 1));
   }
 }
 const pointsObject = { v_texcoord: { data: pointData, numComponents: 2 } };
@@ -63,7 +63,7 @@ function draw(time) {
     prevStateFeromones: feromone1.attachments[0],
     tick: tick,
     u_time: new Date() / 1000,
-    u_resolution: [n, m],
+    u_resolution: [m, n],
     u_mouse: mousepos,
   });
   twgl.bindFramebufferInfo(gl, cell2);

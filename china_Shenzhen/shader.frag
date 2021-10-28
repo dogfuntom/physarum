@@ -1,17 +1,17 @@
 #version 300 es
 precision mediump float;
-uniform sampler2D prevStateCells;
+// uniform sampler2D prevStateCells;
 out vec4 outColor;
 
-#define paletteN 5.
+// #define paletteN 5.
 
-uniform float tick;
-uniform float u_time;
-uniform vec2 u_resolution;
-uniform vec2 u_mouse;
-uniform vec4 palette[5];
-uniform vec4 viewbox;
-uniform float params[5];
+// uniform float tick;
+// uniform float u_time;
+// uniform vec2 u_resolution;
+// uniform vec2 u_mouse;
+// uniform vec4 palette[5];
+// uniform vec4 viewbox;
+// uniform float params[5];
 
 // // #pragma glslify: hsv = require(glsl-hsv2rgb) 
 // // #pragma glslify: noise= require(glsl-noise/simplex/4d) 
@@ -36,8 +36,8 @@ uniform float params[5];
 // #define f(x) (.5 + .3 * sin(x * PI * 2. * ceil(rnd(id + .5 + 5.) * 3.) + (id + 2.) * PI * 2.))
 
 void main() {
-    vec2 uv = (gl_FragCoord.xy * 2. - u_resolution) / u_resolution;
-    outColor = vec4(vec3(length(uv)),1);
+    // vec2 uv = (gl_FragCoord.xy * 2. - u_resolution) / u_resolution;
+    // outColor = vec4(vec3(length(uv)),1);
     outColor = vec4(0,0,1,1);
     // #define AA 1.
     // vec4 color;

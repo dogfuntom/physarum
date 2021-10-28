@@ -49,7 +49,7 @@ twgl.addExtensionsToContext(gl);
 const program = twgl.createProgramInfo(gl, [vShader, fShader])
 const programShow = twgl.createProgramInfo(gl, [vShader, fShow])
 
-const m = 800;
+const m = 1024;
 const n = m;
 // const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }];
 const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE }]
@@ -65,12 +65,12 @@ windowResized()
 
 
 function draw() {
-  console.log('draw')
+  // console.log('draw')
   
   gl.useProgram(program.program);
   twgl.setBuffersAndAttributes(gl, program, positionBuffer);
   twgl.setUniforms(program, {
-    prevStateCells: shader2.attachments[0],
+    // prevStateCells: shader2.attachments[0],
     tick: tick,
     // palette: palette.flat(),
     u_time: tick / (FPS * animDuration),
@@ -81,6 +81,9 @@ function draw() {
   twgl.bindFramebufferInfo(gl, shader1)
   twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN)
   
+
+  if(tick==10)console.log(shader1)
+
   gl.useProgram(programShow.program)
   twgl.setBuffersAndAttributes(gl, programShow, positionBuffer)
   twgl.setUniforms(programShow, {
@@ -91,14 +94,14 @@ function draw() {
   twgl.bindFramebufferInfo(gl, null)
   twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN)
   
-  // ping-pong buffers
-  let temp = shader1;
-  shader1 = shader2;
-  shader2 = temp;
+  // // ping-pong buffers
+  // let temp = shader1;
+  // shader1 = shader2;
+  // shader2 = temp;
 }
 
 function animate() {
-  console.log('hf')  
+  // console.log('hf')  
   // if (pause) return;
   let timeCurrent = +new Date()
   time += timeCurrent - timePrev
