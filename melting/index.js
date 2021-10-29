@@ -1,19 +1,27 @@
 'use strict';
+
+let fileNamePrefix = "island"
+
+let FPS = 30
+let animDuration = 40*FPS
+let animDelay = animDuration
+let isRendering = true
+
+
+
+
 let twgl = require('twgl.js')
-
-
-
-
-
-
-
 let WebMidi = require('webmidi')
+let chroma = require('chroma-js')
 
 let midi = JSON.parse(localStorage.getItem("midi"));
 if(!midi) midi = Array(64).fill(.5)
 // midi = [0.015748031496062992,0.05511811023622047,0.8188976377952756,0,1,0.30708661417322836,1,0.5354330708661418,0.023622047244094488,0.031496062992125984,0.015748031496062992,0.8661417322834646,1,0.023622047244094488,0.031496062992125984,0.07086614173228346,0.6692913385826772,1,1,0.05511811023622047,0,0.2992125984251969,0.6377952755905512,0.7244094488188977,0.5196850393700787,0.49606299212598426,0.5118110236220472,0.047244094488188976,0.5039370078740157,0.5039370078740157,0.5118110236220472,0.5511811023622047,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]
-
-
+// midi = [0.031496062992125984,0.06299212598425197,0.8346456692913385,0,1,0.29133858267716534,1,0.5196850393700787,1,0.023622047244094488,0,0.8818897637795275,0.9921259842519685,0,0.5433070866141733,0.06299212598425197,1,1,1,0.09448818897637795,0,0.31496062992125984,0.6535433070866141,0.8188976377952756,0.5196850393700787,0.49606299212598426,0.5118110236220472,0.13385826771653545,0.5275590551181102,0.5433070866141733,0.5433070866141733,0.8582677165354331,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5354330708661418,0.13385826771653545,0.33070866141732286,0.03937007874015748,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]
+// midi = [0.023622047244094488,0.05511811023622047,0.8346456692913385,0.1732283464566929,1,0.952755905511811,1,0.4015748031496063,1,0.023622047244094488,0,0.48031496062992124,0.7086614173228346,0.015748031496062992,0.5590551181102362,0.047244094488188976,1,0.9606299212598425,1,0,0,0.31496062992125984,0.6535433070866141,1,0.5196850393700787,0.49606299212598426,1,0.12598425196850394,0.6850393700787402,0.5433070866141733,0.49606299212598426,0.30708661417322836,0.015748031496062992,0.8031496062992126,0.2283464566929134,0.36220472440944884,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.7795275590551181,0.2283464566929134,0.2755905511811024,0.23622047244094488,0.5,0.18110236220472442,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]
+let palette = ['#230f2b', '#f21d41', '#ebebbc', '#bce3c5', '#82b3ae']
+palette = palette.map(c => chroma(c).gl())
+palette = palette.sort((a, b) => chroma(a).get('lch.l') - chroma(b).get('lch.l'))
 
 
 WebMidi.enable(function (err) {
@@ -66,7 +74,7 @@ console.log(gl.getExtension("WEBGL_color_buffer_float"));
 const programCell = twgl.createProgramInfo(gl, [vCell, fCell]);
 const programDraw = twgl.createProgramInfo(gl, [vCell, fDraw]);
 
-const m = 128;
+const m = 256;
 const n = m;
 const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }];
 let cell1 = twgl.createFramebufferInfo(gl, attachments, m, n);
@@ -90,11 +98,13 @@ let dt;
 let prevTime;
 let temp;
 
+
 function draw(time) {
   twgl.resizeCanvasToDisplaySize(gl.canvas);
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   dt = (prevTime) ? time - prevTime : 0;
   prevTime = time;
+  // console.log(1/dt)
 
   gl.useProgram(programCell.program);
   twgl.setBuffersAndAttributes(gl, programCell, positionBuffer);
@@ -102,7 +112,7 @@ function draw(time) {
     backbuffer: cell1.attachments[0],
     tick: tick,
     midi: midi,
-    u_time: time,
+    u_time: (tick-animDelay)/animDuration,
     u_resolution: [m, n],
     u_mouse: mousepos,
   });
@@ -114,8 +124,11 @@ function draw(time) {
   twgl.setUniforms(programDraw, {
     prevStateCells: cell1.attachments[0],
     prevStateFeromones: feromone1.attachments[0],
+    u_tex_res: [m, n],
     u_resolution: [canvas.width, canvas.height],
     midi: midi,
+    u_time: (tick-animDelay)/animDuration,
+    palette: palette.flat(),
   });
   twgl.bindFramebufferInfo(gl, null);
   twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
@@ -126,14 +139,28 @@ function draw(time) {
   cell1 = cell2;
   cell2 = temp;
 
+  if(isRendering == true && tick > animDelay){
+    let link = document.getElementById('link');
+    const zeroPad = (num, places) => String(num).padStart(places, '0')
+    
+    link.setAttribute('download', fileNamePrefix+`${zeroPad(tick-animDelay, 6)}.png`);
+    link.setAttribute('href', canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
+    link.click();
+    if((tick-animDelay)/animDuration > 1) isRendering = false
+}
+
   tick++
 }
 
-(function animate(now) {
+if(isRendering) setInterval(animate, 200)
+else animate()
+
+function animate(now) {
   draw(now / 1000);
   // setTimeout(requestAnimationFrame, 50, animate);
-  requestAnimationFrame(animate);
-})(0);
+  if(isRendering == false)
+    requestAnimationFrame(animate);
+}
 
 function setMousePos(e) {
   mousepos[0] = e.clientX / gl.canvas.clientWidth;
