@@ -1,6 +1,46 @@
 'use strict';
 let twgl = require('twgl.js')
 
+
+
+
+
+
+
+let WebMidi = require('webmidi')
+
+let midi = JSON.parse(localStorage.getItem("midi"));
+if(!midi) midi = Array(64).fill(.5)
+// midi = [0.015748031496062992,0.05511811023622047,0.8188976377952756,0,1,0.30708661417322836,1,0.5354330708661418,0.023622047244094488,0.031496062992125984,0.015748031496062992,0.8661417322834646,1,0.023622047244094488,0.031496062992125984,0.07086614173228346,0.6692913385826772,1,1,0.05511811023622047,0,0.2992125984251969,0.6377952755905512,0.7244094488188977,0.5196850393700787,0.49606299212598426,0.5118110236220472,0.047244094488188976,0.5039370078740157,0.5039370078740157,0.5118110236220472,0.5511811023622047,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]
+
+
+
+
+WebMidi.enable(function (err) {
+  if (err) {
+    console.log("WebMidi could not be enabled.", err);
+  }
+  var input = WebMidi.inputs[0];
+
+  input.addListener('controlchange', "all",
+    function (e) {
+      // console.log("Received 'controlchange' message.", e);
+      let [code, id, value] = Array.from(e.data);
+      value = value / 127
+      console.log(id, value);
+      if (code == 176) {
+        midi[id] = value
+      }
+      localStorage.setItem("midi", JSON.stringify(midi));
+    });
+})
+
+
+
+
+
+
+
 const vCell = `
   precision mediump float;
 
@@ -26,9 +66,9 @@ console.log(gl.getExtension("WEBGL_color_buffer_float"));
 const programCell = twgl.createProgramInfo(gl, [vCell, fCell]);
 const programDraw = twgl.createProgramInfo(gl, [vCell, fDraw]);
 
-const m = 1024;
+const m = 128;
 const n = m;
-const attachments = [{ format:gl.RGBA, type:gl.FLOAT, minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }];
+const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }];
 let cell1 = twgl.createFramebufferInfo(gl, attachments, m, n);
 let cell2 = twgl.createFramebufferInfo(gl, attachments, m, n);
 let feromone1 = twgl.createFramebufferInfo(gl, attachments, m, n);
@@ -61,6 +101,7 @@ function draw(time) {
   twgl.setUniforms(programCell, {
     backbuffer: cell1.attachments[0],
     tick: tick,
+    midi: midi,
     u_time: time,
     u_resolution: [m, n],
     u_mouse: mousepos,
@@ -73,6 +114,8 @@ function draw(time) {
   twgl.setUniforms(programDraw, {
     prevStateCells: cell1.attachments[0],
     prevStateFeromones: feromone1.attachments[0],
+    u_resolution: [canvas.width, canvas.height],
+    midi: midi,
   });
   twgl.bindFramebufferInfo(gl, null);
   twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
@@ -123,6 +166,6 @@ function handleTouch(e) {
 }
 
 canvas.addEventListener('contextmenu', e => e.preventDefault());
-canvas.addEventListener('touchstart', handleTouch, {passive: false});
-canvas.addEventListener('touchmove', handleTouch, {passive: false});
+canvas.addEventListener('touchstart', handleTouch, { passive: false });
+canvas.addEventListener('touchmove', handleTouch, { passive: false });
 
