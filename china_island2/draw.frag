@@ -15,6 +15,9 @@ uniform vec4 palette[5];
 // vec3 mul = vec3(midi[8+16],midi[9+16],midi[10+16]);
 // vec3 add = vec3(midi[12+16],midi[13+16],midi[14+16]);
 
+  float size = midi[15 + 16 * 2] * 10000.;
+
+
 vec3 col(float c) {
   vec4 c1, c2;
   c1 = palette[0];
@@ -29,6 +32,33 @@ vec3 col(float c) {
 #define rnd(d) fract(sin(length(d)*99.))
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
 
+float map(vec3 p) {
+  float sphere = length(p) - size;
+  // sphere = abs(sphere) - .01 * size;
+
+  float fi = 1.618033988749;
+  vec3 p1 = vec3(0, 0, fi);
+  vec3 p2 = vec3(.5, fi / 2., fi * fi / 2.);
+  vec3 n = normalize(vec3(p1 - p2));
+
+  float s = 1.;
+  p.zy *= rot(.2);
+  // p.zx*=rot(time);
+  for(int j=0; j < 5; j++) {
+    p.xy = abs(p.xy);
+    float g = dot(p, n);
+    p -= (g - abs(g)) * n;
+  }
+  float cyl = (length(p.xy)) - .2*size;
+  // cyl = max(cyl, sin(cyl/100. - u_time));
+  // float ray=(length(p.xy));
+
+  // float e = max(cyl, sphere) / s;
+  float e = (length(vec2((fract(cyl)-.5), sphere))-size*.1)/s;
+  // gl+=.0009/ray;
+  return e;
+}
+
 void main() {
   float c = texture2D(prevStateCells, uv).r;
   float h = c;
@@ -41,47 +71,19 @@ void main() {
 
   gl_FragColor.rgb += col(c) * shade;//*(sin(c*400.)*.5+.5);
 
-// float j,d,e=1.;
-// vec3 p;
-// for(float i = 1.;i<99.;i++){
-//   p=normalize(vec3(U,1))*d*(rnd(length(U))*.1+.9);
-//   p.z-=1.;
-
-//   d+=e=length(p)-.5;
-//   if(e<.001)break;
-//   j=i;
-// }
-//   if(c>d*midi[14+16]*2.) gl_FragColor=vec4(3./j);
-
   float j, d, e = 1.;
   vec3 p;
   float steps = u_tex_res[0] / 2.;
 // float steps = pow(2.,midi[14+16*2]*10.);
   float dist = midi[12 + 16 * 2] * 10000.;
-  float size = midi[15 + 16 * 2] * 10000.;
   for(float i = 1.; i < 199.; i++) {
     p = normalize(vec3(U, 1)) * d * (rnd(length(U)) * .1 + .9);
   // p=normalize(vec3(floor(U*steps)/steps,1))*d*(rnd(length(floor(U*steps)*100.))*.1+.9);
     p.z -= dist;
-  // p.xz *= rot(u_time*2.*.4);
-  // p.yz *= rot(u_time*3.*.4);
 
-  // p-=clamp(p,-size,size);
-  // d+=e=length(p)-.001;
-
-    float s = 1.;
-    for(float i = 0.; i < 16.; i++) {
-      if(i > midi[1 + 16 * 2] * 16.)
-        break;
-      p *= 1. + midi[16 * 2 + 2];
-      s *= 1. + midi[16 * 2 + 2];
-      p = abs(p);
-      p -= vec3(.5 * size * midi[16 * 2 + 3]);
-      p.xz *= rot(u_time * PI * 2. + i);
-      p.yz *= rot(u_time * PI * 2. + i);
-    }
-
-    d += e = (length(vec2(p.z, length(p.xy) - size)) - size / 2.) / s;
+      p.xz *= rot(u_time * PI * 2.);
+      p.yz *= rot(u_time * PI * 2.);
+   d += e = map(p);
 
     if(e < .001 || d > 2. * dist)
       break;
