@@ -15,8 +15,7 @@ uniform vec4 palette[5];
 // vec3 mul = vec3(midi[8+16],midi[9+16],midi[10+16]);
 // vec3 add = vec3(midi[12+16],midi[13+16],midi[14+16]);
 
-  float size = midi[15 + 16 * 2] * 10000.;
-
+float size = midi[15 + 16 * 2] * 10000.;
 
 vec3 col(float c) {
   vec4 c1, c2;
@@ -33,7 +32,7 @@ vec3 col(float c) {
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
 
 float map(vec3 p) {
-  float sphere = length(p) - size;
+  float sphere = length(p) - size*4.;
   // sphere = abs(sphere) - .01 * size;
 
   float fi = 1.618033988749;
@@ -44,23 +43,24 @@ float map(vec3 p) {
   float s = 1.;
   p.zy *= rot(.2);
   // p.zx*=rot(time);
-  for(int j=0; j < 5; j++) {
+  for(int j = 0; j < 5; j++) {
     p.xy = abs(p.xy);
     float g = dot(p, n);
     p -= (g - abs(g)) * n;
   }
-  float cyl = (length(p.xy)) - .2*size;
-  // cyl = max(cyl, sin(cyl/100. - u_time));
+  float cyl = (length(p-vec3(0,0,size))) - .3 * size;
+  // float cyl = (fract(length(p)/size)-.5)*size;// - .1 * size;
+  cyl = max(cyl, sphere);
   // float ray=(length(p.xy));
 
-  // float e = max(cyl, sphere) / s;
-  float e = (length(vec2((fract(cyl)-.5), sphere))-size*.1)/s;
+  float e = cyl;//max(cyl, sphere) / s;
+  // float e = (length(vec2((fract(cyl) - .5), sphere)) - size * .1) / s;
   // gl+=.0009/ray;
   return e;
 }
 
 void main() {
-  float c = texture2D(prevStateCells, uv).r;
+  float c = texture2D(prevStateCells, uv.yx).r;
   float h = c;
   float shade = smoothstep(.0, .2, c);
   c = fract(c + midi[3 + 16]);
@@ -81,15 +81,15 @@ void main() {
   // p=normalize(vec3(floor(U*steps)/steps,1))*d*(rnd(length(floor(U*steps)*100.))*.1+.9);
     p.z -= dist;
 
-      p.xz *= rot(u_time * PI * 2.);
-      p.yz *= rot(u_time * PI * 2.);
-   d += e = map(p);
+    p.xz *= rot(sin(u_time * PI * 2.) * PI * 2.);
+    p.yz *= rot(u_time * PI * 2.);
+    d += e = map(p);
 
     if(e < .001 || d > 2. * dist)
       break;
     j = i;
   }
-  if(h > d / dist * (midi[15 + 16] * 2.))
+  if(h > pow(d / dist, 2.) * (midi[15 + 16] * 2.))
     gl_FragColor = vec4(8. / j);
   // if(c>d/dist*(midi[15+16]*2.)) gl_FragColor=vec4(d/dist);
 

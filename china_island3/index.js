@@ -5,7 +5,7 @@ let fileNamePrefix = "island"
 let FPS = 30
 let animDuration = 40*FPS
 let animDelay = animDuration
-let isRendering = true
+let isRendering = false
 
 
 
