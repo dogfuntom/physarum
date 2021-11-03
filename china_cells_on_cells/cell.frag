@@ -34,9 +34,9 @@ void main() {
     n.x += snoise3D(vec3(uv * 100.*midi[1], sin(PI*2.* u_time*floor(5.*midi[7]) ))) * midi[5];
     n.x += snoise3D(vec3(uv * 100.*midi[2], sin(PI*2.* u_time*floor(8.*midi[7]) ))) * midi[6];
 
-    // n.y += snoise3D(vec3(uv * 100.*midi[0], sin(PI*2.* u_time*floor(3.*midi[7]) )) + 9.) * midi[4];
-    // n.y += snoise3D(vec3(uv * 100.*midi[1], sin(PI*2.* u_time*floor(5.*midi[7]) )) + 9.) * midi[5];
-    // n.y += snoise3D(vec3(uv * 100.*midi[2], sin(PI*2.* u_time*floor(8.*midi[7]) )) + 9.) * midi[6];
+    n.y += snoise3D(vec3(uv * 100.*midi[0], sin(PI*2.* u_time*floor(3.*midi[7]) )) + 9.) * midi[4];
+    n.y += snoise3D(vec3(uv * 100.*midi[1], sin(PI*2.* u_time*floor(5.*midi[7]) )) + 9.) * midi[5];
+    n.y += snoise3D(vec3(uv * 100.*midi[2], sin(PI*2.* u_time*floor(8.*midi[7]) )) + 9.) * midi[6];
 
     o = mix(texture2D(backbuffer, fract(uv + offset)), n.xyyy * .5 + .5, midi[15]);
     // o = noise;

@@ -7,9 +7,6 @@ let animDuration = 40*FPS
 let animDelay = animDuration
 let isRendering = false
 
-
-
-
 let twgl = require('twgl.js')
 let WebMidi = require('webmidi')
 let chroma = require('chroma-js')
@@ -44,9 +41,6 @@ WebMidi.enable(function (err) {
 
 
 
-
-
-
 const vCell = `
   precision mediump float;
 
@@ -58,8 +52,8 @@ const vCell = `
     gl_Position = vec4(position, 0.0, 1.0);
   }`;
 const fCell = require('./cell.frag');
+const fConway = require('./conway.frag');
 const fDraw = require('./draw.frag');
-
 
 const mousepos = [999., 999.];
 let tick = 0
@@ -70,27 +64,26 @@ console.log(gl.getExtension("OES_texture_float"));
 console.log(gl.getExtension("WEBGL_color_buffer_float"));
 
 const programCell = twgl.createProgramInfo(gl, [vCell, fCell]);
+const programConway = twgl.createProgramInfo(gl, [vCell, fConway]);
 const programDraw = twgl.createProgramInfo(gl, [vCell, fDraw]);
 
 const m = 256;
-const n = m;
+const mConway = 17;
 const attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }];
-let cell1 = twgl.createFramebufferInfo(gl, attachments, m, n);
-let cell2 = twgl.createFramebufferInfo(gl, attachments, m, n);
-let feromone1 = twgl.createFramebufferInfo(gl, attachments, m, n);
-let feromone2 = twgl.createFramebufferInfo(gl, attachments, m, n);
+let cell1 = twgl.createFramebufferInfo(gl, attachments, m, m);
+let cell2 = twgl.createFramebufferInfo(gl, attachments, m, m);
+let conway1 = twgl.createFramebufferInfo(gl, attachments, mConway, mConway);
+let conway2 = twgl.createFramebufferInfo(gl, attachments, mConway, mConway);
 const positionObject = { position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComponents: 2 } };
 const positionBuffer = twgl.createBufferInfoFromArrays(gl, positionObject);
 
 const pointData = [];
 for (let i = 0; i < m; i++) {
-  for (let j = 0; j < n; j++) {
+  for (let j = 0; j < m; j++) {
     pointData.push(i / (m - 1));
-    pointData.push(j / (n - 1));
+    pointData.push(j / (m - 1));
   }
 }
-const pointsObject = { v_texcoord: { data: pointData, numComponents: 2 } };
-const pointsBuffer = twgl.createBufferInfoFromArrays(gl, pointsObject);
 
 let dt;
 let prevTime;
@@ -102,27 +95,39 @@ function draw(time) {
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   dt = (prevTime) ? time - prevTime : 0;
   prevTime = time;
-  // console.log(1/dt)
 
-  gl.useProgram(programCell.program);
-  twgl.setBuffersAndAttributes(gl, programCell, positionBuffer);
-  twgl.setUniforms(programCell, {
-    backbuffer: cell1.attachments[0],
+  gl.useProgram(programConway.program);
+  twgl.setBuffersAndAttributes(gl, programConway, positionBuffer);
+  twgl.setUniforms(programConway, {
+    backbuffer: conway1.attachments[0],
     tick: tick,
     midi: midi,
     u_time: (tick-animDelay)/animDuration,
-    u_resolution: [m, n],
-    u_mouse: mousepos,
+    u_resolution: [mConway, mConway],
   });
-  twgl.bindFramebufferInfo(gl, cell2);
+  twgl.bindFramebufferInfo(gl, conway2);
   twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
+
+  // gl.useProgram(programCell.program);
+  // twgl.setBuffersAndAttributes(gl, programCell, positionBuffer);
+  // twgl.setUniforms(programCell, {
+  //   backbuffer: cell1.attachments[0],
+  //   tick: tick,
+  //   midi: midi,
+  //   u_time: (tick-animDelay)/animDuration,
+  //   u_resolution: [m, m],
+  //   u_mouse: mousepos,
+  // });
+  // twgl.bindFramebufferInfo(gl, cell2);
+  // twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
 
   gl.useProgram(programDraw.program);
   twgl.setBuffersAndAttributes(gl, programDraw, positionBuffer);
   twgl.setUniforms(programDraw, {
     prevStateCells: cell1.attachments[0],
-    prevStateFeromones: feromone1.attachments[0],
-    u_tex_res: [m, n],
+    prevStateConway: conway1.attachments[0],
+    u_tex_res: [m, m],
+    u_conway_res: [mConway, mConway],
     u_resolution: [canvas.width, canvas.height],
     midi: midi,
     u_time: (tick-animDelay)/animDuration,
@@ -136,6 +141,9 @@ function draw(time) {
   temp = cell1;
   cell1 = cell2;
   cell2 = temp;
+  temp = conway1;
+  conway1 = conway2;
+  conway2 = temp;
 
   if(isRendering == true && tick > animDelay){
     let link = document.getElementById('link');
@@ -159,38 +167,3 @@ function animate(now) {
   if(isRendering == false)
     requestAnimationFrame(animate);
 }
-
-function setMousePos(e) {
-  mousepos[0] = e.clientX / gl.canvas.clientWidth;
-  mousepos[1] = 1 - e.clientY / gl.canvas.clientHeight;
-}
-
-canvas.addEventListener('mousemove', setMousePos);
-
-canvas.addEventListener('mouseleave', () => {
-  mousepos[0] = 999.;
-  mousepos[1] = 999.;
-});
-
-canvas.addEventListener('mousedown', e => {
-  if (e.button === 0) {
-    offGravity = 1;
-  } else {
-    restoreColors = 1;
-  }
-});
-
-window.addEventListener('mouseup', () => {
-  offGravity = 0;
-  restoreColors = 0;
-});
-
-function handleTouch(e) {
-  e.preventDefault();
-  setMousePos(e.touches[0]);
-}
-
-canvas.addEventListener('contextmenu', e => e.preventDefault());
-canvas.addEventListener('touchstart', handleTouch, { passive: false });
-canvas.addEventListener('touchmove', handleTouch, { passive: false });
-
