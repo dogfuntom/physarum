@@ -40,7 +40,7 @@ void main() {
 
   // vec2 U = (gl_FragCoord.xy * 2. - u_resolution) / min(u_resolution.x, u_resolution.y);
 
-  gl_FragColor.rgb += c;
+  gl_FragColor.rgb = texture2D(prevStateConway, uv.yx).rgb;
   // gl_FragColor.rgb = col(c);
   gl_FragColor.a = 1.;
 }

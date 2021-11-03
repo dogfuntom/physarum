@@ -42,6 +42,7 @@ void main() {
         }
     }
 
-    if(f==0.)o.r = step(.5,rnd(length(uv)));
+    if(f==0.)
+        o.r = step(.5,rnd(length(uv)));
     o.a = 1.;
 }
