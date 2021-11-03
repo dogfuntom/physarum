@@ -42,7 +42,6 @@ void main() {
         }
     }
 
-    o.rg=step(.5,fract(uv+t));
-    o.b=0.;
+    if(f==0.)o.r = step(.5,rnd(length(uv)));
     o.a = 1.;
 }
