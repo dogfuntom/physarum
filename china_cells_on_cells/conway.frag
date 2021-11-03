@@ -1,5 +1,6 @@
 precision mediump float;
 uniform sampler2D backbuffer;
+uniform sampler2D texture;
 uniform float tick;
 uniform float u_time;
 uniform vec2 u_resolution;
@@ -42,7 +43,7 @@ void main() {
         }
     }
 
-    if(f==0.)
-        o.r = step(.5,rnd(length(uv)));
+    if(f<1.)
+        o = texture2D(texture, uv);
     o.a = 1.;
 }

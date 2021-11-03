@@ -17,7 +17,7 @@ if (!midi) midi = Array(64).fill(.5)
 let palette = ['#230f2b', '#f21d41', '#ebebbc', '#bce3c5', '#82b3ae']
 palette = palette.map(c => chroma(c).gl())
 palette = palette.sort((a, b) => chroma(a).get('lch.l') - chroma(b).get('lch.l'))
-
+let passes
 
 WebMidi.enable(function (err) {
   if (err) {
@@ -39,7 +39,7 @@ WebMidi.enable(function (err) {
 })
 
 
-function Pass(frag, size) {
+function Pass({ frag, size, texture }) {
   if (size.length)
     this.resolution = size
   else
@@ -53,56 +53,66 @@ function Pass(frag, size) {
     uv = position * .5 + .5;
     gl_Position = vec4(position, 0.0, 1.0);
   }`
-  this.frag = frag;
-  this.program = twgl.createProgramInfo(gl, [this.vert, this.frag]);
-  this.attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }];
-  this.buffer = twgl.createFramebufferInfo(gl, this.attachments, ...this.resolution);
-  this.backbuffer = twgl.createFramebufferInfo(gl, this.attachments, ...this.resolution);
-  this.positionObject = { position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComponents: 2 } };
-  this.positionBuffer = twgl.createBufferInfoFromArrays(gl, this.positionObject);
+  this.frag = frag
+  this.program = twgl.createProgramInfo(gl, [this.vert, this.frag])
+  this.attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }]
+  this.buffer = twgl.createFramebufferInfo(gl, this.attachments, ...this.resolution)
+  this.backbuffer = twgl.createFramebufferInfo(gl, this.attachments, ...this.resolution)
+  this.positionObject = { position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComponents: 2 } }
+  this.positionBuffer = twgl.createBufferInfoFromArrays(gl, this.positionObject)
 
-  this.draw = (uniforms, target) => {
-    gl.useProgram(this.program.program);
-    twgl.setBuffersAndAttributes(gl, this.program, this.positionBuffer);
+  this.texture = texture
 
-    uniforms.backbuffer = this.backbuffer.attachments[0]
-    // console.log('y', uniforms.backbuffer)
+  this.draw = ({ uniforms, target }) => {
+    // target: self, screen, self+screen
+    gl.useProgram(this.program.program)
+    twgl.setBuffersAndAttributes(gl, this.program, this.positionBuffer)
+
     uniforms.u_resolution = this.resolution
+    if (target != 'screen') // self or both
+      uniforms.backbuffer = this.backbuffer.attachments[0]
+      if (this.texture)
+      uniforms.texture = this.texture
+    twgl.setUniforms(this.program, uniforms)
 
-    twgl.setUniforms(this.program, uniforms);
-    if (typeof target !== 'undefined')
-      twgl.bindFramebufferInfo(gl, null);
-    else
-      twgl.bindFramebufferInfo(gl, this.buffer);
-    let tmp = this.buffer
-    this.buffer = this.backbuffer
-    this.backbuffer = tmp
-
-    twgl.drawBufferInfo(gl, this.positionBuffer, gl.TRIANGLE_FAN);
+    if (target != 'self') { // screen or both
+      twgl.bindFramebufferInfo(gl, null)
+      twgl.drawBufferInfo(gl, this.positionBuffer, gl.TRIANGLE_FAN)
+    }
+    if (target != 'screen') { // self or both
+      twgl.bindFramebufferInfo(gl, this.buffer)
+      let tmp = this.buffer
+      this.buffer = this.backbuffer
+      this.backbuffer = tmp
+      twgl.drawBufferInfo(gl, this.positionBuffer, gl.TRIANGLE_FAN)
+    }
   }
 }
 
 
 
-
-const fCell = require('./cell.frag');
-const fConway = require('./conway.frag');
-const fDraw = require('./draw.frag');
+const fCell = require('./cell.frag')
+const fConway = require('./conway.frag')
+const fDraw = require('./draw.frag')
 
 let tick = 0
-const canvas = document.getElementById('canvasgl');
-const gl = twgl.getWebGLContext(canvas, { antialias: false, depth: false });
-twgl.addExtensionsToContext(gl);
-console.log(gl.getExtension("OES_texture_float"));
-console.log(gl.getExtension("WEBGL_color_buffer_float"));
+const canvas = document.getElementById('canvasgl')
+const gl = twgl.getWebGLContext(canvas, { antialias: false, depth: false })
+twgl.addExtensionsToContext(gl)
+gl.getExtension("OES_texture_float")
+gl.getExtension("WEBGL_color_buffer_float")
 
 let dt;
 let prevTime;
 
-let passes = {
-  conway: new Pass(fConway, 17),
-  draw: new Pass(fDraw, [canvas.width, canvas.height]),
-}
+let conwayInitTexture = twgl.createTexture(gl, {
+  src: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARAQMAAAABo9W5AAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAZQTFRFAAAA////pdmf3QAAABVJREFUeJxjYMAD+CwYGLg0IDQeAAAZpgC/nhpjBAAAAABJRU5ErkJggg==',
+  crossOrigin: '', // not needed if image on same origin
+}, function (err, tex, img) {
+  // wait for the image to load because we need to know it's size
+  start();
+});
+
 
 function draw(time) {
   twgl.resizeCanvasToDisplaySize(gl.canvas);
@@ -111,18 +121,24 @@ function draw(time) {
   prevTime = time;
 
   passes.conway.draw({
-    tick: tick,
-    midi: midi,
-    u_time: (tick - animDelay) / animDuration,
+    uniforms: {
+      tick: tick,
+      midi: midi,
+      u_time: (tick - animDelay) / animDuration,
+    },
+    target: 'self',
   })
 
   passes.draw.draw({
-    prevStateConway: passes.conway.backbuffer.attachments[0],
-    u_conway_res: passes.conway.resolution,
-    midi: midi,
-    u_time: (tick - animDelay) / animDuration,
-    palette: palette.flat(),
-  }, null)
+    uniforms: {
+      prevStateConway: passes.conway.backbuffer.attachments[0],
+      u_conway_res: passes.conway.resolution,
+      midi: midi,
+      u_time: (tick - animDelay) / animDuration,
+      palette: palette.flat(),
+    },
+    target: 'self+screen',
+  })
 
   if (isRendering == true && tick > animDelay) {
     let link = document.getElementById('link');
@@ -137,8 +153,23 @@ function draw(time) {
   tick++
 }
 
-if (isRendering) setInterval(animate, 200)
-else animate()
+function start() {
+  passes = {
+    conway: new Pass({
+      frag: fConway,
+      size: 17,
+      texture: conwayInitTexture,
+    }),
+    draw: new Pass({
+      frag: fDraw,
+      size: [canvas.width, canvas.height],
+    }),
+  }
+  
+
+  if (isRendering) setInterval(animate, 200)
+  else animate()
+}
 
 function animate(now) {
   draw(now / 1000);

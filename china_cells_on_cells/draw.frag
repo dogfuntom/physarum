@@ -4,6 +4,7 @@ uniform vec2 u_resolution;
 uniform vec2 u_tex_res;
 uniform sampler2D prevStateCells;
 uniform sampler2D prevStateConway;
+uniform sampler2D backbuffer;
 uniform float midi[64];
 uniform float u_time;
 uniform vec4 palette[5];
@@ -41,6 +42,7 @@ void main() {
   // vec2 U = (gl_FragCoord.xy * 2. - u_resolution) / min(u_resolution.x, u_resolution.y);
 
   gl_FragColor.rgb = texture2D(prevStateConway, uv.yx).rgb;
+  gl_FragColor = mix(gl_FragColor, texture2D(backbuffer, uv), .9);
   // gl_FragColor.rgb = col(c);
   gl_FragColor.a = 1.;
 }
