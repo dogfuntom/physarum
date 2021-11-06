@@ -21,7 +21,7 @@ uniform float midi[64];
 
 void main() {
     vec2 uv = FC.xy / u_resolution;
-    #define func(n0, n1, n2, n3, n4, i) rnd((n0 + 2.*n1 + 4.*n2 + 8.*n3 + 16.*n3 + 32.*n4)/64. + i + vec4(0)+.01*floor(tick/2.)) 
+    #define func(n0, n1, n2, n3, n4, i) rnd((n0 + 2.*n1 + 4.*n2 + 8.*n3 + 16.*n3 + 32.*n4)/64. + i + vec4(0)+.01*floor(tick/200.)) 
 
     // uv = abs(uv - .5) + .5;
     float size = 1. / pow(2., divisions+2.); // from the previous iteration, in the backbuffer 

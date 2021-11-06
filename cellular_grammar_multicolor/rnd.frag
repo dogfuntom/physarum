@@ -15,10 +15,11 @@ uniform vec2 u_resolution;
 
 void main() {
     vec2 uv = FC.xy / u_resolution;
-    float size = 1. / pow(2., 1. + 2.); // from the previous iteration, in the backbuffer 
+    float splits = pow(2., 5.);
+    float size = 1. / splits; // from the previous iteration, in the backbuffer 
     uv = floor(uv / size) * size;
-    float uvSerial = uv.x*8.+uv.y;
-    uv = vec2(floor(uvSerial/8.), fract(uvSerial/8.));
+    float uvSerial = uv.x*splits+uv.y;
+    uv = vec2(floor(uvSerial/8.), fract(uvSerial/splits));
     gl_FragColor += rnd(length(uv + vec2(0, .1)));// + mod(tick, PI));
-    gl_FragColor = fract(gl_FragColor+tick/1000.);
+    // gl_FragColor = fract(gl_FragColor+tick/1000.);
 }

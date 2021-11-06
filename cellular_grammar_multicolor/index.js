@@ -136,27 +136,10 @@ function draw(time) {
   passes.rnd.draw({ uniforms: { tick: tick, }, target: 'self', })
 
   passes.ca.draw({ uniforms: { tick: tick, tex: passes.rnd.b, divisions: 1, }, target: 'self', })
-  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 2, }, target: 'self', })
-  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 3, }, target: 'self', })
-  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 4, }, target: 'self', })
-  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 5, }, target: 'self', })
-
-  // passes.ca.draw({
-  //   uniforms: {
-  //     tex: passes.ca.b,
-  //     divisions: 2,
-  //   },
-  //   target: 'self',
-  // })
-
-  // passes.ca.draw({
-  //   uniforms: {
-  //     tex: passes.ca.b,
-  //     divisions: 3,
-  //   },
-  //   target: 'self',
-  // })
-
+  // passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 2, }, target: 'self', })
+  // passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 3, }, target: 'self', })
+  // passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 4, }, target: 'self', })
+  // passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 5, }, target: 'self', })
   passes.draw.draw({
     uniforms: {
       tex: passes.ca.b,
@@ -182,9 +165,10 @@ function draw(time) {
 }
 
 // if (isRendering) setInterval(animate, 200)
-// else animate()
+// else 
+// animate()
 
-setInterval(animate, 50)
+setInterval(animate, 200)
 
 function animate(now) {
   draw(now / 1000);
