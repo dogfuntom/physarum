@@ -1,8 +1,7 @@
 precision mediump float;
-varying vec2 uv;
 uniform vec2 u_resolution;
 uniform vec2 u_tex_res;
-uniform sampler2D prevStateCells;
+uniform sampler2D prevStateSea;
 uniform sampler2D prevStateConway;
 uniform sampler2D backbuffer;
 uniform float midi[64];
@@ -12,10 +11,10 @@ uniform vec4 palette[5];
 #define PI 3.1415
 
 #define col(c) -cos((pow(vec3(c), pw) + off) * 2. * PI) * mul + add
-vec3 pw = vec3(midi[0+16],midi[1+16],midi[2+16]);
-vec3 off = vec3(midi[4+16],midi[5+16],midi[6+16]);
-vec3 mul = vec3(midi[8+16],midi[9+16],midi[10+16]);
-vec3 add = vec3(midi[12+16],midi[13+16],midi[14+16]);
+vec3 pw = vec3(midi[0 + 16], midi[1 + 16], midi[2 + 16]);
+vec3 off = vec3(midi[4 + 16], midi[5 + 16], midi[6 + 16]);
+vec3 mul = vec3(midi[8 + 16], midi[9 + 16], midi[10 + 16]);
+vec3 add = vec3(midi[12 + 16], midi[13 + 16], midi[14 + 16]);
 
 float size = midi[15 + 16 * 2] * 10000.;
 
@@ -34,15 +33,37 @@ float size = midi[15 + 16 * 2] * 10000.;
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
 
 void main() {
-  float c = texture2D(prevStateConway, uv.yx).r;
+  vec2 uvN = gl_FragCoord.xy / u_resolution;
+  vec2 uv = (gl_FragCoord.xy * 2. - u_resolution) / min(u_resolution.x, u_resolution.y);
 
-  float steps = 100. * midi[16+7];
-  c = floor(c*steps)/steps;
+  float sea = texture2D(prevStateSea, uvN).r;
 
-  // vec2 U = (gl_FragCoord.xy * 2. - u_resolution) / min(u_resolution.x, u_resolution.y);
+  float steps = 100. * midi[16 + 7];
+  sea = floor(sea * steps) / steps;
 
-  gl_FragColor.rgb = texture2D(prevStateConway, uv.yx).rgb;
-  gl_FragColor = mix(gl_FragColor, texture2D(backbuffer, uv), .9);
+  vec4 seaCol = vec4(col(sea), 1);
+
+  // // vec2 U = (gl_FragCoord.xy * 2. - u_resolution) / min(u_resolution.x, u_resolution.y);
+
+  vec2 U = uv;
+  U += 1.;
+  U /= 2.;
+  // U = U * 8.;
+  // U -= 1. / 1.6 / 2.;
+  vec2 uvFl = floor(U * 17.) / 17.;
+  vec2 uvFr = fract(U * 17.) * 2. - 1.;
+  float conway = texture2D(prevStateConway, uvFl).r * smoothstep(3., 0., length(uvFr * uvFr * uvFr * uvFr * uvFr * uvFr));
+
+  // if(conway > sea)
+  //   gl_FragColor = mix(1.-seaCol, seaCol, smoothstep(.1, .0, conway-sea));
+  // else{
+  //   gl_FragColor = seaCol;
+  // }
+  // gl_FragColor = texture2D(prevStateConway, U);
+  // gl_FragColor.rg = uv;
+  gl_FragColor = mix(vec4(rnd(sea)) * vec4(midi[16 * 2 + 0], midi[16 * 2 + 1], midi[16 * 2 + 2], 1), seaCol, smoothstep(.1, .0, conway - sea));
+
+  // gl_FragColor = mix(gl_FragColor, texture2D(backbuffer, uv), 0.);
   // gl_FragColor.rgb = col(c);
   gl_FragColor.a = 1.;
 }

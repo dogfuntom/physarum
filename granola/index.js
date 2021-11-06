@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     var Engine = Matter.Engine,
         Composite = Matter.Composite,
-        Bodies = Matter.Bodies;
+        Bodies = Matter.Bodies
 
     let engine = Engine.create()
     let world = engine.world
@@ -103,7 +103,8 @@ document.addEventListener("DOMContentLoaded", () => {
             s.scale(.8)
 
             let t = Number(new Date())
-            Engine.update(engine, (t - tPrev) * .2)
+            let delta = Math.min(t - tPrev, 100)
+            Engine.update(engine, (delta) * .2)
 
             world.bodies.forEach((b, i) => {
                 let pos = { x: b.position.x, y: b.position.y }

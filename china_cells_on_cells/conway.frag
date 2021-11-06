@@ -5,7 +5,6 @@ uniform float tick;
 uniform float u_time;
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
-varying vec2 uv;
 uniform float midi[64];
 
 #define t u_time
@@ -23,7 +22,7 @@ uniform float midi[64];
 
 void main() {
     o = vec4(0);
-    vec2 uv = FC.xy / res;
+    vec2 uv = gl_FragCoord.xy / u_resolution;
     float self = texture2D(backbuffer, fract(uv)).r;
     float n = 0.;
     n += texture2D(backbuffer, fract(uv + vec2( 1, 1)/u_resolution)).r;
@@ -43,7 +42,8 @@ void main() {
         }
     }
 
-    if(f<1.)
+    if(f<100.)
         o = texture2D(texture, uv);
+    
     o.a = 1.;
 }

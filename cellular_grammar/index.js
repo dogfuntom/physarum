@@ -40,13 +40,13 @@ WebMidi.enable(function (err) {
 })
 
 
-function Pass({ frag, size=8, texture }) {
+function Pass({ frag, size = 8, texture }) {
   if (size.length)
     this.resolution = size
   else
     this.resolution = [size, size]
 
-  console.log(this.resolution)     
+  console.log(this.resolution)
   this.vert = `
   precision mediump float;
   attribute vec2 position;
@@ -69,7 +69,7 @@ function Pass({ frag, size=8, texture }) {
     gl.useProgram(this.program.program)
     twgl.setBuffersAndAttributes(gl, this.program, this.positionBuffer)
 
-    if(!uniforms.u_resolution)uniforms.u_resolution = this.resolution
+    if (!uniforms.u_resolution) uniforms.u_resolution = this.resolution
     if (target != 'screen') // self or both
       uniforms.backbuffer = this.backbuffer.attachments[0]
     if (this.texture)
@@ -93,11 +93,6 @@ function Pass({ frag, size=8, texture }) {
 
 
 
-const fSea = require('./sea.frag')
-const fConway = require('./conway.frag')
-const fConwayFade = require('./conwayFade.frag')
-const fDraw = require('./draw.frag')
-
 let tick = 0
 const canvas = document.getElementById('canvasgl')
 const gl = twgl.getWebGLContext(canvas, { antialias: false, depth: false })
@@ -118,21 +113,16 @@ let conwayInitTexture = twgl.createTexture(gl, {
 });
 
 passes = {
-  sea: new Pass({
-    frag: fSea,
-    size: [114, 256],
+  rnd: new Pass({
+    frag: require('./rnd.frag'),
+    size: 1024,
   }),
-  conway: new Pass({
-    frag: fConway,
-    size: 17,
-    texture: conwayInitTexture,
-  }),
-  conwayFade: new Pass({
-    frag: fConwayFade,
-    size: 17,
+  ca: new Pass({
+    frag: require('./ca.frag'),
+    size: 1024,
   }),
   draw: new Pass({
-    frag: fDraw,
+    frag: require('./draw.frag'),
   }),
 }
 
@@ -143,45 +133,40 @@ function draw(time) {
   dt = (prevTime) ? time - prevTime : 0;
   prevTime = time;
 
-  passes.sea.draw({
-    uniforms: {
-      tick: tick,
-      tex_conway: passes.conwayFade.b,
-      midi: midi,
-      u_time: (tick - animDelay) / animDuration,
-    },
-    target: 'self',
-  })
+  passes.rnd.draw({ uniforms: { tick: tick, }, target: 'self', })
 
-  if (tick % 80 == 0) passes.conway.draw({
-    uniforms: {
-      tick: tick,
-      midi: midi,
-      u_time: (tick - animDelay) / animDuration,
-    },
-    target: 'self',
-  })
+  passes.ca.draw({ uniforms: { tick: tick, tex: passes.rnd.b, divisions: 1, }, target: 'self', })
+  // // let tmp = passes.ca.buffer; passes.ca.buffer = passes.ca.backbuffer; passes.ca.backbuffer = tmp
+  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 2, }, target: 'self', })
+  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 3, }, target: 'self', })
+  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 4, }, target: 'self', })
+  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 5, }, target: 'self', })
 
-  passes.conwayFade.draw({
-    uniforms: {
-      tex_sea: passes.sea.b,
-      prevStateConway: passes.conway.b,
-      midi: midi,
-    },
-    target: 'self',
-  })
+  // passes.ca.draw({
+  //   uniforms: {
+  //     tex: passes.ca.b,
+  //     divisions: 2,
+  //   },
+  //   target: 'self',
+  // })
+
+  // passes.ca.draw({
+  //   uniforms: {
+  //     tex: passes.ca.b,
+  //     divisions: 3,
+  //   },
+  //   target: 'self',
+  // })
 
   passes.draw.draw({
     uniforms: {
-      prevStateConway: passes.conwayFade.b,
-      prevStateSea: passes.sea.b,
-      u_conway_res: passes.conway.resolution,
+      tex: passes.ca.b,
       midi: midi,
       u_time: (tick - animDelay) / animDuration,
       palette: palette.flat(),
       u_resolution: [canvas.width, canvas.height],
     },
-    target: 'self+screen',
+    target: 'screen',
   })
 
   if (isRendering == true && tick > animDelay) {
@@ -197,12 +182,14 @@ function draw(time) {
   tick++
 }
 
-if (isRendering) setInterval(animate, 200)
-else animate()
+// if (isRendering) setInterval(animate, 200)
+// else animate()
+
+setInterval(animate, 500)
 
 function animate(now) {
   draw(now / 1000);
   // setTimeout(requestAnimationFrame, 50, animate);
-  if (isRendering == false)
-    requestAnimationFrame(animate);
+  // if (isRendering == false)
+  // requestAnimationFrame(animate);
 }
