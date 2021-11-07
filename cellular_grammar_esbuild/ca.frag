@@ -39,8 +39,6 @@ void main() {
     // vec4 n4 = step(.5, texture2D(tex, fract(uv + vec2(0, size))));
     vec2 quadrant = floor(mod(uv, vec2(size)) / size * 2.);
     float quadId = quadrant.x + 2. * quadrant.y;
-    if(divisions == 3.)quadId += .01*floor(-tick/pow(2.,divisions+2.)*8.+floor(length(uv*8.-4.)*pow(2.,divisions+2.))/pow(2.,divisions+2.));
-    // if(divisions == 3.)quadId += .01*floor(tick/pow(2.,divisions+2.)/40.+floor((uv.y)*pow(2.,divisions+2.))/pow(2.,divisions+2.)+rnd(uv.x)*1.);
 
     o = vec4(step(.5, func(n0, n1, n2, n3, n4, quadId)));
 }

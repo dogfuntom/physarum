@@ -20,5 +20,5 @@ void main() {
     float uvSerial = uv.x*8.+uv.y;
     uv = vec2(floor(uvSerial/8.), fract(uvSerial/8.));
     gl_FragColor += rnd(length(uv + vec2(0, .1)));// + mod(tick, PI));
-    // gl_FragColor = fract(gl_FragColor+tick/1000.);
+    gl_FragColor = fract(gl_FragColor+tick/1000.);
 }

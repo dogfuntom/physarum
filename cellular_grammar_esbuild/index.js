@@ -115,15 +115,14 @@ let conwayInitTexture = twgl.createTexture(gl, {
 passes = {
   rnd: new Pass({
     frag: require('./rnd.frag'),
-    size: 8,
+    size: 1024,
   }),
   ca: new Pass({
     frag: require('./ca.frag'),
-    size: 128,
+    size: 1024,
   }),
   draw: new Pass({
     frag: require('./draw.frag'),
-    size: 1024,
   }),
 }
 
@@ -141,13 +140,30 @@ function draw(time) {
   passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 3, }, target: 'self', })
   passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 4, }, target: 'self', })
   passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 5, }, target: 'self', })
+
+  // passes.ca.draw({
+  //   uniforms: {
+  //     tex: passes.ca.b,
+  //     divisions: 2,
+  //   },
+  //   target: 'self',
+  // })
+
+  // passes.ca.draw({
+  //   uniforms: {
+  //     tex: passes.ca.b,
+  //     divisions: 3,
+  //   },
+  //   target: 'self',
+  // })
+
   passes.draw.draw({
     uniforms: {
       tex: passes.ca.b,
       midi: midi,
       u_time: (tick - animDelay) / animDuration,
       palette: palette.flat(),
-      u_resolution: [canvas.width, canvas.height], // window.devicePixelRatio
+      u_resolution: [canvas.width, canvas.height],
     },
     target: 'screen',
   })
