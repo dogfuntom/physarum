@@ -33,7 +33,8 @@ function Pass({ frag, size = 8, texture }) {
   }`
   this.frag = frag
   this.program = twgl.createProgramInfo(gl, [this.vert, this.frag])
-  this.attachments = [{ format: gl.RGBA, type: gl.FLOAT, minMag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE }]
+  // this.attachments = [{ format: gl.RGBA, type: gl.UNSIGNED_BYTE, minMag: gl.GL_NEAREST, wrap: gl.GL_CLAMP_TO_EDGE }]
+  this.attachments = [{ format: gl.RGBA, mag: gl.NEAREST }]
   this.buffer = twgl.createFramebufferInfo(gl, this.attachments, ...this.resolution)
   this.backbuffer = twgl.createFramebufferInfo(gl, this.attachments, ...this.resolution)
   this.b = this.backbuffer.attachments[0]
@@ -156,26 +157,37 @@ windowResized()
 
 
 passes = {
+  rnd: new Pass({
+    frag: require('./rnd.frag'),
+    size: 8,
+  }),
+  ca: new Pass({
+    frag: require('./ca.frag'),
+    size: 128,
+  }),
   draw: new Pass({
-    frag: require('./shader.frag'),
-    // size: 1024,
+    frag: require('./draw.frag'),
+    size: 1024,
   }),
 }
-console.log(JSON.stringify(passes))
+// console.log(JSON.stringify(passes))
 
 function draw() {
   if(!passes || !passes.draw || !passes.draw.program) return;
-  console.log('draw', JSON.stringify(passes.draw))
+  // console.log('draw', JSON.stringify(passes.draw))
+  passes.rnd.draw({ uniforms: { tick: tick, }, target: 'self', })
+  passes.ca.draw({ uniforms: { tick: tick, tex: passes.rnd.b, divisions: 1, }, target: 'self', })
+  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 2, }, target: 'self', })
+  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 3, }, target: 'self', })
+  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 4, }, target: 'self', })
+  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 5, }, target: 'self', })
   passes.draw.draw({
     uniforms: {
-      tick: tick,
-      palette: palette.flat(),
+      tex: passes.ca.b,
+      // midi: midi,
       u_time: time / 1000,
-      u_resolution: [gl.canvas.width, gl.canvas.height],
-      u_mouse: mousepos,
-      params: params,
-      viewbox: [0, 0, 1, 1],
-      dartTheme: dartTheme,
+      palette: palette.flat(),
+      u_resolution: [canvas.width, canvas.height], // window.devicePixelRatio
     },
     target: 'screen',
   })
