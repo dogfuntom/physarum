@@ -170,11 +170,9 @@ passes = {
     size: 1024,
   }),
 }
-// console.log(JSON.stringify(passes))
 
 function draw() {
   if(!passes || !passes.draw || !passes.draw.program) return;
-  // console.log('draw', JSON.stringify(passes.draw))
   passes.rnd.draw({ uniforms: { tick: tick, }, target: 'self', })
   passes.ca.draw({ uniforms: { tick: tick, tex: passes.rnd.b, divisions: 1, }, target: 'self', })
   passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 2, }, target: 'self', })
@@ -184,31 +182,12 @@ function draw() {
   passes.draw.draw({
     uniforms: {
       tex: passes.ca.b,
-      // midi: midi,
       u_time: time / 1000,
       palette: palette.flat(),
       u_resolution: [canvas.width, canvas.height], // window.devicePixelRatio
     },
     target: 'screen',
   })
-
-  // gl.useProgram(programDraw.program);
-  // twgl.setBuffersAndAttributes(gl, programDraw, positionBuffer);
-  // twgl.setUniforms(programDraw, {
-  //   prevStateCells: shader1.attachments[0],
-  //   prevStateFeromones: feromone1.attachments[0],
-  // });
-  // twgl.bindFramebufferInfo(gl, null);
-  // twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
-
-  // ping-pong buffers
-  // temp = shader1;
-  // shader1 = shader2;
-  // shader2 = temp;
-
-  // temp = feromone1;
-  // feromone1 = feromone2;
-  // feromone2 = temp;
 
   tick++
 }
