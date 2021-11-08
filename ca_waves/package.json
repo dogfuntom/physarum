@@ -5,7 +5,8 @@
     "glsl-random": "0.0.5",
     "glslify-hex": "^2.1.1",
     "parcel": "^2.0.0-rc.0",
-    "twgl.js": "^4.19.1"
+    "twgl.js": "^4.19.1",
+    "z-palletes": "gist:f7d785542ac60bcddbb58736ddd5db6a#ea13bfef6437bdff81fdf57880ecb47ebf43fcde"
   },
   "devDependencies": {
     "@parcel/transformer-glsl": "^2.0.0-rc.0",
