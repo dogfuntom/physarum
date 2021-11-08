@@ -7,7 +7,9 @@ uniform sampler2D backbuffer;
 // uniform float midi[64];
 uniform float u_time;
 uniform vec4 palette[5];
+uniform float params[4];
 out vec4 o;
+
 
 #define PI 3.1415
 
@@ -67,6 +69,9 @@ void main() {
   // // gl_FragColor = mix(gl_FragColor, texture(backbuffer, uv), 0.);
   // // gl_FragColor.rgb = col(c);
 
-  o = texture(tex, uvN);
+  vec3 col = texture(tex, uvN).rgb;
+  int id = int(mod(col.r + col.g * 2. + col.b * 4. + floor(100. * params[1]), 5.));
+
+  o = palette[id];
   o.a = 1.;
 }

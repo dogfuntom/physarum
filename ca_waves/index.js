@@ -122,18 +122,20 @@ passes = {
 
 function draw() {
   if(!passes || !passes.draw || !passes.draw.program) return;
-  passes.rnd.draw({ uniforms: { tick: tick, }, target: 'self', })
-  passes.ca.draw({ uniforms: { tick: tick, tex: passes.rnd.b, divisions: 1, }, target: 'self', })
-  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 2, }, target: 'self', })
-  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 3, }, target: 'self', })
-  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 4, }, target: 'self', })
-  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 5, }, target: 'self', })
+  passes.rnd.draw({ uniforms: { tick: tick, u_time: time / 1000, params: params, }, target: 'self', })
+  // console.log(time)
+  passes.ca.draw({ uniforms: { tick: tick, u_time: time / 1000, tex: passes.rnd.b, divisions: 1, params: params, }, target: 'self', })
+  passes.ca.draw({ uniforms: { tick: tick, u_time: time / 1000, tex: passes.ca.b, divisions: 2, params: params, }, target: 'self', })
+  passes.ca.draw({ uniforms: { tick: tick, u_time: time / 1000, tex: passes.ca.b, divisions: 3, params: params, }, target: 'self', })
+  passes.ca.draw({ uniforms: { tick: tick, u_time: time / 1000, tex: passes.ca.b, divisions: 4, params: params, }, target: 'self', })
+  passes.ca.draw({ uniforms: { tick: tick, u_time: time / 1000, tex: passes.ca.b, divisions: 5, params: params, }, target: 'self', })
   passes.draw.draw({
     uniforms: {
       tex: passes.ca.b,
       u_time: time / 1000,
       palette: palette.flat(),
       u_resolution: [canvas.width, canvas.height], // window.devicePixelRatio
+      params: params, 
     },
     target: 'screen',
   })
