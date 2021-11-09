@@ -14,8 +14,6 @@ out vec4 o;
 #define FC gl_FragCoord.xy
 #define PI 3.1415926536
 
-#pragma glslify: snoise2D = require(../modules/math/glsl-noise/simplex/2d.glsl)
-#pragma glslify: snoise3D = require(../modules/math/glsl-noise/simplex/3d.glsl)
 
 #define rnd(x) fract(54321.987 * sin(987.12345 * x))
 // #define T(dx,dy) (texture(prevStateCells,fract((FC.xy+vec2(dx,dy))/res)).rgb)
@@ -29,7 +27,7 @@ void main() {
     // float quadId = rnd(length(floor((mod(uv, size) / size * 3. - 1.5) + .5)));
     uv = floor(uv / size) * size + size / 2.;
 
-    #define tx(xx,yy) step(.5 + sin(u_time) * .01, texture(tex, fract(uv + vec2(xx, yy) * size))[i])
+    #define tx(xx,yy) step(.5, texture(tex, fract(uv + vec2(xx, yy) * size))[i])
     vec3 col;
     for(int i = 0; i < 3; i++) {
         float n0 = tx(0,0);
