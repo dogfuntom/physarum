@@ -24,7 +24,7 @@ function Pass({ frag, size = 8, texture }) {
   else
     this.resolution = [size, size]
 
-  console.log(this.resolution)
+  // console.log(this.resolution)
   this.vert = `#version 300 es
   precision mediump float;
   in vec2 position;
@@ -72,11 +72,11 @@ function Pass({ frag, size = 8, texture }) {
 
 
 import palettes from "z-palletes"
-console.log(palettes)
+// console.log(palettes)
 let palette
 let params
 
-let isCanvasSquare = false
+let isCanvasSquare = true
 ////////////////////
 // CUSTOM CODE BELOW
 ////////////////////
@@ -123,7 +123,6 @@ passes = {
 function draw() {
   if(!passes || !passes.draw || !passes.draw.program) return;
   passes.rnd.draw({ uniforms: { tick: tick, u_time: time / 1000, params: params, }, target: 'self', })
-  // console.log(time)
   passes.ca.draw({ uniforms: { tick: tick, u_time: time / 1000, tex: passes.rnd.b, divisions: 1, params: params, }, target: 'self', })
   passes.ca.draw({ uniforms: { tick: tick, u_time: time / 1000, tex: passes.ca.b, divisions: 2, params: params, }, target: 'self', })
   passes.ca.draw({ uniforms: { tick: tick, u_time: time / 1000, tex: passes.ca.b, divisions: 3, params: params, }, target: 'self', })
@@ -136,6 +135,7 @@ function draw() {
       palette: palette.flat(),
       u_resolution: [canvas.width, canvas.height], // window.devicePixelRatio
       params: params, 
+      viewbox: [0, 0, 1, 1],
     },
     target: 'screen',
   })
@@ -212,7 +212,8 @@ function windowResized() {
 
 let blink = () => {
   document.querySelector('canvas').style.opacity = 0
-  setTimeout(() => document.querySelector('canvas').style.opacity = 1, 100)
+  // setTimeout(() => console.log('yo'), 100)
+  setTimeout(() => {document.querySelector('canvas').style.opacity = .999}, 100)
 }
 
 let timer
@@ -262,22 +263,23 @@ function saveImage() {
   let date = new Date()
   for (let i = 0; i < 1; i += step) {
     for (let j = 0; j < 1; j += step) {
-      gl.useProgram(program.program);
-      twgl.setBuffersAndAttributes(gl, program, positionBuffer);
-      twgl.setUniforms(program, {
-        // prevStateCells: shader.attachments[0],
-        tick: tick,
-        palette: palette.flat(),
-        u_time: time / 1000,
-        u_resolution: [gl.canvas.width, gl.canvas.height],
-        u_mouse: mousepos,
-        params: params,
-        viewbox: [i, j, step, step],
-        dartTheme: dartTheme,
-      });
-      twgl.bindFramebufferInfo(gl, null);
-      twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
-
+      passes.rnd.draw({ uniforms: { tick: tick, u_time: time / 1000, params: params, }, target: 'self', })
+      passes.ca.draw({ uniforms: { tick: tick, u_time: time / 1000, tex: passes.rnd.b, divisions: 1, params: params, }, target: 'self', })
+      passes.ca.draw({ uniforms: { tick: tick, u_time: time / 1000, tex: passes.ca.b, divisions: 2, params: params, }, target: 'self', })
+      passes.ca.draw({ uniforms: { tick: tick, u_time: time / 1000, tex: passes.ca.b, divisions: 3, params: params, }, target: 'self', })
+      passes.ca.draw({ uniforms: { tick: tick, u_time: time / 1000, tex: passes.ca.b, divisions: 4, params: params, }, target: 'self', })
+      passes.ca.draw({ uniforms: { tick: tick, u_time: time / 1000, tex: passes.ca.b, divisions: 5, params: params, }, target: 'self', })
+      passes.draw.draw({
+        uniforms: {
+          tex: passes.ca.b,
+          u_time: time / 1000,
+          palette: palette.flat(),
+          u_resolution: [canvas.width, canvas.height], // window.devicePixelRatio
+          params: params,
+          viewbox: [i, j, step, step],
+        },
+        target: 'screen',
+      })
       dynamicContext.drawImage(canvas, i * size, size - (j + step) * size);
     }
   }

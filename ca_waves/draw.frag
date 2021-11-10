@@ -7,9 +7,9 @@ uniform sampler2D backbuffer;
 // uniform float midi[64];
 uniform float u_time;
 uniform vec4 palette[5];
+uniform vec4 viewbox;
 uniform float params[4];
 out vec4 o;
-
 
 #define PI 3.1415
 
@@ -32,12 +32,18 @@ out vec4 o;
 //   return mix(c1, c2, fract(c * 1.999)).rgb;
 // }
 
-#define rnd(d) fract(sin(length(d)*99.))
+// #define rnd(d) fract(sin(length(d)*99.))
+#define rnd(x) fract(54321.987 * sin(987.12345 * x))
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
 
 void main() {
   vec2 uvN = gl_FragCoord.xy / u_resolution;
-  vec2 uv = (gl_FragCoord.xy * 2. - u_resolution) / min(u_resolution.x, u_resolution.y);
+  // vec2 uv = (gl_FragCoord.xy * 2. - u_resolution) / min(u_resolution.x, u_resolution.y);
+
+      // uv = uv * .5 + .5;
+  uvN *= viewbox.zw;
+  uvN += viewbox.xy;
+    // uv = uv * 2. - 1.;
 
   // float sea = texture(prevStateSea, uvN).r;
 
@@ -70,8 +76,19 @@ void main() {
   // // gl_FragColor.rgb = col(c);
 
   vec3 col = texture(tex, uvN).rgb;
-  int id = int(mod(col.r + col.g * 2. + col.b * 4. + floor(100. * params[1]), 5.));
+  // int id = int(mod(col.r + col.g * 2. + col.b * 4. + floor(100. * params[1]), 5.));
 
-  o = palette[id];
+  float id = col.r + col.g * 2. + col.b * 4. + params[0];
+  int i1 = int(rnd(params[1] + id) * 3.);
+  int i2 = (i1 + 1 + int(rnd(params[1] + id + .1) * 1.)) % 3;
+  vec4 c1 = palette[i1];
+  vec4 c2 = palette[i2];
+  int dir = int(rnd(params[3] + id)*2.);
+  float sand = rnd(length(floor((uvN + vec2(0, 9)) * 128.) / 128.) + fract(u_time));
+  o = mix(c1, c2, sin(uvN[dir] * (rnd(params[2] + id) * 10. + 2.) + u_time * 2. * (rnd(params[2]+id) - .5) + sand * .6 * rnd(id + params[1]))*.5+.5);
+  o.a = 1.;
+  o = clamp(o, 0., 1.);
+
+  // o = palette[id];
   o.a = 1.;
 }

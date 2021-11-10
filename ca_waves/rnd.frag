@@ -34,7 +34,7 @@ void main() {
     // o.b = length(uv*.5+vec2(rnd(params[0]+.3),rnd(params[0]+.4))*.8-.4);
 
     vec2 uv = FC.xy / u_resolution;
-    o.r = .5 + .5 * snoise3D(vec3(uv * 2., t * .01));
-    o.g = .5 + .5 * snoise3D(vec3(uv * 2., t * .01 + .1 * params[0]));
-    o.b = .5 + .5 * snoise3D(vec3(uv * 2., t * .01 + .1 * params[1]));
+    o.r = .5 + .5 * snoise3D(vec3((uv + params[0] + 0.) * 1., t * .01));
+    o.g = .5 + .5 * snoise3D(vec3((uv + params[0] + .1 * params[1]) * 1., t * .01));
+    o.b = .5 + .5 * snoise3D(vec3((uv + params[0] + .2 * params[2]) * 1., t * .01));
 }
