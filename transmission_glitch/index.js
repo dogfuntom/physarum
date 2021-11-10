@@ -1,13 +1,7 @@
 'use strict';
 let twgl = require('twgl.js')
 let chroma = require('chroma-js')
-const vShader = `#version 300 es
-  precision mediump float;
-  in vec2 position;
-  void main() {
-    gl_Position = vec4(position, 0.0, 1.0);
-  }`;
-const fShader = require('./shader.frag');
+
 let timePrev = +new Date()
 let time = 0
 
@@ -52,7 +46,7 @@ function Pass({ frag, size = 8, texture }) {
     if (target != 'screen') // self or both
       uniforms.backbuffer = this.backbuffer.attachments[0]
     if (this.texture)
-      uniforms.texture = this.texture
+      uniforms.tex = this.texture
     twgl.setUniforms(this.program, uniforms)
 
     if (target != 'self') { // screen or both
@@ -103,37 +97,31 @@ windowResized()
 
 
 
-
+let img = twgl.createTexture(gl, {
+  src: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARAQMAAAABo9W5AAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAZQTFRFAAAA////pdmf3QAAADBJREFUeJxjYIACHgkGBjYDBgbVIAYG6zwGBtEQBgY+C4gciAbxQeIgeZA6kHooAACUUgRTZfOwlgAAAABJRU5ErkJggg==',
+  crossOrigin: '', // not needed if image on same origin
+}, function (err, tex, img) {
+  // wait for the image to load because we need to know it's size
+  // start();
+});
 
 passes = {
-  rnd: new Pass({
-    frag: require('./rnd.frag'),
-    size: 8,
-  }),
-  ca: new Pass({
-    frag: require('./ca.frag'),
-    size: 128,
-  }),
   draw: new Pass({
     frag: require('./draw.frag'),
     size: 1024,
+    texture: img,
   }),
 }
 
 function draw() {
-  if(!passes || !passes.draw || !passes.draw.program) return;
-  passes.rnd.draw({ uniforms: { tick: tick, }, target: 'self', })
-  passes.ca.draw({ uniforms: { tick: tick, tex: passes.rnd.b, divisions: 1, }, target: 'self', })
-  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 2, }, target: 'self', })
-  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 3, }, target: 'self', })
-  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 4, }, target: 'self', })
-  passes.ca.draw({ uniforms: { tick: tick, tex: passes.ca.b, divisions: 5, }, target: 'self', })
+  console.log(JSON.stringify(passes))
+  if(!passes || !passes.draw || !passes.draw.draw) return;
+
   passes.draw.draw({
     uniforms: {
-      tex: passes.ca.b,
       u_time: time / 1000,
-      palette: palette.flat(),
-      u_resolution: [canvas.width, canvas.height], // window.devicePixelRatio
+      u_tex_res: [17, 17],
+      u_resolution: [canvas.width, canvas.height],
     },
     target: 'screen',
   })
@@ -239,54 +227,54 @@ function keyPressed(key) {
       animate()
     }
   }
-  if (key.code == 'KeyS') {
-    saveImage()
-  }
+  // if (key.code == 'KeyS') {
+  //   saveImage()
+  // }
 }
 
-function saveImage() {
-  let size = 10000
-  let splits = Math.ceil(size / 512)
-  let step = 1 / splits
-  let splitSize = size / splits
-  canvas.width = splitSize
-  canvas.height = splitSize
+// function saveImage() {
+//   let size = 10000
+//   let splits = Math.ceil(size / 512)
+//   let step = 1 / splits
+//   let splitSize = size / splits
+//   canvas.width = splitSize
+//   canvas.height = splitSize
 
-  var dynamicCanvas = document.createElement("canvas");
-  var dynamicContext = dynamicCanvas.getContext("2d")
-  dynamicCanvas.height = size;
-  dynamicCanvas.width = size;
+//   var dynamicCanvas = document.createElement("canvas");
+//   var dynamicContext = dynamicCanvas.getContext("2d")
+//   dynamicCanvas.height = size;
+//   dynamicCanvas.width = size;
 
-  let date = new Date()
-  for (let i = 0; i < 1; i += step) {
-    for (let j = 0; j < 1; j += step) {
-      gl.useProgram(program.program);
-      twgl.setBuffersAndAttributes(gl, program, positionBuffer);
-      twgl.setUniforms(program, {
-        // prevStateCells: shader.attachments[0],
-        tick: tick,
-        palette: palette.flat(),
-        u_time: time / 1000,
-        u_resolution: [gl.canvas.width, gl.canvas.height],
-        u_mouse: mousepos,
-        params: params,
-        viewbox: [i, j, step, step],
-        dartTheme: dartTheme,
-      });
-      twgl.bindFramebufferInfo(gl, null);
-      twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
+//   let date = new Date()
+//   for (let i = 0; i < 1; i += step) {
+//     for (let j = 0; j < 1; j += step) {
+//       gl.useProgram(program.program);
+//       twgl.setBuffersAndAttributes(gl, program, positionBuffer);
+//       twgl.setUniforms(program, {
+//         // prevStateCells: shader.attachments[0],
+//         tick: tick,
+//         palette: palette.flat(),
+//         u_time: time / 1000,
+//         u_resolution: [gl.canvas.width, gl.canvas.height],
+//         u_mouse: mousepos,
+//         params: params,
+//         viewbox: [i, j, step, step],
+//         dartTheme: dartTheme,
+//       });
+//       twgl.bindFramebufferInfo(gl, null);
+//       twgl.drawBufferInfo(gl, positionBuffer, gl.TRIANGLE_FAN);
 
-      dynamicContext.drawImage(canvas, i * size, size - (j + step) * size);
-    }
-  }
+//       dynamicContext.drawImage(canvas, i * size, size - (j + step) * size);
+//     }
+//   }
 
 
-  let link = document.getElementById('link');
-  link.setAttribute('download', `image.png`);
-  link.setAttribute('href', dynamicCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
-  link.click();
+//   let link = document.getElementById('link');
+//   link.setAttribute('download', `image.png`);
+//   link.setAttribute('href', dynamicCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
+//   link.click();
 
-  // resume
-  windowResized()
-  draw()
-}
+//   // resume
+//   windowResized()
+//   draw()
+// }
