@@ -497,7 +497,7 @@ function setup() {
     uniform V gl_z_palette[20];
     uniform sampler2D gl_z_backbuffer;
     uniform float gl_z_tick;
-    uniform float u_res;
+    uniform float gl_z_res;
     
     ivec3 colIds;
     float gl;
@@ -612,7 +612,25 @@ function setup() {
         ${uniforms}
         gl = 0.;
         float d = 0., e = 1e9, ep, j;
-        v uv_ = uv;// + random2f() * 1.5 / u_res;
+
+        float fl = floor(gl_z_tick/2.);
+        float fr = mod(gl_z_tick,2.);
+        vec2 pos = vec2(fr/2.,fl/4.);
+        if(mod(fl, 2.)==0.) pos.x += .25; //https://bit.ly/30g2DXs
+
+        // float gl_z_tick = mod(f,8.);
+        // float fl = floor(gl_z_tick/2.);
+        // float fr = mod(gl_z_tick,2.);
+        // vec2 pos = vec2(fr/2.,fract(fl/2.));
+        // if(floor(fl/2.)==1.) pos += .25;
+
+        // float fl = floor(gl_z_tick/4.);
+        // float fr = mod(gl_z_tick,4.);
+        // vec2 pos = vec2(fr/4.,fl/8.);
+        // if(mod(fl, 2.)==0.) pos.x += 1./8.; // https://bit.ly/3qFnhLs
+
+        v uv_ = uv + pos / gl_z_res; // if tick <= 1
+        // v uv_ = uv + 1./random2f() * 1.5 / u_res;
         V p, ro = V(uv_ * float(${viewBox.scale}) + 
         v(${viewBox.offset.x},
         ${viewBox.offset.y}), -camDist), 
@@ -690,6 +708,7 @@ function setup() {
         if(${features.ColorScheme} == 4)
             o = (V(10. / j));
     
+        // gl_FragColor = vec4(o, 1);
         gl_FragColor = mix(texture2D(gl_z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (gl_z_tick + 1.));
         // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
         // gl_FragColor=vec4(uv_,0,1);
@@ -754,13 +773,14 @@ function draw() {
     s.setUniform('backbuffer', b)
     s.setUniform('tick', u_tick)
     s.setUniform('palette', u_palette)
-    s.setUniform('u_res', size)
+    s.setUniform('res', size)
     console.log('size',size)
     rect(0, 0, width, height)
 
     // preloader.style.width = preloaderSize.width * u_tick / 5e1
 
-    if (++u_tick > 1) {
+    console.log('u_tick', u_tick)
+    if (++u_tick > 8.5) {
         // preloader.remove()
         noLoop()
         // save(`${tokenData.hash}.png`)
@@ -769,8 +789,8 @@ function draw() {
         // gl = b.getContext('webgl')
         // document.querySelector('canvas').getContext('webgl').getExtension('WEBGL_lose_context').loseContext()
         // setTimeout(setup, 500)
+        console.log('time', new Date() - timeStart)
     }
     window.document.title = 50-u_tick > 0 ? floor(50-u_tick) : '👾'
-    console.log('time', new Date() - timeStart)
 }
 /*end render*/
