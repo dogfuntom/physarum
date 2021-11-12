@@ -18,6 +18,7 @@ out vec4 o;
 void main() {
     vec2 uv = FC.xy / u_resolution;
     #define func(n0, n1, n2, n3, n4, i) rnd((n0 + 2.*n1 + 4.*n2 + 8.*n3 + 16.*n3 + 32.*n4)/64. + i + params[0]) 
+    // #define func(n0, n1, n2, n3, n4, n5, n6, n7, n8, i) rnd((n0 + 2.*n1 + 4.*n2 + 8.*n3 + 16.*n3 + 32.*n4+ 32. * 2.*n5 + 32. * 2. * 2.*n6  + 32. * 2. * 2. * 2.*n7   + 32. * 2. * 2. * 2. * 2.*n8)/200. + i + params[0]) 
 
     float size = 1. / pow(2., divisions + 2.);
     uv = floor(uv / size) * size + size / 2.;
@@ -30,11 +31,15 @@ void main() {
         float n2 = tx(1,0);
         float n3 = tx(0,1);
         float n4 = tx(0,-1);
+        // float n5 = tx(-1, -1);
+        // float n6 = tx(1, -1);
+        // float n7 = tx(-1, 1);
+        // float n8 = tx(1, 1);
         vec2 quadrant = floor(mod(uv, vec2(size)) / size * 2.);
         float quadId = quadrant.x + 2. * quadrant.y;
 
         col[i] = step(.5, func(n0, n1, n2, n3, n4, quadId));
-
+        // col[i] = step(.5, func(n0, n1, n2, n3, n4, n5, n6, n7, n8, quadId));
     }
     o.rgb = col;
 }

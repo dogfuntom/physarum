@@ -85,7 +85,7 @@ void main() {
   vec4 c2 = palette[i2];
   int dir = int(rnd(params[3] + id)*2.);
   float sand = rnd(length(floor((uvN + vec2(0, 9)) * 128.) / 128.) + fract(u_time));
-  o = mix(c1, c2, sin(uvN[dir] * (rnd(params[2] + id) * 10. + 2.) + u_time * 2. * (rnd(params[2]+id) - .5) + sand * .6 * rnd(id + params[1]))*.5+.5);
+  o = mix(c1, c2, sin(uvN[dir] * (rnd(params[2] + id) * 2. + 2.) + u_time * 2. * (rnd(params[2]+id) - .5) + sand * .6 * rnd(id + params[1]))*.5+.5);
   o.a = 1.;
   o = clamp(o, 0., 1.);
 
