@@ -50,11 +50,11 @@ try {
       minifyJs(dataArt, minifyOptions).then((c) => {
         let art = c.code
         art += `'tx shvembldr piter'`
-        fs.writeFileSync("dist/art.js", art);
+        fs.writeFileSync("dist_/art.js", art);
       })
 
       let dataFeatures = data.replaceAll(/\/\*begin render\*\/(.|\n)*?\/\*end render\*\//gm, '');
-      fs.writeFileSync("dist/features.js", dataFeatures);
+      fs.writeFileSync("dist_/features.js", dataFeatures);
       //   minifyJs(dataArt, minifyOptions).then((c) => {
       //   let features = c.code
       //   fs.writeFileSync("dist/features.js", features);
