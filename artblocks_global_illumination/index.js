@@ -7,7 +7,7 @@ function calculateFeatures(tokenData) {
 //     tokenData.hash = window.location.hash.slice(1)
 // }
 // arr = arr.slice(0, 10)
-// tokenData.hash = `0x19983dc66d38fbcd2444401326a327a2da8f37687f0e87a829b2c78283831e0b`
+tokenData.hash = `0x19983dc66d38fbcd2444401326a327a2da8f37687f0e87a829b2c78283831e0b`
 
 // console.clear();
 let S, ss, R, t, RL, SH
@@ -743,6 +743,8 @@ function setup() {
 
 
 /*begin render*/
+// FIXME
+let timeStart = +new Date()
 
 function draw() {
     b.clear();
@@ -769,5 +771,6 @@ function draw() {
         // setTimeout(setup, 500)
     }
     window.document.title = 50-u_tick > 0 ? floor(50-u_tick) : '👾'
+    console.log('time', new Date() - timeStart)
 }
 /*end render*/
