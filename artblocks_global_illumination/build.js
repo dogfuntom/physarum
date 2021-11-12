@@ -5,7 +5,8 @@ const { GlslMinify } = require('webpack-glsl-minify/build/minify')
 const minifyOptions = {
   compress: {
     dead_code: true,
-    drop_console: true,
+    // drop_console: true,
+    drop_console: false,
     drop_debugger: true,
     keep_classnames: false,
     keep_fargs: false,

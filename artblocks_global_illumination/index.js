@@ -431,8 +431,10 @@ let findViewBox = () => {
 
 
 /*begin render*/
+// let size = [100, 100]
+let size
 function setup() {
-    let size = min(windowHeight, windowWidth)
+    size = min(windowHeight, windowWidth)
     canvas = createCanvas(size, size, WEBGL)
     b = createGraphics(width, height, WEBGL)
     // tokenData.hash=arr.pop().hash
@@ -495,7 +497,7 @@ function setup() {
     uniform V gl_z_palette[20];
     uniform sampler2D gl_z_backbuffer;
     uniform float gl_z_tick;
-    uniform vec2 u_res;
+    uniform float u_res;
     
     ivec3 colIds;
     float gl;
@@ -610,7 +612,7 @@ function setup() {
         ${uniforms}
         gl = 0.;
         float d = 0., e = 1e9, ep, j;
-        v uv_ = (uv*u_res/min(u_res.x,u_res.y)) + random2f() * 1.5 / u_res;
+        v uv_ = uv;// + random2f() * 1.5 / u_res;
         V p, ro = V(uv_ * float(${viewBox.scale}) + 
         v(${viewBox.offset.x},
         ${viewBox.offset.y}), -camDist), 
@@ -690,7 +692,7 @@ function setup() {
     
         gl_FragColor = mix(texture2D(gl_z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (gl_z_tick + 1.));
         // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
-        // gl_FragColor=vec4(1,0,0,1);
+        // gl_FragColor=vec4(uv_,0,1);
 
     }`/*glsl*/)
 
@@ -751,11 +753,12 @@ function draw() {
     s.setUniform('tick', u_tick)
     s.setUniform('palette', u_palette)
     s.setUniform('u_res', size)
+    console.log('size',size)
     rect(0, 0, width, height)
 
     // preloader.style.width = preloaderSize.width * u_tick / 5e1
 
-    if (++u_tick > 50) {
+    if (++u_tick > 1) {
         // preloader.remove()
         noLoop()
         // save(`${tokenData.hash}.png`)
