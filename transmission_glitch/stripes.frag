@@ -33,7 +33,7 @@ void main (void) {
     uv.y+=floor(u_time/3.) + floor(u_time/5.) + floor(u_time/7.) + .1*sn(vec3(u_time));
     float id = rnd(vec2(floor(uv.y*7.)+floor(uv.y*11.)+floor(uv.y*13.)));
 
-    uv.x += 10.*sin(u_time*id+id*2.*PI); // stripes
+    uv.x += .1*sin(u_time*id+id*2.*PI); // stripes
     uv.x += id * .001 * sin(uv.y * 1000.); // waves
     uv = fract(uv);
 
