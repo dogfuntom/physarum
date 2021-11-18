@@ -474,6 +474,17 @@ function setup() {
     // console.log(uniforms)
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+
     s = createShader(`attribute vec3 aPosition;varying vec2 uv;void main(){uv=(gl_Position=vec4(aPosition,1.)*2.-1.).xy;}`,
     /*glsl*/`precision highp float;
     #define BLOCKS_NUMBER_MAX 60
@@ -493,6 +504,7 @@ function setup() {
     vec3 gl_z_sizes[BLOCKS_NUMBER_MAX];
     vec2 gl_z_roty[BLOCKS_NUMBER_MAX];
     ivec3 gl_z_colors[BLOCKS_NUMBER_MAX];
+    bool mask[BLOCKS_NUMBER_MAX];
     
     uniform V gl_z_palette[20];
     uniform sampler2D gl_z_backbuffer;
@@ -527,20 +539,37 @@ function setup() {
     }
     
     int eye;
+
+    vec2 boxIntersection(vec3 ro, vec3 rd, vec3 rad){
+        vec3 m = 1.0/rd;
+        vec3 n = m*ro;
+        vec3 k = abs(m)*rad;
+        vec3 t1 = -n - k;
+        vec3 t2 = -n + k;
+
+        float tN = max( max( t1.x, t1.y ), t1.z );
+        float tF = min( min( t2.x, t2.y ), t2.z );
+        
+        if( tN>tF || tF<0.0) return vec2(-1.0);
+        
+        return vec2( tN, tF );
+    }
     
     float dist(V p) {
-
         colIds = ivec3(0, 0, -1);
         p.x = abs(p.x);
         float res = p.y + 1.; // floor plane
         for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
+
+            // ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓
+            if(i != 1)break;
+            // if(i >= ${blocks.length})break;
             eye = 0;
-            if(i >= ${blocks.length})
-                break;
             V pb = p;
+            // if(!mask[i]) continue;
             pb -= gl_z_positions[i];
             pb.xz *= rot(gl_z_roty[i].x * PI / 2.);
-    
+
             // box
             float cornerR = .01;
             float gap = .008;
@@ -634,7 +663,30 @@ function setup() {
         V p, ro = V(uv_ * float(${viewBox.scale}) + 
         v(${viewBox.offset.x},
         ${viewBox.offset.y}), -camDist), 
-        rd = V(0, 0, .9 + .1 * rnd(length(uv_))), o;
+        // rd = V(0, 0, .9 + .1 * rnd(length(uv_))), o;
+        rd = V(0, 0, 1), o;
+
+        // ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓
+        float opacity = 0.;
+        for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
+            if(i != 1) break;
+            vec3 size = gl_z_sizes[i] * .5;
+            vec3 ro_ = ro, rd_ = rd;
+            ro_.yz *= -rot(${u_camAngYZ});
+            ro_.xz *= -rot(${u_camAngXZ});
+            rd_.yz *= -rot(${u_camAngYZ});
+            rd_.xz *= -rot(${u_camAngXZ});
+            // ro_+=gl_z_positions[i];
+            // size.xz *= -rot(gl_z_roty[i].x * PI / 2.);
+            float op = step(0.,boxIntersection(ro_, rd_, size.zyx).r);
+            // float op = step(0.,boxIntersection(ro_, rd_, vec3(max(max(size.x,size.y),size.z))).r);
+            opacity = max(op, opacity);
+            mask[i] = bool(op);
+        }
+        // if(opacity==0.)discard;
+
+
+
         bool outline = false;
         for(float i = 0.; i < STEPS; i++) {
             j = i;
@@ -705,8 +757,9 @@ function setup() {
             }
             
         // gazya
-        if(${features.ColorScheme} == 4)
-            o = (V(10. / j));
+        // if(${features.ColorScheme} == 4)
+        o = (V(3. / j));
+        // o = (V(10. / j));
     
         // gl_FragColor = vec4(o, 1);
         gl_FragColor = mix(texture2D(gl_z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (gl_z_tick + 1.));
@@ -717,6 +770,15 @@ function setup() {
 
     /*end render*/
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
