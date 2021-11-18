@@ -562,11 +562,11 @@ function setup() {
         for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
 
             // ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓
-            if(i != 1)break;
+            if(i >= 1)break;
             // if(i >= ${blocks.length})break;
             eye = 0;
             V pb = p;
-            // if(!mask[i]) continue;
+            if(!mask[i]) continue;
             pb -= gl_z_positions[i];
             pb.xz *= rot(gl_z_roty[i].x * PI / 2.);
 
@@ -669,21 +669,21 @@ function setup() {
         // ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓
         float opacity = 0.;
         for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
-            if(i != 1) break;
+            if(i >= 1) break;
             vec3 size = gl_z_sizes[i] * .5;
             vec3 ro_ = ro, rd_ = rd;
             ro_.yz *= -rot(${u_camAngYZ});
             ro_.xz *= -rot(${u_camAngXZ});
             rd_.yz *= -rot(${u_camAngYZ});
             rd_.xz *= -rot(${u_camAngXZ});
-            // ro_+=gl_z_positions[i];
-            // size.xz *= -rot(gl_z_roty[i].x * PI / 2.);
+            ro_+=gl_z_positions[i];
+            size.xz *= -rot(gl_z_roty[i].x * PI / 2.);
             float op = step(0.,boxIntersection(ro_, rd_, size.zyx).r);
             // float op = step(0.,boxIntersection(ro_, rd_, vec3(max(max(size.x,size.y),size.z))).r);
             opacity = max(op, opacity);
             mask[i] = bool(op);
         }
-        // if(opacity==0.)discard;
+        if(opacity==0.)discard;
 
 
 
