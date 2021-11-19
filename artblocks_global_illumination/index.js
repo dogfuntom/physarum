@@ -7,8 +7,8 @@ function calculateFeatures(tokenData) {
 //     tokenData.hash = window.location.hash.slice(1)
 // }
 // arr = arr.slice(0, 10)
-tokenData.hash = `0x19983dc66d38fbcd2444401326a327a2da8f37687f0e87a829b2c78283831e0b`
-
+// tokenData.hash = `0x21968a510e166d7c18423475381fa943f5e868516591254c9f52e35645ddada0`
+console.log(tokenData.hash)
 // console.clear();
 let S, ss, R, t, RL, SH
 // if (window.location.hash) {
@@ -529,7 +529,6 @@ function setup() {
     int eye;
     
     float dist(V p) {
-
         colIds = ivec3(0, 0, -1);
         p.x = abs(p.x);
         float res = p.y + 1.; // floor plane
@@ -546,16 +545,12 @@ function setup() {
             float gap = .008;
             float block;
 
-            if(gl_z_roty[i].y == 0. || gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4. || gl_z_roty[i].y == 5. || gl_z_roty[i].y == 6.) {
-                V s = gl_z_sizes[i] - 2. * (cornerR + gap);
-                block = length(pb - clamp(pb, -(s)/2., (s)/2.)) - cornerR * 1.4;
-            } else if(gl_z_roty[i].y == 1.) { // cyl
-                block = max(length(pb.xz) - .5, abs(pb.y) - .5);
-            } else if(gl_z_roty[i].y == 2.) { // ball
-                block = length(pb) - .52;
-            }
+            // if(gl_z_roty[i].y == 0. || gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4. || gl_z_roty[i].y == 5. || gl_z_roty[i].y == 6.) {
+            V s = gl_z_sizes[i] - 2. * (cornerR + gap);
+            block = length(pb - clamp(pb, -(s)/2., (s)/2.)) - cornerR * 1.4;
+            // }
     
-            if(gl_z_roty[i].y == 5.) {
+            if(gl_z_roty[i].y == 5.) { // arc
                 float cyl = length(pb.zy) - .5;
                 float box = max(abs(pb.z) - .5, abs(pb.y + gl_z_sizes[i].y / 2.) - 1.);
                 float hole = min(cyl, box);
@@ -569,14 +564,17 @@ function setup() {
             }
     
             // studs
-            if(gl_z_roty[i].y != 6.) {
+            if(gl_z_roty[i].y != 6.) { // not pillar
                 V ps = pb;
                 v l = gl_z_sizes[i].xz;
                 ps.xz += (l - 1.) / 2.;
                 ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
                 float h = .24;
-                float stud = (${features.Studs} == 1) ? abs(length(ps.xz) - .28 + .05) - .05 : length(ps.xz) - .28;
-                stud = max(stud, abs(ps.y - gl_z_sizes[i].y / 2. - h / 2.) - h / 2.);
+                ps.y -= gl_z_sizes[i].y / 2.;
+                ps.y -= clamp(ps.y, EPS, h);
+                vec2 po = vec2(length(ps.xz), ps.y);
+                po.x -= clamp(po.x, mix(EPS,.18,${features.Studs}.), .28);
+                float stud = length(po)-EPS;
                 block = min(stud, block);
             }
     
