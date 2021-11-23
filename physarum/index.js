@@ -1,4 +1,7 @@
 'use strict'
+
+console.clear()
+
 let twgl = require('twgl.js')
 const dat = require('dat.gui')
 const canvas = document.getElementById('canvasgl')
@@ -7,6 +10,7 @@ const gl = twgl.getWebGLContext(canvas, {
   depth: false,
   preserveDrawingBuffer: true,
 })
+
 let tick = 10
 let timeStart = new Date() / 1000
 const n = 1000
@@ -16,8 +20,6 @@ const fftResolution = 256
 
 let WebMidi = require('webmidi')
 let midi = Array(64).fill(0)
-
-
 
 
 
@@ -177,18 +179,18 @@ WebMidi.enable(function (err) {
   ]
   input.addListener('controlchange', "all",
     function (e) {
-      console.log("Received 'controlchange' message.", e);
+      // console.log("Received 'controlchange' message.", e);
       let [code, id, value] = Array.from(e.data);
       value = value / 127
-      console.log(code, id, value);
+      // console.log(code, id, value);
       if (code == 176) {
         // midi[id] = value, console.log(midi)
         let name = names[id]
-        console.log(name)
+        // console.log(name)
     
         // if this control has its peer in gui, we set min-max values form there
         let guiControllersFiltered = gui.__controllers.filter(c => c.property == name)
-        console.log('osc giu', guiControllersFiltered)
+        // console.log('osc giu', guiControllersFiltered)
         if (guiControllersFiltered.length > 0) {
           value *= guiControllersFiltered[0].__max - guiControllersFiltered[0].__min
           value += guiControllersFiltered[0].__min
