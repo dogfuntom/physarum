@@ -816,12 +816,14 @@ function calculateFeatures(tokenData) {
 
     let tPrev = +new Date();
     let state = "adapt";
+    let delayPrev, delay = 0
     
     function draw() {
       if (state == "adapt") {
         // adapt
         let t = +new Date();
-        let delay = t - tPrev;
+        let delayPrev = delay;
+        delay = t - tPrev;
         tPrev = t;
     
         // adapt
@@ -830,7 +832,7 @@ function calculateFeatures(tokenData) {
     
         console.log('renderSize',renderSize, 'size',size, 'delay', delay)
         // adapt
-        if (renderSize >= size || delay > maxDelay && u_tick > adaptFrames) {
+        if (renderSize >= size || u_tick > adaptFrames && delay + delayPrev > maxDelay * 2 ) {
           state = "render";
           u_tick = 0;
           renderSize /= 2;

@@ -37,7 +37,7 @@
     // new
     let renderSize;
     let splits;
-    let maxDelay = 20;
+    let maxDelay = 40;
     let adaptFrames = 4;
     let size;
         
@@ -533,12 +533,14 @@ float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){retur
 
     let tPrev = +new Date();
     let state = "adapt";
+    let delayPrev, delay = 0
     
     function draw() {
       if (state == "adapt") {
         // adapt
         let t = +new Date();
-        let delay = t - tPrev;
+        let delayPrev = delay;
+        delay = t - tPrev;
         tPrev = t;
     
         // adapt
@@ -547,7 +549,7 @@ float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){retur
     
         console.log('renderSize',renderSize, 'size',size, 'delay', delay)
         // adapt
-        if (renderSize >= size || delay > maxDelay && u_tick > adaptFrames) {
+        if (renderSize >= size || u_tick > adaptFrames && delay + delayPrev > maxDelay * 2 ) {
           state = "render";
           u_tick = 0;
           renderSize /= 2;
