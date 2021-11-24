@@ -37,9 +37,9 @@
     // new
     let renderSize;
     let splits;
-    let maxDelay = 40;
+    let maxDelay = 100;
     let adaptFrames = 4;
-    let size;
+    let size, gSize;
         
 
     
@@ -425,7 +425,8 @@
     function setup() {
         size = min(windowHeight, windowWidth)
         createCanvas(size, size)
-        b = createGraphics(size, size, WEBGL)
+        gSize = min(size, 1024)
+        b = createGraphics(gSize, gSize, WEBGL)
         // b.noStroke();
         b.fill(0);
       
@@ -477,9 +478,9 @@
 float F(float G){return fract(54321.987*sin(987.12345*mod(G,12.34567)));}mat2 H(float I){return mat2(cos(I),-sin(I),sin(I),cos(I));}
 #define J 4e2
 #define K .001
-float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){return(I+O+L(I-O))*.5;}vec3 positions[A];vec3 sizes[A];vec2 roty[A];ivec3 colors[A];uniform D palette[20];uniform sampler2D backbuffer;uniform float tick;uniform float res;uniform vec4 vb;uniform float k;ivec3 P;float Q;float R=1e2;float S(D M,D T,float U){M.y-=clamp(M.y,-T.x,T.x);float V=length(M.xz)-T.z;V-=clamp(V,-T.y,T.y);float S=length(E(V,M.y))-U;return S;}E W(){vec2 X=(gl_FragCoord.xy*2.-res)/res;vec2 Y=vec2(F(length(X)-tick),F(length(X)-tick-.1));float Z=.5;E I;I.x=.5*pow(abs(2.*((Y.x<0.5)?Y.x:1.-Y.x)),Z);I.y=.5*pow(abs(2.*((Y.y<0.5)?Y.y:1.-Y.y)),Z);Y.x=(Y.x<0.5)?I.x:1.-I.x;Y.y=(Y.y<0.5)?I.y:1.-I.y;return Y*2.-1.;}int a;float b(D M){P=ivec3(0,0,-1);M.x=abs(M.x);float c=M.y+1.;for(int d=0;d<A;d++){a=0;if(d>=${blocks.length})break;D e=M;e-=positions[d];e.xz*=H(roty[d].x*B/2.);float U=.01;float f=.008;float g;D T=sizes[d]-2.*(U+f);g=length(e-clamp(e,-(T)/2.,(T)/2.))-U*1.4;if(roty[d].y==5.){float S=length(e.zy)-.5;float h=max(abs(e.z)-.5,abs(e.y+sizes[d].y/2.)-1.);float i=min(S,h);g=max(g,-i);}if(roty[d].y==6.){float j=length(e.zx)-.15;float k=S(e+D(0,sizes[d].y-.5,0)/2.,D(.2,.25,.2),U);g=max(g,min(j,k));}if(roty[d].y!=6.){D l=e;E m=sizes[d].xz;l.xz+=(m-1.)/2.;l.xz=l.xz-clamp(floor(l.xz+.5),E(0.),m-1.);float n=.24;l.y-=sizes[d].y/2.;l.y-=clamp(l.y,K,n);vec2 o=vec2(length(l.xz),l.y);o.x-=clamp(o.x,mix(K,.18,${features.Studs}.),.28);float p=length(o)-K;g=min(p,g);}if(e.z<0.15&&(roty[d].y==3.||roty[d].y==4.)){g=N(g,(-e.z*.8-(roty[d].y==3.?-1.:1.)*e.y-.5)/1.4142);}if(roty[d].y==7.){float q=S(e,D(.2,.25,.2),U);g=q;if(q<K){a=1;}}if(g<c){c=g;P=colors[d];}if(c<K)break;}return c;}D r(D M){E s=E(.01,0.);return normalize(D(b(M+s.xyy)-b(M-s.xyy),b(M+s.yxy)-b(M-s.yxy),b(M+s.yyx)-b(M-s.yyx)));}void main(){vec2 X=(gl_FragCoord.xy*2.-res)/res;${uniforms}Q=0.;float t=0.,s=1e9,u,v;float w=floor(tick/2.);float x=mod(tick,2.);vec2 y=vec2(x/2.,w/4.);if(mod(w,2.)==0.)y.x+=.25;E z=X;z/=k;z=z*.5+.5;z*=vb.zw;z+=vb.xy;z=z*2.-1.;z=z+y/res;D M,AA=D(z*float(${viewBox.scale})+E(${viewBox.offset.x},${viewBox.offset.y}),-R),AB=D(0,0,.9+.1*F(length(z))),AC;bool AD=false;for(float d=0.;d<J;d++){v=d;M=t*AB+AA;M.z-=R;M.yz*=H(${u_camAngYZ});M.xz*=H(${u_camAngXZ});t+=s=b(M);if(u<s&&s<.01){AD=true;break;}u=s;if(s<K||s>R*2.)break;}if(!AD){D AE,AF;for(int v=0;v<20;v++){if(P[0]==v)AE=palette[v];if(P[1]==v)AF=palette[v];}D AG=AE;if(P.z==1)if(sin(M.y*B*3.)>0.)AG=AF;if(P.z==2)if(sin((M.x+fract(positions[0].x-sizes[0].x/2.))*B*2.*1.5)>0.)AG=AF;if(${features.ColorScheme}==3)AG=sin(length(M)/max(float(${gs}),float(${features.Height}))*6.28*2.-D(0,B*2./3.,B*4./3.))*.5+.5;if(a==1){AG=D(0);D AH=M+fract(${gs}./2.);AH=fract(AH)-.5;AG+=step(.3,length(AH.xz));AG+=step(-.1,-length(AH.xz+.1));}if(P.z==-1){AC=palette[0];if(length(AC)>.4)AC*=smoothstep(5.,0.,length(z+E(${features.BackgroundLight},-1)));if(${features.ColorScheme}==3)AC=D(.2);if(sin(length(pow(abs(z),E(${features.BackgroundType})))*32.)>0.)AC*=.95;}else{AC=(min(1.5,14./v)*.2+.8)*(dot(r(M),normalize(D(0,1,1)))*.2+.8)*AG;AC+=pow(abs(dot(r(M),normalize(D(0.,3.,1.)))),40.);}}if(${features.ColorScheme}==4)AC=(D(10./v));gl_FragColor=vec4(AC,1);}`)
+float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){return(I+O+L(I-O))*.5;}vec3 positions[A];vec3 sizes[A];vec2 roty[A];ivec3 colors[A];uniform D palette[20];uniform sampler2D backbuffer;uniform float tick;uniform float res;uniform vec4 vb;uniform float k;ivec3 P;float Q;float R=1e2;float S(D M,D T,float U){M.y-=clamp(M.y,-T.x,T.x);float V=length(M.xz)-T.z;V-=clamp(V,-T.y,T.y);float S=length(E(V,M.y))-U;return S;}E W(){vec2 X=(gl_FragCoord.xy*2.-res)/res;vec2 Y=vec2(F(length(X)-tick),F(length(X)-tick-.1));float Z=.5;E I;I.x=.5*pow(abs(2.*((Y.x<0.5)?Y.x:1.-Y.x)),Z);I.y=.5*pow(abs(2.*((Y.y<0.5)?Y.y:1.-Y.y)),Z);Y.x=(Y.x<0.5)?I.x:1.-I.x;Y.y=(Y.y<0.5)?I.y:1.-I.y;return Y*2.-1.;}int a;float b(D M){P=ivec3(0,0,-1);M.x=abs(M.x);float c=M.y+1.;for(int d=0;d<A;d++){a=0;if(d>=${blocks.length})break;D e=M;e-=positions[d];e.xz*=H(roty[d].x*B/2.);float U=.01;float f=.008;float g;D T=sizes[d]-2.*(U+f);g=length(e-clamp(e,-(T)/2.,(T)/2.))-U*1.4;if(roty[d].y==5.){float S=length(e.zy)-.5;float h=max(abs(e.z)-.5,abs(e.y+sizes[d].y/2.)-1.);float i=min(S,h);g=max(g,-i);}if(roty[d].y==6.){float j=length(e.zx)-.15;float k=S(e+D(0,sizes[d].y-.5,0)/2.,D(.2,.25,.2),U);g=max(g,min(j,k));}if(roty[d].y!=6.){D l=e;E m=sizes[d].xz;l.xz+=(m-1.)/2.;l.xz=l.xz-clamp(floor(l.xz+.5),E(0.),m-1.);float n=.24;l.y-=sizes[d].y/2.;l.y-=clamp(l.y,K,n);vec2 o=vec2(length(l.xz),l.y);o.x-=clamp(o.x,mix(K,.18,${features.Studs}.),.28);float p=length(o)-K;g=min(p,g);}if(e.z<0.15&&(roty[d].y==3.||roty[d].y==4.)){g=N(g,(-e.z*.8-(roty[d].y==3.?-1.:1.)*e.y-.5)/1.4142);}if(roty[d].y==7.){float q=S(e,D(.2,.25,.2),U);g=q;if(q<K){a=1;}}if(g<c){c=g;P=colors[d];}if(c<K)break;}return c;}D r(D M){E s=E(.01,0.);return normalize(D(b(M+s.xyy)-b(M-s.xyy),b(M+s.yxy)-b(M-s.yxy),b(M+s.yyx)-b(M-s.yyx)));}void main(){gl_FragColor*=0.;${uniforms}for(float t=0.;t<8.;t++){Q=0.;float u=0.,s=1e9,v,w;float x=floor(t/2.);float y=mod(t,2.);vec2 z=vec2(y/2.,x/4.);if(mod(x,2.)==0.)z.x+=.25;vec2 X=(gl_FragCoord.xy*2.-res+z)/res;X/=k;X=X*.5+.5;X*=vb.zw;X+=vb.xy;X=X*2.-1.;D M,AA=D(X*float(${viewBox.scale})+E(${viewBox.offset.x},${viewBox.offset.y}),-R),AB=D(0,0,.9+.1*F(length(X))),AC;bool AD=false;for(float d=0.;d<J;d++){w=d;M=u*AB+AA;M.z-=R;M.yz*=H(${u_camAngYZ});M.xz*=H(${u_camAngXZ});u+=s=b(M);if(v<s&&s<.01){AD=true;break;}v=s;if(s<K||s>R*2.)break;}if(!AD){D AE,AF;for(int w=0;w<20;w++){if(P[0]==w)AE=palette[w];if(P[1]==w)AF=palette[w];}D AG=AE;if(P.z==1)if(sin(M.y*B*3.)>0.)AG=AF;if(P.z==2)if(sin((M.x+fract(positions[0].x-sizes[0].x/2.))*B*2.*1.5)>0.)AG=AF;if(${features.ColorScheme}==3)AG=sin(length(M)/max(float(${gs}),float(${features.Height}))*6.28*2.-D(0,B*2./3.,B*4./3.))*.5+.5;if(a==1){AG=D(0);D AH=M+fract(${gs}./2.);AH=fract(AH)-.5;AG+=step(.3,length(AH.xz));AG+=step(-.1,-length(AH.xz+.1));}if(P.z==-1){AC=palette[0];if(length(AC)>.4)AC*=smoothstep(5.,0.,length(X+E(${features.BackgroundLight},-1)));if(${features.ColorScheme}==3)AC=D(.2);if(sin(length(pow(abs(X),E(${features.BackgroundType})))*32.)>0.)AC*=.95;}else{AC=(min(1.5,14./w)*.2+.8)*(dot(r(M),normalize(D(0,1,1)))*.2+.8)*AG;AC+=pow(abs(dot(r(M),normalize(D(0.,3.,1.)))),40.);}}if(${features.ColorScheme}==4)AC=(D(10./w));gl_FragColor+=vec4(AC,1)/8.;}}`)
         b.shader(s);
-        s.setUniform('res', size * 2)
+        s.setUniform('res', gSize * 2)
         s.setUniform('palette', u_palette)
         // s.setUniform("size", size * 2);
 
@@ -547,9 +548,8 @@ float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){retur
         renderSize = 8 * pow(2, floor(u_tick / adaptFrames));
         console.log('renderSize',renderSize)
     
-        console.log('renderSize',renderSize, 'size',size, 'delay', delay)
         // adapt
-        if (renderSize >= size || u_tick > adaptFrames && delay + delayPrev > maxDelay * 2 ) {
+        if (renderSize > gSize || u_tick > adaptFrames && delay + delayPrev > maxDelay * 2 ) {
           state = "render";
           u_tick = 0;
           renderSize /= 2;
@@ -558,24 +558,25 @@ float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){retur
     
         // adapt
         s.setUniform("vb", [0, 0, 1, 1]);
-        s.setUniform("k", (renderSize / size) * 0.5);
-        console.log((renderSize / size) * 0.5)
-        let qs = renderSize / size / 2;
+        s.setUniform("k", (renderSize / gSize) * 0.5);
+        console.log((renderSize / gSize) * 0.5)
+        let qs = renderSize / gSize / 2;
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
     
-        image(
-          b,
-          0,
-          0,
-          size,
-          size,
-          size / 2 - renderSize / 4,
-          size / 2 - renderSize / 4,
-          renderSize / 2,
-          renderSize / 2
-        );
+        // image(
+        //   b,
+        //   0,
+        //   0,
+        //   size,
+        //   size,
+        //   gSize / 2 - renderSize / 4,
+        //   gSize / 2 - renderSize / 4,
+        //   renderSize / 2,
+        //   renderSize / 2
+        // );
       } else {
         splits = size / renderSize;
+        // splits = ceil(size / renderSize);
         let i = (u_tick % ceil(splits)) / splits;
         let j = floor(u_tick / ceil(splits)) / splits;
         if (j >= 1) {
@@ -583,22 +584,32 @@ float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){retur
           return;
         }
         let tileSize = 1 / splits;
+        console.log('tileSize', tileSize, 'splits', splits)
         let viewbox = [i, j, tileSize, tileSize];
         s.setUniform("vb", viewbox);
         s.setUniform("k", tileSize);
-        let qs = tileSize * 1.1;
+        let qs = tileSize * 1.01;
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
+        // b.background('red')
         image(
           b,
           size * i,
           size * (1 - j - tileSize),
           size * tileSize,
           size * tileSize,
-          size / 2 - (size * tileSize) / 2,
-          size / 2 - (size * tileSize) / 2,
-          size * tileSize,
-          size * tileSize
+          gSize / 2 - (gSize * tileSize) / 2,
+          gSize / 2 - (gSize * tileSize) / 2,
+          gSize * tileSize,
+          gSize * tileSize
         );
+        console.log(          size * i,
+            size * (1 - j - tileSize),
+            size * tileSize,
+            size * tileSize,
+            size / 2 - (size * tileSize) / 2,
+            size / 2 - (size * tileSize) / 2,
+            size * tileSize,
+            size * tileSize)
       }
       u_tick++;
     //   if(u_tick > 13)noLoop()
