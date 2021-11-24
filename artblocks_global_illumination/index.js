@@ -828,8 +828,9 @@ function calculateFeatures(tokenData) {
         renderSize = 8 * pow(2, floor(u_tick / adaptFrames));
         console.log('renderSize',renderSize)
     
+        console.log('renderSize',renderSize, 'size',size, 'delay', delay)
         // adapt
-        if (delay > maxDelay && u_tick > adaptFrames) {
+        if (renderSize >= size || delay > maxDelay && u_tick > adaptFrames) {
           state = "render";
           u_tick = 0;
           renderSize /= 2;
@@ -854,7 +855,6 @@ function calculateFeatures(tokenData) {
           renderSize / 2,
           renderSize / 2
         );
-        // if(u_tick > 20)noLoop()
       } else {
         splits = size / renderSize;
         let i = (u_tick % ceil(splits)) / splits;
