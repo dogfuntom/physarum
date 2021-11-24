@@ -1,188 +1,3 @@
-// Тааак, теперь суперплан.
-// Так, тут болезненный мерж
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-
-// // fork of https://editor.p5js.org/illus0r/sketches/LxT6WBnxC
-// let s;
-// let g;
-// let tick = 0;
-// let size;
-// let S = 20; // splits
-// let maxDelay = 20;
-// let adaptFrames = 4
-// let ws;
-
-// let tries = {};
-// function preload() {
-//   s = loadShader("s.vert", "s.frag");
-// }
-// function setup() {
-//   frameRate(100);
-//   ws = min(windowWidth, windowHeight);
-//   // финальная картинка будет ws*pixelDensity
-
-//   let canvas = createCanvas(ws, ws);
-//   size = 8;
-
-//   canvas.style("width", "100%");
-//   canvas.style("height", "100%");
-//   canvas.style("image-rendering", "crisp-edges");
-//   // let ctx = document.querySelector('canvas').getContext("2d")
-//   // ctx.webkitImageSmoothingEnabled=false
-//   // canvas.style('image-rendering', 'crisp-edges')
-
-//   g = createGraphics(ws, ws, WEBGL);
-//   g.noStroke();
-//   g.fill(0);
-//   // g.background("red");
-//   // g.circle(0, 0, size/2);
-//   s = g.createShader(
-//     `precision highp float;
-// attribute vec3 aPosition;
-// void main() { gl_Position = vec4(aPosition,1.0);}`,
-//     `#define rnd(x) fract(54321.987 * sin(987.12345 * x))
-// precision highp float;
-// uniform sampler2D g;
-// uniform float t;
-// uniform float tick;
-// uniform float size;
-// uniform float k;
-// uniform vec4 viewbox;
-// void main() {
-//    vec2 uv = (gl_FragCoord.xy*2.-size)/size;
-//     uv /= k;
-
-//     uv = uv * .5 + .5;
-//     uv *= viewbox.zw;
-//     uv += viewbox.xy;
-//     uv = uv * 2. - 1.;
-  
-//   for(int i=0; i<10000; i++){
-//      vec2 d;
-//      d.x = rnd(length(gl_FragCoord.xy/size+float(i)/1000.+vec2(1,0)));
-//      d.y = rnd(length(gl_FragCoord.xy/size+float(i)/1000.+vec2(1,0))+.1);
-//      d = d * 2. - 1.;
-//      d*=1./size;
-//     // gl_FragColor.rgb+=vec3(cos(1./(length(uv+d)/8.)*6.28)*.5+.5);
-//     gl_FragColor += length(fract((uv+d)/dot((uv+d),(uv+d))));
-//   }
-// gl_FragColor /= 10000.;
-//    gl_FragColor.rg=uv;
-//    // gl_FragColor.b=1.;
-//    gl_FragColor.a=1.;
-//    // gl_FragColor = vec4(1,1,0,1);
-// }`
-//   );
-//   g.shader(s);
-// }
-
-// let tPrev = +new Date();
-// let delays = [...Array(20)].fill(maxDelay * 0.8);
-
-// let state = "adapt";
-
-// function draw() {
-//   if (state == "adapt" || state == "render") {
-//     // if (false) {
-//     if (state == "adapt") {
-//       let delayAvg = delays.reduce((a, b) => a + b) / delays.length;
-
-//       let t = +new Date();
-//       let delay = t - tPrev;
-//       delays.shift();
-//       delays.push(delay);
-//       tPrev = t;
-
-//       if (tries[size]) tries[size].push(delay);
-//       else tries[size] = [delay];
-//       size = 8 * pow(2, floor((frameCount - 1) / adaptFrames));
-
-//       console.log(tries);
-//       if (delay > maxDelay && frameCount > adaptFrames) {
-//         state = "render";
-//         size /= 2;
-//         // size /= 2;
-//         console.log("size is", size);
-//         for (k in tries) {
-//           console.log(
-//             k,
-//             tries[k].reduce((s, t) => max(s, t), 0)
-//           );
-//         }
-//         // background('red');
-//         return;
-//       }
-
-//       s.setUniform("viewbox", [0, 0, 1, 1]);
-//       s.setUniform("size", ws * 2);
-//       s.setUniform("k", (size / ws) * 0.5);
-//       s.setUniform("t", millis() / 1000);
-//       g.quad(
-//         -size / ws / 2,
-//         -size / ws / 2,
-//         size / ws / 2,
-//         -size / ws / 2,
-//         size / ws / 2,
-//         size / ws / 2,
-//         -size / ws / 2,
-//         size / ws / 2
-//       );
-
-//       translate(width / 2, height / 2);
-//       scale((ws / size) * 2);
-//       translate(-width / 2, -height / 2);
-//       image(g, 0, 0, width, height);
-//       // noLoop()
-//     } else {
-//       S = (ws / size);
-//       let i = (tick % ceil(S)) / S; // S is number of horiz steps
-//       let j = floor(tick / ceil(S)) / S;
-//       if (j>=1) {noLoop(); return;}
-//       console.log("S", S);
-//       let K = 1/S;
-//       let viewbox = [i, j, 1. / S, 1 / S];
-//       s.setUniform("viewbox", viewbox);
-//       s.setUniform("size", ws * 2);
-//       s.setUniform("tick", tick);
-//       s.setUniform("k", K);
-//       s.setUniform("t", millis() / 1000);
-//       let kk = 1.1
-//       g.quad(-K*kk, -K*kk, K*kk, -K*kk, K*kk, K*kk, -K*kk, K*kk);
-//       image(g, width*i, width*(1-j-1/S), width*1 / S, width*1 / S,
-//            g.width/2-g.width*K/2, g.width/2-g.width*K/2, g.width*K, g.width*K );
-
-//       tick++;
-//     }
-//   }
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*begin features*/
 function calculateFeatures(tokenData) {
     /*end features*/
@@ -226,6 +41,14 @@ function calculateFeatures(tokenData) {
     let palette
     let u_tick
     let viewBox
+    // new
+    let renderSize;
+    let splits;
+    let maxDelay = 20;
+    let adaptFrames = 4;
+    let size;
+        
+
     
     let init = () => {
         // console.log(tokenData.hash)
@@ -617,11 +440,13 @@ function calculateFeatures(tokenData) {
     
     /*begin render*/
     // let size = [100, 100]
-    let size
     function setup() {
         size = min(windowHeight, windowWidth)
-        canvas = createCanvas(size, size, WEBGL)
-        b = createGraphics(width, height, WEBGL)
+        createCanvas(size, size)
+        b = createGraphics(size, size, WEBGL)
+        // b.noStroke();
+        b.fill(0);
+      
         // tokenData.hash=arr.pop().hash
         // Below part needs changing if hash changes
         // pixelDensity(1)
@@ -659,7 +484,8 @@ function calculateFeatures(tokenData) {
         // console.log(uniforms)
     
     
-        s = createShader(`attribute vec3 aPosition;varying vec2 uv;void main(){uv=(gl_Position=vec4(aPosition,1.)*2.-1.).xy;}`,
+        // s = b.createShader(`attribute vec3 aPosition;varying vec2 uv;void main(){uv=(gl_Position=vec4(aPosition,1.)*2.-1.).xy;}`,
+        s = b.createShader(`precision highp float;attribute vec3 aPosition;void main() { gl_Position = vec4(aPosition,1.0);}`,
         /*glsl*/`precision highp float;
         #define BLOCKS_NUMBER_MAX 60
         #define PI 3.1415
@@ -673,7 +499,7 @@ function calculateFeatures(tokenData) {
         float sabs(float p) {return sqrt(abs(p)*abs(p)+5e-5);}
         float smax(float a, float b) {return (a+b+sabs(a-b))*.5;}
         
-        varying vec2 uv;
+        
         vec3 gl_z_positions[BLOCKS_NUMBER_MAX];
         vec3 gl_z_sizes[BLOCKS_NUMBER_MAX];
         vec2 gl_z_roty[BLOCKS_NUMBER_MAX];
@@ -683,6 +509,10 @@ function calculateFeatures(tokenData) {
         uniform sampler2D gl_z_backbuffer;
         uniform float gl_z_tick;
         uniform float gl_z_res;
+        uniform vec4 gl_z_vb;
+        uniform float gl_z_k;
+
+        // varying vec2 uv;
         
         ivec3 colIds;
         float gl;
@@ -700,7 +530,9 @@ function calculateFeatures(tokenData) {
             return cyl;
         }
         
+        // FIXME get rid of it
         v random2f() {
+            vec2 uv = (gl_FragCoord.xy*2.-gl_z_res)/gl_z_res;
             vec2 rn = vec2(rnd(length(uv) - gl_z_tick), rnd(length(uv) - gl_z_tick - .1));
             float k = .5;
             v a;
@@ -792,7 +624,8 @@ function calculateFeatures(tokenData) {
         }
         
         void main() {
-            ${uniforms}
+            vec2 uv = (gl_FragCoord.xy*2.-gl_z_res)/gl_z_res;
+        ${uniforms}
             gl = 0.;
             float d = 0., e = 1e9, ep, j;
     
@@ -811,8 +644,18 @@ function calculateFeatures(tokenData) {
             // float fr = mod(gl_z_tick,4.);
             // vec2 pos = vec2(fr/4.,fl/8.);
             // if(mod(fl, 2.)==0.) pos.x += 1./8.; // https://bit.ly/3qFnhLs
+
+
     
-            v uv_ = uv + pos / gl_z_res; // if tick <= 1
+            v uv_ = uv;
+
+            uv_ /= gl_z_k;
+            uv_ = uv_ * .5 + .5;
+            uv_ *= gl_z_vb.zw;
+            uv_ += gl_z_vb.xy;
+            uv_ = uv_ * 2. - 1.;
+
+            uv_ = uv_ + pos / gl_z_res; // if tick <= 1
             // v uv_ = uv + 1./random2f() * 1.5 / u_res;
             V p, ro = V(uv_ * float(${viewBox.scale}) + 
             v(${viewBox.offset.x},
@@ -891,13 +734,19 @@ function calculateFeatures(tokenData) {
             if(${features.ColorScheme} == 4)
                 o = (V(10. / j));
         
-            // gl_FragColor = vec4(o, 1);
-            gl_FragColor = mix(texture2D(gl_z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (gl_z_tick + 1.));
             // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
             // gl_FragColor=vec4(uv_,0,1);
+            // gl_FragColor = vec4(o, 1);
+            // gl_FragColor = mix(texture2D(gl_z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (gl_z_tick + 1.));
+            gl_FragColor = vec4(o, 1);
+            // gl_FragColor = vec4(1,0,1,1);
     
         }`/*glsl*/)
-    
+        b.shader(s);
+        s.setUniform('res', size * 2)
+        s.setUniform('palette', u_palette)
+        // s.setUniform("size", size * 2);
+
         /*end render*/
     
     
@@ -947,34 +796,94 @@ function calculateFeatures(tokenData) {
     /*begin render*/
     // FIXME
     let timeStart = +new Date()
+
+
+    // function draw() {
+    //     console.log('u_tick', u_tick)
+    //     if (++u_tick > 8.5) {
+    //         // preloader.remove()
+    //         noLoop()
+    //         // save(`${tokenData.hash}.png`)
+    //         // let gl = canvas.getContext('webgl')
+    //         // gl.getExtension('WEBGL_lose_context').loseContext()
+    //         // gl = b.getContext('webgl')
+    //         // document.querySelector('canvas').getContext('webgl').getExtension('WEBGL_lose_context').loseContext()
+    //         // setTimeout(setup, 500)
+    //         console.log('time', new Date() - timeStart)
+    //     }
+    //     window.document.title = 50-u_tick > 0 ? floor(50-u_tick) : '👾'
+    // }
+
+    let tPrev = +new Date();
+    let state = "adapt";
     
     function draw() {
-        b.clear();
-        b.image(canvas, width * -0.5, height * -0.5, width, height);
-        clear();
-        shader(s);
-        s.setUniform('backbuffer', b)
-        s.setUniform('tick', u_tick)
-        s.setUniform('palette', u_palette)
-        s.setUniform('res', size)
-        console.log('size',size)
-        rect(0, 0, width, height)
+      if (state == "adapt") {
+        // adapt
+        let t = +new Date();
+        let delay = t - tPrev;
+        tPrev = t;
     
-        // preloader.style.width = preloaderSize.width * u_tick / 5e1
+        // adapt
+        renderSize = 8 * pow(2, floor(u_tick / adaptFrames));
+        console.log('renderSize',renderSize)
     
-        console.log('u_tick', u_tick)
-        if (++u_tick > 8.5) {
-            // preloader.remove()
-            noLoop()
-            // save(`${tokenData.hash}.png`)
-            // let gl = canvas.getContext('webgl')
-            // gl.getExtension('WEBGL_lose_context').loseContext()
-            // gl = b.getContext('webgl')
-            // document.querySelector('canvas').getContext('webgl').getExtension('WEBGL_lose_context').loseContext()
-            // setTimeout(setup, 500)
-            console.log('time', new Date() - timeStart)
+        // adapt
+        if (delay > maxDelay && u_tick > adaptFrames) {
+          state = "render";
+          u_tick = 0;
+          renderSize /= 2;
+          return;
         }
-        window.document.title = 50-u_tick > 0 ? floor(50-u_tick) : '👾'
-    }
-    /*end render*/
     
+        // adapt
+        s.setUniform("vb", [0, 0, 1, 1]);
+        s.setUniform("k", (renderSize / size) * 0.5);
+        console.log((renderSize / size) * 0.5)
+        let qs = renderSize / size / 2;
+        b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
+    
+        image(
+          b,
+          0,
+          0,
+          size,
+          size,
+          size / 2 - renderSize / 4,
+          size / 2 - renderSize / 4,
+          renderSize / 2,
+          renderSize / 2
+        );
+        // if(u_tick > 20)noLoop()
+      } else {
+        splits = size / renderSize;
+        let i = (u_tick % ceil(splits)) / splits;
+        let j = floor(u_tick / ceil(splits)) / splits;
+        if (j >= 1) {
+          noLoop();
+          return;
+        }
+        let tileSize = 1 / splits;
+        let viewbox = [i, j, tileSize, tileSize];
+        s.setUniform("vb", viewbox);
+        s.setUniform("k", tileSize);
+        let qs = tileSize * 1.1;
+        b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
+        image(
+          b,
+          size * i,
+          size * (1 - j - tileSize),
+          size * tileSize,
+          size * tileSize,
+          size / 2 - (size * tileSize) / 2,
+          size / 2 - (size * tileSize) / 2,
+          size * tileSize,
+          size * tileSize
+        );
+      }
+      u_tick++;
+    //   if(u_tick > 13)noLoop()
+    }
+    
+    
+    /*end render*/

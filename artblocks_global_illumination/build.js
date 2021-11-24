@@ -20,7 +20,7 @@ const minifyOptions = {
   mangle: {
     eval: true,
     properties: {
-      reserved: ['image', 'setUniform']
+      reserved: ['image', 'setUniform', 'shader']
       // regex: /^(size|span)$/,
     },
     keep_classnames: false,
@@ -50,7 +50,7 @@ try {
       minifyJs(dataArt, minifyOptions).then((c) => {
         let art = c.code
         art += `'tx shvembldr piter'`
-        fs.writeFileSync("dist_/art.js", art);
+        fs.writeFileSync("dist_/art.js", dataArt);
       })
 
       let dataFeatures = data.replaceAll(/\/\*begin render\*\/(.|\n)*?\/\*end render\*\//gm, '');
