@@ -44,7 +44,7 @@ function calculateFeatures(tokenData) {
     // new
     let renderSize;
     let splits;
-    let maxDelay = 80;
+    let maxDelay = 40;
     let adaptFrames = 4;
     let size, gSize;
         
@@ -531,19 +531,6 @@ function calculateFeatures(tokenData) {
             return cyl;
         }
         
-        // FIXME get rid of it
-        v random2f() {
-            vec2 uv = (gl_FragCoord.xy*2.-gl_z_res)/gl_z_res;
-            vec2 rn = vec2(rnd(length(uv) - gl_z_tick), rnd(length(uv) - gl_z_tick - .1));
-            float k = .5;
-            v a;
-            a.x = .5 * pow(abs(2.0 * ((rn.x < 0.5) ? rn.x : 1.0 - rn.x)), k);
-            a.y = .5 * pow(abs(2.0 * ((rn.y < 0.5) ? rn.y : 1.0 - rn.y)), k);
-            rn.x = (rn.x < 0.5) ? a.x : 1.0 - a.x;
-            rn.y = (rn.y < 0.5) ? a.y : 1.0 - a.y;
-            return rn * 2. - 1.;
-        }
-        
         int eye;
         
         float dist(V p) {
@@ -629,9 +616,8 @@ function calculateFeatures(tokenData) {
             ${uniforms}
             for(float A = 0.; A < 8.; A++){
                 gl = 0.;
-            float d = 0., e = 1e9, ep, j;
+                float d = 0., e = 1e9, ep, j;
 
-    
                 float fl = floor(A/2.);
                 float fr = mod(A,2.);
                 vec2 pos = vec2(fr/2.,fl/4.);
@@ -659,92 +645,92 @@ function calculateFeatures(tokenData) {
                 uv += gl_z_vb.xy;
                 uv = uv * 2. - 1.;
 
-                V p, ro = V(uv * float(${viewBox.scale}) + 
-                v(${viewBox.offset.x},
-                ${viewBox.offset.y}), -camDist), 
-                rd = V(0, 0, .9 + .1 * rnd(length(uv))), o;
-                bool outline = false;
-                for(float i = 0.; i < STEPS; i++) {
-                    j = i;
-                    p = d * rd + ro;
-                    p.z -= camDist;
-                    p.yz *= rot(${u_camAngYZ});
-                    p.xz *= rot(${u_camAngXZ});
-                    d += e = dist(p);
-                    if(ep < e && e < .01) {
-                        // gl_FragColor = vec4(0);
-                        outline = true;
-                        break;
-                    }
-                    ep = e;
-                    if(e < EPS || e > camDist*2.)
-                        break;
-                }
-                if(!outline) {
-                    V col1, col2;
-                    for(int j = 0; j < 20; j++) {
-                        if(colIds[0] == j)
-                            col1 = gl_z_palette[j];
-                        if(colIds[1] == j)
-                            col2 = gl_z_palette[j];
-                    }
+                gl_FragColor.rgb += (sin(vec3(3,4,5)*log(length(uv))+vec3(0,1,2)/3.) * .5 + .5) / 8.;
+                gl_FragColor.a = 1.;
+
+            //     V p, ro = V(uv * float(${viewBox.scale}) + 
+            //     v(${viewBox.offset.x},
+            //     ${viewBox.offset.y}), -camDist), 
+            //     rd = V(0, 0, .9 + .1 * rnd(length(uv))), o;
+            //     bool outline = false;
+            //     for(float i = 0.; i < STEPS; i++) {
+            //         j = i;
+            //         p = d * rd + ro;
+            //         p.z -= camDist;
+            //         p.yz *= rot(${u_camAngYZ});
+            //         p.xz *= rot(${u_camAngXZ});
+            //         d += e = dist(p);
+            //         if(ep < e && e < .01) {
+            //             // gl_FragColor = vec4(0);
+            //             outline = true;
+            //             break;
+            //         }
+            //         ep = e;
+            //         if(e < EPS || e > camDist*2.)
+            //             break;
+            //     }
+            //     if(!outline) {
+            //         V col1, col2;
+            //         for(int j = 0; j < 20; j++) {
+            //             if(colIds[0] == j)
+            //                 col1 = gl_z_palette[j];
+            //             if(colIds[1] == j)
+            //                 col2 = gl_z_palette[j];
+            //         }
             
-                    V col = col1;
+            //         V col = col1;
             
-                    // Texturing
-                    //
-                    // layers
-                    if(colIds.z == 1)
-                        if(sin(p.y * PI * 3.) > 0.)
-                            col = col2;
-                            if(colIds.z == 2)
-                            if(sin((p.x + fract(gl_z_positions[0].x - gl_z_sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
-                            col = col2;
+            //         // Texturing
+            //         //
+            //         // layers
+            //         if(colIds.z == 1)
+            //             if(sin(p.y * PI * 3.) > 0.)
+            //                 col = col2;
+            //                 if(colIds.z == 2)
+            //                 if(sin((p.x + fract(gl_z_positions[0].x - gl_z_sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
+            //                 col = col2;
                             
-                            // pride
-                            if(${features.ColorScheme} == 3)
-                            col = sin(length(p) / max(float(${gs}), float(${features.Height})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
-                            // p*=.3;
-                            // col = sin(8.*dot(sin(p), cos(p.zxy))  - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+            //                 // pride
+            //                 if(${features.ColorScheme} == 3)
+            //                 col = sin(length(p) / max(float(${gs}), float(${features.Height})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+            //                 // p*=.3;
+            //                 // col = sin(8.*dot(sin(p), cos(p.zxy))  - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
                             
-                            if(eye == 1) {
-                                col = V(0);
-                                V pe = p + fract(${gs}. / 2.);
-                                pe = fract(pe) - .5;
-                                col += step(.3, length(pe.xz));
-                                col += step(-.1, -length(pe.xz + .1));
-                            }
+            //                 if(eye == 1) {
+            //                     col = V(0);
+            //                     V pe = p + fract(${gs}. / 2.);
+            //                     pe = fract(pe) - .5;
+            //                     col += step(.3, length(pe.xz));
+            //                     col += step(-.1, -length(pe.xz + .1));
+            //                 }
                             
-                        if(colIds.z == -1) {
-                            o = gl_z_palette[0];
-                            if(length(o) > .4)
-                            o *= smoothstep(5., 0., length(uv + v(${features.BackgroundLight}, -1)));
-                            if(${features.ColorScheme} == 3)
-                            o = V(.2);
-                            if(sin(length(pow(abs(uv), v(${features.BackgroundType}))) * 32.) > 0.)
-                            o *= .95;
-                        } else {
-                            // shading
-                            o = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(V(0, 1, 1))) * .2 + .8) * col;
-                            // glare
-                            o += pow(abs(dot(norm(p), normalize(V(0., 3., 1.)))), 40.);
-                            // o.r = 1.;
-                        }
-                    }
+            //             if(colIds.z == -1) {
+            //                 o = gl_z_palette[0];
+            //                 if(length(o) > .4)
+            //                 o *= smoothstep(5., 0., length(uv + v(${features.BackgroundLight}, -1)));
+            //                 if(${features.ColorScheme} == 3)
+            //                 o = V(.2);
+            //                 if(sin(length(pow(abs(uv), v(${features.BackgroundType}))) * 32.) > 0.)
+            //                 o *= .95;
+            //             } else {
+            //                 // shading
+            //                 o = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(V(0, 1, 1))) * .2 + .8) * col;
+            //                 // glare
+            //                 o += pow(abs(dot(norm(p), normalize(V(0., 3., 1.)))), 40.);
+            //                 // o.r = 1.;
+            //             }
+            //         }
                     
-                // gazya
-                if(${features.ColorScheme} == 4)
-                    o = (V(10. / j));
+            //     // gazya
+            //     if(${features.ColorScheme} == 4)
+            //         o = (V(10. / j));
             
-                // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
-                // gl_FragColor=vec4(uv,0,1);
-                // gl_FragColor = vec4(o, 1);
-                // gl_FragColor = mix(texture2D(gl_z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (gl_z_tick + 1.));
-                gl_FragColor += vec4(o, 1) / 8.;
+            //     // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
+            //     // gl_FragColor=vec4(uv,0,1);
+            //     // gl_FragColor = vec4(o, 1);
+            //     // gl_FragColor = mix(texture2D(gl_z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (gl_z_tick + 1.));
+            //     gl_FragColor += vec4(o, 1) / 8.;
             }
-            // gl_FragColor = vec4(o, 1);
-            // gl_FragColor = vec4(1,0,1,1);
-    
         }`/*glsl*/)
         b.shader(s);
         s.setUniform('res', gSize * 2)
