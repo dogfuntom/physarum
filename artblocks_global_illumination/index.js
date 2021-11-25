@@ -44,7 +44,7 @@ function calculateFeatures(tokenData) {
     // new
     let renderSize;
     let splits;
-    let maxDelay = 40;
+    let maxDelay = 80;
     let adaptFrames = 4;
     let size, gSize;
         
@@ -645,91 +645,91 @@ function calculateFeatures(tokenData) {
                 uv += gl_z_vb.xy;
                 uv = uv * 2. - 1.;
 
-                gl_FragColor.rgb += (sin(vec3(3,4,5)*log(length(uv))+vec3(0,1,2)/3.) * .5 + .5) / 8.;
-                gl_FragColor.a = 1.;
+                // gl_FragColor.rgb += (sin(vec3(3,4,5)*log(length(uv))+vec3(0,1,2)/3.) * .5 + .5) / 8.;
+                // gl_FragColor.a = 1.;
 
-            //     V p, ro = V(uv * float(${viewBox.scale}) + 
-            //     v(${viewBox.offset.x},
-            //     ${viewBox.offset.y}), -camDist), 
-            //     rd = V(0, 0, .9 + .1 * rnd(length(uv))), o;
-            //     bool outline = false;
-            //     for(float i = 0.; i < STEPS; i++) {
-            //         j = i;
-            //         p = d * rd + ro;
-            //         p.z -= camDist;
-            //         p.yz *= rot(${u_camAngYZ});
-            //         p.xz *= rot(${u_camAngXZ});
-            //         d += e = dist(p);
-            //         if(ep < e && e < .01) {
-            //             // gl_FragColor = vec4(0);
-            //             outline = true;
-            //             break;
-            //         }
-            //         ep = e;
-            //         if(e < EPS || e > camDist*2.)
-            //             break;
-            //     }
-            //     if(!outline) {
-            //         V col1, col2;
-            //         for(int j = 0; j < 20; j++) {
-            //             if(colIds[0] == j)
-            //                 col1 = gl_z_palette[j];
-            //             if(colIds[1] == j)
-            //                 col2 = gl_z_palette[j];
-            //         }
+                V p, ro = V(uv * float(${viewBox.scale}) + 
+                v(${viewBox.offset.x},
+                ${viewBox.offset.y}), -camDist), 
+                rd = V(0, 0, .9 + .1 * rnd(length(uv))), o;
+                bool outline = false;
+                for(float i = 0.; i < STEPS; i++) {
+                    j = i;
+                    p = d * rd + ro;
+                    p.z -= camDist;
+                    p.yz *= rot(${u_camAngYZ});
+                    p.xz *= rot(${u_camAngXZ});
+                    d += e = dist(p);
+                    if(ep < e && e < .01) {
+                        // gl_FragColor = vec4(0);
+                        outline = true;
+                        break;
+                    }
+                    ep = e;
+                    if(e < EPS || e > camDist*2.)
+                        break;
+                }
+                if(!outline) {
+                    V col1, col2;
+                    for(int j = 0; j < 20; j++) {
+                        if(colIds[0] == j)
+                            col1 = gl_z_palette[j];
+                        if(colIds[1] == j)
+                            col2 = gl_z_palette[j];
+                    }
             
-            //         V col = col1;
+                    V col = col1;
             
-            //         // Texturing
-            //         //
-            //         // layers
-            //         if(colIds.z == 1)
-            //             if(sin(p.y * PI * 3.) > 0.)
-            //                 col = col2;
-            //                 if(colIds.z == 2)
-            //                 if(sin((p.x + fract(gl_z_positions[0].x - gl_z_sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
-            //                 col = col2;
+                    // Texturing
+                    //
+                    // layers
+                    if(colIds.z == 1)
+                        if(sin(p.y * PI * 3.) > 0.)
+                            col = col2;
+                            if(colIds.z == 2)
+                            if(sin((p.x + fract(gl_z_positions[0].x - gl_z_sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
+                            col = col2;
                             
-            //                 // pride
-            //                 if(${features.ColorScheme} == 3)
-            //                 col = sin(length(p) / max(float(${gs}), float(${features.Height})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
-            //                 // p*=.3;
-            //                 // col = sin(8.*dot(sin(p), cos(p.zxy))  - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+                            // pride
+                            if(${features.ColorScheme} == 3)
+                            col = sin(length(p) / max(float(${gs}), float(${features.Height})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+                            // p*=.3;
+                            // col = sin(8.*dot(sin(p), cos(p.zxy))  - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
                             
-            //                 if(eye == 1) {
-            //                     col = V(0);
-            //                     V pe = p + fract(${gs}. / 2.);
-            //                     pe = fract(pe) - .5;
-            //                     col += step(.3, length(pe.xz));
-            //                     col += step(-.1, -length(pe.xz + .1));
-            //                 }
+                            if(eye == 1) {
+                                col = V(0);
+                                V pe = p + fract(${gs}. / 2.);
+                                pe = fract(pe) - .5;
+                                col += step(.3, length(pe.xz));
+                                col += step(-.1, -length(pe.xz + .1));
+                            }
                             
-            //             if(colIds.z == -1) {
-            //                 o = gl_z_palette[0];
-            //                 if(length(o) > .4)
-            //                 o *= smoothstep(5., 0., length(uv + v(${features.BackgroundLight}, -1)));
-            //                 if(${features.ColorScheme} == 3)
-            //                 o = V(.2);
-            //                 if(sin(length(pow(abs(uv), v(${features.BackgroundType}))) * 32.) > 0.)
-            //                 o *= .95;
-            //             } else {
-            //                 // shading
-            //                 o = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(V(0, 1, 1))) * .2 + .8) * col;
-            //                 // glare
-            //                 o += pow(abs(dot(norm(p), normalize(V(0., 3., 1.)))), 40.);
-            //                 // o.r = 1.;
-            //             }
-            //         }
+                        if(colIds.z == -1) {
+                            o = gl_z_palette[0];
+                            if(length(o) > .4)
+                            o *= smoothstep(5., 0., length(uv + v(${features.BackgroundLight}, -1)));
+                            if(${features.ColorScheme} == 3)
+                            o = V(.2);
+                            if(sin(length(pow(abs(uv), v(${features.BackgroundType}))) * 32.) > 0.)
+                            o *= .95;
+                        } else {
+                            // shading
+                            o = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(V(0, 1, 1))) * .2 + .8) * col;
+                            // glare
+                            o += pow(abs(dot(norm(p), normalize(V(0., 3., 1.)))), 40.);
+                            // o.r = 1.;
+                        }
+                    }
                     
-            //     // gazya
-            //     if(${features.ColorScheme} == 4)
-            //         o = (V(10. / j));
+                // gazya
+                if(${features.ColorScheme} == 4)
+                    o = (V(10. / j));
             
-            //     // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
-            //     // gl_FragColor=vec4(uv,0,1);
-            //     // gl_FragColor = vec4(o, 1);
-            //     // gl_FragColor = mix(texture2D(gl_z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (gl_z_tick + 1.));
-            //     gl_FragColor += vec4(o, 1) / 8.;
+                // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
+                // gl_FragColor=vec4(uv,0,1);
+                // gl_FragColor = vec4(o, 1);
+                // gl_FragColor = mix(texture2D(gl_z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (gl_z_tick + 1.));
+                gl_FragColor += vec4(o, 1) / 8.;
             }
         }`/*glsl*/)
         b.shader(s);
@@ -818,7 +818,7 @@ function calculateFeatures(tokenData) {
     
         // adapt
         renderSize = 8 * pow(2, floor(u_tick / adaptFrames));
-        console.log('renderSize',renderSize)
+        // console.log('renderSize',renderSize)
     
         // adapt
         if (renderSize > gSize || u_tick > adaptFrames && delay + delayPrev > maxDelay * 2 ) {
@@ -831,21 +831,21 @@ function calculateFeatures(tokenData) {
         // adapt
         s.setUniform("vb", [0, 0, 1, 1]);
         s.setUniform("k", (renderSize / gSize) * 0.5);
-        console.log((renderSize / gSize) * 0.5)
+        // console.log((renderSize / gSize) * 0.5)
         let qs = renderSize / gSize / 2;
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
     
-        // image(
-        //   b,
-        //   0,
-        //   0,
-        //   size,
-        //   size,
-        //   gSize / 2 - renderSize / 4,
-        //   gSize / 2 - renderSize / 4,
-        //   renderSize / 2,
-        //   renderSize / 2
-        // );
+        image(
+          b,
+          0,
+          0,
+          size,
+          size,
+          gSize / 2 - renderSize / 4,
+          gSize / 2 - renderSize / 4,
+          renderSize / 2,
+          renderSize / 2
+        );
       } else {
         splits = size / renderSize;
         // splits = ceil(size / renderSize);
@@ -858,6 +858,7 @@ function calculateFeatures(tokenData) {
         let tileSize = 1 / splits;
         console.log('tileSize', tileSize, 'splits', splits)
         let viewbox = [i, j, tileSize, tileSize];
+        console.log('viewbox', viewbox)
         s.setUniform("vb", viewbox);
         s.setUniform("k", tileSize);
         let qs = tileSize * 1.01;
@@ -874,14 +875,20 @@ function calculateFeatures(tokenData) {
           gSize * tileSize,
           gSize * tileSize
         );
-        console.log(          size * i,
+        console.log(          
+            'target region',
+            size * i,
             size * (1 - j - tileSize),
             size * tileSize,
-            size * tileSize,
-            size / 2 - (size * tileSize) / 2,
-            size / 2 - (size * tileSize) / 2,
-            size * tileSize,
-            size * tileSize)
+            size * tileSize
+        )
+        console.log(          
+            'source region',
+            gSize / 2 - (gSize * tileSize) / 2,
+            gSize / 2 - (gSize * tileSize) / 2,
+            gSize * tileSize,
+            gSize * tileSize
+        )         
       }
       u_tick++;
     //   if(u_tick > 13)noLoop()
