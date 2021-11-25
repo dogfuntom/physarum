@@ -7,7 +7,7 @@ function calculateFeatures(tokenData) {
     //     tokenData.hash = window.location.hash.slice(1)
     // }
     // arr = arr.slice(0, 10)
-    // tokenData.hash = `0x21968a510e166d7c18423475381fa943f5e868516591254c9f52e35645ddada0`
+    tokenData.hash = `0x5448e7f563c7a1405bec2e245b63c3ac3a1a6cd57242a3efc0bc54bf0941db5a`
     console.log(tokenData.hash)
     // console.clear();
     let S, ss, R, t, RL, SH
