@@ -440,12 +440,24 @@ function calculateFeatures(tokenData) {
     
     /*begin render*/
     // let size = [100, 100]
+
+    let density
     function setup() {
+        density = displayDensity()
+        console.log('density', density)
+        console.log('windowHeight', windowHeight)
+        console.log('windowWidth', windowWidth)
+        console.log(density)
+        density = 1
+        pixelDensity(density)
+
         size = min(windowHeight, windowWidth)
-        createCanvas(size, size)
+        let canvas = createCanvas(size, size)
+        canvas.style("image-rendering", "pixelated");
         gSize = min(size, 1024)
         b = createGraphics(gSize, gSize, WEBGL)
-        // b.noStroke();
+        console.log('size', size)
+        console.log('gSize', gSize)
         b.fill(0);
       
         // tokenData.hash=arr.pop().hash
@@ -470,8 +482,8 @@ function calculateFeatures(tokenData) {
         u_colors = blocks.map(b => [b.color, b.color2, b.texture]).flat()
     
     
-        console.log(blocks.map(b=>b.type))
-        console.log(blocks.filter(b=>b.type==7))
+        // console.log(blocks.map(b=>b.type))
+        // console.log(blocks.filter(b=>b.type==7))
     
         let uniforms = ``
         uniforms += blocks.map((b, i) =>
@@ -614,7 +626,7 @@ function calculateFeatures(tokenData) {
         void main() {
             gl_FragColor *= 0.;
             ${uniforms}
-            for(float A = 0.; A < 8.; A++){
+            for(float A = 0.; A < 1.; A++){
                 gl = 0.;
                 float d = 0., e = 1e9, ep, j;
 
@@ -636,9 +648,8 @@ function calculateFeatures(tokenData) {
                 // vec2 pos = vec2(fr/4.,fl/8.);
                 // if(mod(fl, 2.)==0.) pos.x += 1./8.; // https://bit.ly/3qFnhLs
 
-
-        
                 vec2 uv = (gl_FragCoord.xy*2.-gl_z_res + pos)/gl_z_res;
+                // uv -= 1.;
                 uv /= gl_z_k;
                 uv = uv * .5 + .5;
                 uv *= gl_z_vb.zw;
@@ -729,11 +740,11 @@ function calculateFeatures(tokenData) {
                 // gl_FragColor=vec4(uv,0,1);
                 // gl_FragColor = vec4(o, 1);
                 // gl_FragColor = mix(texture2D(gl_z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (gl_z_tick + 1.));
-                gl_FragColor += vec4(o, 1) / 8.;
+                gl_FragColor += vec4(o, 1) / 1.;
             }
         }`/*glsl*/)
         b.shader(s);
-        s.setUniform('res', gSize * 2)
+        s.setUniform('res', gSize)
         s.setUniform('palette', u_palette)
         // s.setUniform("size", size * 2);
 
@@ -808,7 +819,15 @@ function calculateFeatures(tokenData) {
     let state = "adapt";
     let delayPrev, delay = 0
     
+
+
+
+
+
     function draw() {
+        // size — width and height of canvas
+        // renderSize — running window
+        // gSize — size of a texture
       if (state == "adapt") {
         // adapt
         let t = +new Date();
@@ -817,35 +836,41 @@ function calculateFeatures(tokenData) {
         tPrev = t;
     
         // adapt
-        renderSize = 8 * pow(2, floor(u_tick / adaptFrames));
-        // console.log('renderSize',renderSize)
+        renderSize = 2 * pow(2, floor(u_tick / adaptFrames));
+        console.log('renderSize',renderSize,'size',size)
     
         // adapt
         if (renderSize > gSize || u_tick > adaptFrames && delay + delayPrev > maxDelay * 2 ) {
           state = "render";
           u_tick = 0;
           renderSize /= 2;
+            //   noLoop()
+            // background('red')
           return;
         }
     
         // adapt
         s.setUniform("vb", [0, 0, 1, 1]);
-        s.setUniform("k", (renderSize / gSize) * 0.5);
+        // s.setUniform("k", 1);
+        // s.setUniform("k", density * .5);
+        s.setUniform("k", (renderSize / gSize) * density);
         // console.log((renderSize / gSize) * 0.5)
-        let qs = renderSize / gSize / 2;
+        let qs = renderSize / gSize;
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
-    
+
+        pixelDensity(renderSize / gSize * density)
         image(
           b,
           0,
           0,
           size,
           size,
-          gSize / 2 - renderSize / 4,
-          gSize / 2 - renderSize / 4,
-          renderSize / 2,
-          renderSize / 2
+          gSize / 2 - renderSize / 2,
+          gSize / 2 - renderSize / 2,
+          renderSize,
+          renderSize
         );
+        // noLoop()
       } else {
         splits = size / renderSize;
         // splits = ceil(size / renderSize);
@@ -860,7 +885,7 @@ function calculateFeatures(tokenData) {
         let viewbox = [i, j, tileSize, tileSize];
         console.log('viewbox', viewbox)
         s.setUniform("vb", viewbox);
-        s.setUniform("k", tileSize);
+        s.setUniform("k", tileSize * density);
         let qs = tileSize * 1.01;
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
         // b.background('red')
