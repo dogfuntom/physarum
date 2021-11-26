@@ -470,9 +470,6 @@ function calculateFeatures(tokenData) {
     
         init()
     
-        /*begin render*/
-        background(palette[0])
-        /*end render*/
     
         placeBlocks()
     
@@ -628,7 +625,7 @@ function calculateFeatures(tokenData) {
         void main() {
             gl_FragColor *= 0.;
             ${uniforms}
-            for(float A = 0.; A < 1.; A++){
+            for(float A = 0.; A < 8.; A++){
                 gl = 0.;
                 float d = 0., e = 1e9, ep, j;
 
@@ -658,6 +655,7 @@ function calculateFeatures(tokenData) {
                 // return;
 
                 vec2 uv = (gl_FragCoord.xy * 2. - gl_z_res)/gl_z_res_render;//(gl_FragCoord.xy*2.-gl_z_res + pos)/gl_z_res;
+                uv += pos / gl_z_res;
                 // uv /= gl_z_res/gl_z_res_render;
                 // uv /= gl_z_k;
                 // uv -= 1.;
@@ -751,12 +749,13 @@ function calculateFeatures(tokenData) {
                 // gl_FragColor=vec4(uv,0,1);
                 // gl_FragColor = vec4(o, 1);
                 // gl_FragColor = mix(texture2D(gl_z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (gl_z_tick + 1.));
-                gl_FragColor += vec4(o, 1) / 1.;
+                gl_FragColor += vec4(o, 1) / 8.;
             }
         }`/*glsl*/)
         b.shader(s);
         s.setUniform('palette', u_palette)
         // s.setUniform("size", size * 2);
+        b.background(palette[0])
 
         /*end render*/
     
@@ -847,7 +846,7 @@ function calculateFeatures(tokenData) {
         tPrev = t;
     
         // adapt
-        renderSize = 2 * pow(2, floor(u_tick / adaptFrames));
+        renderSize = 64 * pow(2, floor(u_tick / adaptFrames));
     
         // adapt
         if (renderSize > gSize || u_tick > adaptFrames && delay + delayPrev > maxDelay * 2 ) {
@@ -855,7 +854,7 @@ function calculateFeatures(tokenData) {
           u_tick = 0;
           renderSize /= 2;
           console.log('renderSize',renderSize,'size',size)
-        // noLoop()
+            // noLoop()
             // background('red')
           return;
         }
@@ -869,23 +868,23 @@ function calculateFeatures(tokenData) {
         let qs = renderSize / gSize;
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
 
-        // pixelDensity(renderSize / gSize * density)
-        image(
-          b,
-          0,
-          0,
-          size,
-          size,
-          gSize / 2 - renderSize / 2,
-          gSize / 2 - renderSize / 2,
-          renderSize,
-          renderSize
-        );
+        // pixelDensity(renderSize / gSize * density * 2)
+        // image(
+        //   b,
+        //   0,
+        //   0,
+        //   size,
+        //   size,
+        //   gSize / 2 - renderSize / 2,
+        //   gSize / 2 - renderSize / 2,
+        //   renderSize,
+        //   renderSize
+        // );
         // noLoop()
       } else {
         // frameRate(1)
         // pixelDensity(density)
-        splits = 2//size / renderSize;
+        splits = size / renderSize;
         // splits = ceil(size / renderSize);
         let i = (u_tick % ceil(splits)) / splits;
         let j = floor(u_tick / ceil(splits)) / splits;

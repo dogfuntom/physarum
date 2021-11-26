@@ -424,7 +424,6 @@ function calculateFeatures(tokenData) {
     
         init()
     
-        
     
         placeBlocks()
     
