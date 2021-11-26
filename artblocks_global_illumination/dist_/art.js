@@ -587,17 +587,17 @@ float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){retur
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
 
         // pixelDensity(renderSize / gSize * density * 2)
-        // image(
-        //   b,
-        //   0,
-        //   0,
-        //   size,
-        //   size,
-        //   gSize / 2 - renderSize / 2,
-        //   gSize / 2 - renderSize / 2,
-        //   renderSize,
-        //   renderSize
-        // );
+        image(
+          b,
+          0,
+          0,
+          size,
+          size,
+          gSize / 2 - renderSize / 2,
+          gSize / 2 - renderSize / 2,
+          renderSize,
+          renderSize
+        );
         // noLoop()
       } else {
         // frameRate(1)
@@ -613,18 +613,16 @@ float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){retur
         let tileSize = 1 / splits;
         console.log('')
         console.log('tileSize', tileSize, 'splits', splits)
+        console.log('b.width', b.width)
         let viewbox = [i, j, tileSize, tileSize];
         console.log('viewbox', viewbox)
         s.setUniform("vb", viewbox);
         // s.setUniform("k", tileSize * density);
         s.setUniform('res', gSize)
         s.setUniform('res_render', gSize * tileSize)
-        // 691 → .68
-        // 566 → .55
-        // 399 → .78
-        let qs = tileSize * 1.01;
+        // b.save(`${u_tick}.png`)
+        let qs = renderSize/gSize * 1.01;
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
-        // b.background('red')
         image(
           b,
           size * i,
