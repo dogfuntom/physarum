@@ -448,8 +448,8 @@ function calculateFeatures(tokenData) {
         console.log('windowHeight', windowHeight)
         console.log('windowWidth', windowWidth)
         console.log(density)
-        density = 1
-        pixelDensity(density)
+        // density = 1
+        // pixelDensity(density)
 
         size = min(windowHeight, windowWidth)
         let canvas = createCanvas(size, size)
@@ -845,7 +845,7 @@ function calculateFeatures(tokenData) {
           u_tick = 0;
           renderSize /= 2;
             //   noLoop()
-            // background('red')
+            background('red')
           return;
         }
     
@@ -872,6 +872,7 @@ function calculateFeatures(tokenData) {
         );
         // noLoop()
       } else {
+        // pixelDensity(density)
         splits = size / renderSize;
         // splits = ceil(size / renderSize);
         let i = (u_tick % ceil(splits)) / splits;

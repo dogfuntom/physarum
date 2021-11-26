@@ -430,8 +430,8 @@
         console.log('windowHeight', windowHeight)
         console.log('windowWidth', windowWidth)
         console.log(density)
-        density = 1
-        pixelDensity(density)
+        // density = 1
+        // pixelDensity(density)
 
         size = min(windowHeight, windowWidth)
         let canvas = createCanvas(size, size)
@@ -574,7 +574,7 @@ float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){retur
           u_tick = 0;
           renderSize /= 2;
             //   noLoop()
-            // background('red')
+            background('red')
           return;
         }
     
@@ -601,6 +601,7 @@ float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){retur
         );
         // noLoop()
       } else {
+        // pixelDensity(density)
         splits = size / renderSize;
         // splits = ceil(size / renderSize);
         let i = (u_tick % ceil(splits)) / splits;
