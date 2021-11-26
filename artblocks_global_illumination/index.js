@@ -448,8 +448,8 @@ function calculateFeatures(tokenData) {
         console.log('windowHeight', windowHeight)
         console.log('windowWidth', windowWidth)
         console.log(density)
-        // density = 1
-        // pixelDensity(density)
+        density = 1
+        pixelDensity(density)
 
         size = min(windowHeight, windowWidth)
         let canvas = createCanvas(size, size)
@@ -649,14 +649,15 @@ function calculateFeatures(tokenData) {
                 // if(mod(fl, 2.)==0.) pos.x += 1./8.; // https://bit.ly/3qFnhLs
 
                 vec2 uv = (gl_FragCoord.xy*2.-gl_z_res + pos)/gl_z_res;
+                // uv /= gl_z_k;
                 // uv -= 1.;
-                uv /= gl_z_k;
                 uv = uv * .5 + .5;
+                uv /= 2.;
                 uv *= gl_z_vb.zw;
                 uv += gl_z_vb.xy;
                 uv = uv * 2. - 1.;
 
-                // gl_FragColor.rgb += (sin(vec3(3,4,5)*log(length(uv))+vec3(0,1,2)/3.) * .5 + .5) / 8.;
+                // gl_FragColor.rgb += (sin(vec3(3,4,5)*log(length(uv))+vec3(0,1,2)/3.) * .5 + .5);
                 // gl_FragColor.a = 1.;
 
                 V p, ro = V(uv * float(${viewBox.scale}) + 
@@ -744,7 +745,6 @@ function calculateFeatures(tokenData) {
             }
         }`/*glsl*/)
         b.shader(s);
-        s.setUniform('res', gSize)
         s.setUniform('palette', u_palette)
         // s.setUniform("size", size * 2);
 
@@ -836,7 +836,7 @@ function calculateFeatures(tokenData) {
         tPrev = t;
     
         // adapt
-        renderSize = 2 * pow(2, floor(u_tick / adaptFrames));
+        renderSize = size;//2 * pow(2, floor(u_tick / adaptFrames));
         console.log('renderSize',renderSize,'size',size)
     
         // adapt
@@ -844,21 +844,19 @@ function calculateFeatures(tokenData) {
           state = "render";
           u_tick = 0;
           renderSize /= 2;
-            //   noLoop()
-            background('red')
+            // noLoop()
+            // background('red')
           return;
         }
     
         // adapt
         s.setUniform("vb", [0, 0, 1, 1]);
-        // s.setUniform("k", 1);
-        // s.setUniform("k", density * .5);
         s.setUniform("k", (renderSize / gSize) * density);
-        // console.log((renderSize / gSize) * 0.5)
+        s.setUniform('res', renderSize)
         let qs = renderSize / gSize;
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
 
-        pixelDensity(renderSize / gSize * density)
+        // pixelDensity(renderSize / gSize * density)
         image(
           b,
           0,
@@ -887,6 +885,7 @@ function calculateFeatures(tokenData) {
         console.log('viewbox', viewbox)
         s.setUniform("vb", viewbox);
         s.setUniform("k", tileSize * density);
+        s.setUniform('res', gSize)
         let qs = tileSize * 1.01;
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
         // b.background('red')
