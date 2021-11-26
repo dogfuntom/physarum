@@ -444,8 +444,8 @@ function calculateFeatures(tokenData) {
     let density
     function setup() {
         density = displayDensity()
-        density = 1
-        pixelDensity(density)
+        // density = 1
+        // pixelDensity(density)
 
         size = min(windowHeight, windowWidth)
         let canvas = createCanvas(size, size)
