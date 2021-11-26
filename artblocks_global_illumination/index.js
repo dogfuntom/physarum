@@ -444,10 +444,6 @@ function calculateFeatures(tokenData) {
     let density
     function setup() {
         density = displayDensity()
-        console.log('density', density)
-        console.log('windowHeight', windowHeight)
-        console.log('windowWidth', windowWidth)
-        console.log(density)
         density = 1
         pixelDensity(density)
 
@@ -456,8 +452,12 @@ function calculateFeatures(tokenData) {
         canvas.style("image-rendering", "pixelated");
         gSize = min(size, 1024)
         b = createGraphics(gSize, gSize, WEBGL)
+        console.log('windowHeight', windowHeight)
+        console.log('windowWidth', windowWidth)
+        console.log('density', density)
         console.log('size', size)
         console.log('gSize', gSize)
+        console.log('')
         b.fill(0);
       
         // tokenData.hash=arr.pop().hash
@@ -652,7 +652,7 @@ function calculateFeatures(tokenData) {
                 // uv /= gl_z_k;
                 // uv -= 1.;
                 uv = uv * .5 + .5;
-                uv /= 2.;
+                // uv /= 2.;
                 uv *= gl_z_vb.zw;
                 uv += gl_z_vb.xy;
                 uv = uv * 2. - 1.;
@@ -844,7 +844,7 @@ function calculateFeatures(tokenData) {
           state = "render";
           u_tick = 0;
           renderSize /= 2;
-            // noLoop()
+            noLoop()
             // background('red')
           return;
         }
@@ -852,7 +852,7 @@ function calculateFeatures(tokenData) {
         // adapt
         s.setUniform("vb", [0, 0, 1, 1]);
         s.setUniform("k", (renderSize / gSize) * density);
-        s.setUniform('res', renderSize)
+        s.setUniform('res', renderSize * density)
         let qs = renderSize / gSize;
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
 
