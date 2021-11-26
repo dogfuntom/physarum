@@ -567,14 +567,14 @@ float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){retur
     
         // adapt
         renderSize = 2 * pow(2, floor(u_tick / adaptFrames));
-        console.log('renderSize',renderSize,'size',size)
     
         // adapt
         if (renderSize > gSize || u_tick > adaptFrames && delay + delayPrev > maxDelay * 2 ) {
           state = "render";
           u_tick = 0;
           renderSize /= 2;
-            noLoop()
+          console.log('renderSize',renderSize,'size',size)
+        // noLoop()
             // background('red')
           return;
         }
@@ -602,8 +602,9 @@ float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){retur
         );
         // noLoop()
       } else {
+        // frameRate(1)
         // pixelDensity(density)
-        splits = size / renderSize;
+        splits = 2//size / renderSize;
         // splits = ceil(size / renderSize);
         let i = (u_tick % ceil(splits)) / splits;
         let j = floor(u_tick / ceil(splits)) / splits;
@@ -619,7 +620,10 @@ float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){retur
         s.setUniform("vb", viewbox);
         // s.setUniform("k", tileSize * density);
         s.setUniform('res', gSize)
-        s.setUniform('res_render', gSize)
+        s.setUniform('res_render', gSize * tileSize)
+        // 691 → .68
+        // 566 → .55
+        // 399 → .78
         let qs = tileSize * 1.01;
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
         // b.background('red')
