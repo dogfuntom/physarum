@@ -44,7 +44,7 @@ function calculateFeatures(tokenData) {
     // new
     let renderSize;
     let splits;
-    let maxDelay = 80;
+    let maxDelay = 40;
     let adaptFrames = 4;
     let size, gSize;
         
@@ -639,7 +639,7 @@ function calculateFeatures(tokenData) {
 
         
                 vec2 uv = (gl_FragCoord.xy*2.-gl_z_res + pos)/gl_z_res;
-                uv /= gl_z_k / 2.;
+                uv /= gl_z_k;
                 uv = uv * .5 + .5;
                 uv *= gl_z_vb.zw;
                 uv += gl_z_vb.xy;
