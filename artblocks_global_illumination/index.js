@@ -452,6 +452,7 @@ function calculateFeatures(tokenData) {
         canvas.style("image-rendering", "pixelated");
         gSize = min(size, 1024)
         b = createGraphics(gSize, gSize, WEBGL)
+        b.pixelDensity(1)
         console.log('windowHeight', windowHeight)
         console.log('windowWidth', windowWidth)
         console.log('density', density)
@@ -522,6 +523,7 @@ function calculateFeatures(tokenData) {
         uniform sampler2D gl_z_backbuffer;
         uniform float gl_z_tick;
         uniform float gl_z_res;
+        uniform float gl_z_res_render;
         uniform vec4 gl_z_vb;
         uniform float gl_z_k;
 
@@ -648,7 +650,15 @@ function calculateFeatures(tokenData) {
                 // vec2 pos = vec2(fr/4.,fl/8.);
                 // if(mod(fl, 2.)==0.) pos.x += 1./8.; // https://bit.ly/3qFnhLs
 
-                vec2 uv = (gl_FragCoord.xy*2.-gl_z_res + pos)/gl_z_res;
+                // gl_FragColor.r += step(gl_z_res * .5,gl_FragCoord.x);
+                // gl_FragColor.g += 1.;
+                // gl_FragColor.b += step(gl_z_res_render * .5,gl_FragCoord.y);
+                // gl_FragColor += length();
+                // gl_FragColor.a = 1.;
+                // return;
+
+                vec2 uv = (gl_FragCoord.xy * 2. - gl_z_res)/gl_z_res_render;//(gl_FragCoord.xy*2.-gl_z_res + pos)/gl_z_res;
+                // uv /= gl_z_res/gl_z_res_render;
                 // uv /= gl_z_k;
                 // uv -= 1.;
                 uv = uv * .5 + .5;
@@ -828,6 +838,7 @@ function calculateFeatures(tokenData) {
         // size — width and height of canvas
         // renderSize — running window
         // gSize — size of a texture
+        // tileSize — unit of viewport 0…1
       if (state == "adapt") {
         // adapt
         let t = +new Date();
@@ -836,7 +847,7 @@ function calculateFeatures(tokenData) {
         tPrev = t;
     
         // adapt
-        renderSize = size;//2 * pow(2, floor(u_tick / adaptFrames));
+        renderSize = 2 * pow(2, floor(u_tick / adaptFrames));
         console.log('renderSize',renderSize,'size',size)
     
         // adapt
@@ -851,8 +862,10 @@ function calculateFeatures(tokenData) {
     
         // adapt
         s.setUniform("vb", [0, 0, 1, 1]);
-        s.setUniform("k", (renderSize / gSize) * density);
-        s.setUniform('res', renderSize * density)
+        // s.setUniform("k", (renderSize / gSize) * density);
+        // s.setUniform('res', renderSize * density)
+        s.setUniform('res', gSize)
+        s.setUniform('res_render', renderSize)
         let qs = renderSize / gSize;
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
 
@@ -880,12 +893,14 @@ function calculateFeatures(tokenData) {
           return;
         }
         let tileSize = 1 / splits;
+        console.log('')
         console.log('tileSize', tileSize, 'splits', splits)
         let viewbox = [i, j, tileSize, tileSize];
         console.log('viewbox', viewbox)
         s.setUniform("vb", viewbox);
-        s.setUniform("k", tileSize * density);
+        // s.setUniform("k", tileSize * density);
         s.setUniform('res', gSize)
+        s.setUniform('res_render', gSize)
         let qs = tileSize * 1.01;
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
         // b.background('red')
