@@ -901,9 +901,9 @@ function calculateFeatures(tokenData) {
         s.setUniform("vb", viewbox);
         // s.setUniform("k", tileSize * density);
         s.setUniform('res', gSize)
-        s.setUniform('res_render', gSize * tileSize)
+        s.setUniform('res_render', gSize * tileSize * 2)
         // b.save(`${u_tick}.png`)
-        let qs = renderSize/gSize * 1.01;
+        let qs = renderSize/gSize * 2 * 1.01;
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
         image(
           b,
@@ -911,10 +911,10 @@ function calculateFeatures(tokenData) {
           size * (1 - j - tileSize),
           size * tileSize,
           size * tileSize,
-          gSize / 2 - (gSize * tileSize) / 2,
-          gSize / 2 - (gSize * tileSize) / 2,
-          gSize * tileSize,
-          gSize * tileSize
+          gSize / 2 - (gSize * tileSize * 2) / 2,
+          gSize / 2 - (gSize * tileSize * 2) / 2,
+          gSize * tileSize * 2,
+          gSize * tileSize * 2
         );
         console.log(          
             'target region',
