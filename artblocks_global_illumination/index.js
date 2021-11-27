@@ -852,7 +852,7 @@ function calculateFeatures(tokenData) {
         if (renderSize > gSize || u_tick > adaptFrames && delay + delayPrev > maxDelay * 2 ) {
           state = "render";
           u_tick = 0;
-        //   renderSize /= 4;
+          renderSize /= 2;
           console.log('renderSize',renderSize,'size',size)
             // noLoop()
             // background('red')
@@ -898,13 +898,13 @@ function calculateFeatures(tokenData) {
         console.log('b.width', b.width)
         let viewbox = [i, j, tileSize, tileSize];
         console.log('viewbox', viewbox)
-        // console.log('density', density)
         s.setUniform("vb", viewbox);
         // s.setUniform("k", tileSize * density);
         s.setUniform('res', gSize)
+        console.log('density', density)
         s.setUniform('res_render', gSize * tileSize * density)
         // b.save(`${u_tick}.png`)
-        let qs = renderSize/gSize * 2 * 1.01;
+        let qs = renderSize/gSize * density * 1.01;
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
         image(
           b,
