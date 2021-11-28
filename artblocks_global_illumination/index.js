@@ -1,6 +1,6 @@
 /*begin features*/
 function calculateFeatures(tokenData) {
-    /*end features*/
+    /*end features*/ 
     
     
     // if (window.location.hash) {
