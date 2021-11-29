@@ -636,7 +636,7 @@ function calculateFeatures(tokenData) {
 
                 float fl = floor(A/2.);
                 float fr = mod(A,2.);
-                vec2 pos = vec2(fr/2.,fl/4.);
+                vec2 pos = vec2(fr/2.,fl/4.)-.5;
                 if(mod(fl, 2.)==0.) pos.x += .25; //https://bit.ly/30g2DXs
 
                 // pos *= 0.;
@@ -660,7 +660,7 @@ function calculateFeatures(tokenData) {
                 // return;
 
                 vec2 uv = (gl_FragCoord.xy * 2. - gl_z_res)/gl_z_res;//(gl_FragCoord.xy*2.-gl_z_res + pos)/gl_z_res;
-                uv += pos / gl_z_res;
+                uv += pos * 2. / gl_z_res;
                 // uv /= gl_z_res/gl_z_res_render;
                 // uv /= gl_z_k;
                 // uv -= 1.;
@@ -889,7 +889,7 @@ function calculateFeatures(tokenData) {
         // frameRate(1)
         // pixelDensity(density)
         let renderSize = b.width*b.pixelDensity()
-        splits = size / renderSize;
+        splits = size * 2 / renderSize;
         // splits = ceil(size / renderSize);
         let i = (u_tick % ceil(splits)) / splits;
         let j = floor(u_tick / ceil(splits)) / splits;
@@ -899,16 +899,13 @@ function calculateFeatures(tokenData) {
         }
         let tileSize = 1 / splits;
         console.log('')
-        console.log('tileSize', tileSize, 'splits', splits)
+        console.log('tileSize', tileSize, 'splits', splits, 'renderSize', renderSize)
         console.log('b.width', b.width)
         let viewbox = [i, j, tileSize, tileSize];
         console.log('viewbox', viewbox)
         s.setUniform("vb", viewbox);
         // s.setUniform("k", tileSize * density);
         s.setUniform('res', renderSize)
-        console.log('density', density)
-        // s.setUniform('res_render', gSize * tileSize * density)
-        // b.save(`${u_tick}.png`)
         let qs = 1;
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
         image(
@@ -929,13 +926,6 @@ function calculateFeatures(tokenData) {
             size * tileSize,
             size * tileSize
         )
-        console.log(          
-            'source region',
-            gSize / 2 - (gSize * tileSize) / 2,
-            gSize / 2 - (gSize * tileSize) / 2,
-            gSize * tileSize,
-            gSize * tileSize
-        )         
       }
       u_tick++;
     //   if(u_tick > 13)noLoop()
