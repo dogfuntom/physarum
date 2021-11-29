@@ -466,6 +466,7 @@ function calculateFeatures(tokenData) {
         b.pixelDensity(64/2048)
         // pixDensInit = pixelDensity()
         b.fill(0);
+        // noStroke();
       
         // tokenData.hash=arr.pop().hash
         // Below part needs changing if hash changes
@@ -856,17 +857,13 @@ function calculateFeatures(tokenData) {
         // adapt
         console.log('u_tick',u_tick)
         console.log(b.pixelDensity())
-        if (floor(u_tick) % adaptFrames == 0) b.pixelDensity(b.pixelDensity()*2)
-        console.log(b.pixelDensity())
     
         // adapt
-
         if (b.width*b.pixelDensity() > gSize || u_tick > adaptFrames && delay + delayPrev > maxDelay * 2 ) {
             state = "render";
             u_tick = 0;
             // noLoop()
             // background('red')
-
             // pixelDensity(pixDensInit)
             // image(b,0,0,width,height);
             return;
@@ -880,6 +877,18 @@ function calculateFeatures(tokenData) {
     
         // pixelDensity(b.pixelDensity())
         image(b,0,0,width,height);
+
+        // if(floor(u_tick)==0){
+        //     scale(width*pixelDensity()/64)
+        //     // console.log('ПОЕХАЛИ',u_tick,64)
+        //     for(let i = 0; i<(64)**2; i++){
+        //         let [x, y] = [i%(64), floor(i/64)]
+        //         // console.log('x, y', x, y, b.get(x,y))
+        //         fill(...b.get(x*64,(64*pixelDensity()-1-y)*64))
+        //         rect(x-.1, y-.1, 1.2, 1.2)
+        //     }
+        // }
+        if (floor(u_tick) % adaptFrames == 0) b.pixelDensity(b.pixelDensity()*2)
         // noLoop()
       } else {
         // frameRate(1)
