@@ -43,8 +43,9 @@ function calculateFeatures(tokenData) {
     let viewBox
     // new
     let renderSize;
+    // let pixDensInit
     let splits;
-    let maxDelay = 40;
+    let maxDelay = 80;
     let adaptFrames = 4;
     let size, gSize;
         

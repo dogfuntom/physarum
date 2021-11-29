@@ -36,8 +36,9 @@
     let viewBox
     // new
     let renderSize;
+    // let pixDensInit
     let splits;
-    let maxDelay = 40;
+    let maxDelay = 80;
     let adaptFrames = 4;
     let size, gSize;
         
@@ -445,7 +446,9 @@
         // gSize = min(size, 1024)
         b = createGraphics(2048, 2048, WEBGL);
         b.pixelDensity(64/2048)
+        // pixDensInit = pixelDensity()
         b.fill(0);
+        // noStroke();
       
         // tokenData.hash=arr.pop().hash
         // Below part needs changing if hash changes
@@ -557,6 +560,7 @@ float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){retur
 
 
     function draw() {
+        // console.log('NOLOOPED')
         // size — width and height of canvas
         // renderSize — running window
         // gSize — size of a texture
@@ -571,17 +575,16 @@ float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){retur
         // adapt
         console.log('u_tick',u_tick)
         console.log(b.pixelDensity())
-        if (floor(u_tick) % adaptFrames == 0) b.pixelDensity(b.pixelDensity()*2)
-        console.log(b.pixelDensity())
     
         // adapt
-
         if (b.width*b.pixelDensity() > gSize || u_tick > adaptFrames && delay + delayPrev > maxDelay * 2 ) {
             state = "render";
-          u_tick = 0;
+            u_tick = 0;
             // noLoop()
             // background('red')
-          return;
+            // pixelDensity(pixDensInit)
+            // image(b,0,0,width,height);
+            return;
         }
     
         // adapt
@@ -590,24 +593,25 @@ float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){retur
         let qs = 1
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
     
-        // b.save('b.png');
-        image(
-          b,
-          0,
-          0,
-          width,
-          height,
-        //   gSize / 2 - renderSize / 2,
-        //   gSize / 2 - renderSize / 2,
-        //   renderSize,
-        //   renderSize
-        );
+        // pixelDensity(b.pixelDensity())
+        image(b,0,0,width,height);
+
+        // if(floor(u_tick)==0){
+        //     scale(width*pixelDensity()/64)
+        //     // console.log('ПОЕХАЛИ',u_tick,64)
+        //     for(let i = 0; i<(64)**2; i++){
+        //         let [x, y] = [i%(64), floor(i/64)]
+        //         // console.log('x, y', x, y, b.get(x,y))
+        //         fill(...b.get(x*64,(64*pixelDensity()-1-y)*64))
+        //         rect(x-.1, y-.1, 1.2, 1.2)
+        //     }
+        // }
+        if (floor(u_tick) % adaptFrames == 0) b.pixelDensity(b.pixelDensity()*2)
         // noLoop()
       } else {
         // frameRate(1)
-        // pixelDensity(density)
         let renderSize = b.width*b.pixelDensity()
-        splits = size * 2 / renderSize;
+        splits = size * pixelDensity() / renderSize;
         // splits = ceil(size / renderSize);
         let i = (u_tick % ceil(splits)) / splits;
         let j = floor(u_tick / ceil(splits)) / splits;
