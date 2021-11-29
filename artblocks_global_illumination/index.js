@@ -591,7 +591,7 @@ function calculateFeatures(tokenData) {
                     ps.xz += (l - 1.) / 2.;
                     ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
                     float h = .24;
-                    ps.y -= gl_z_sizes[i].y / 2.;
+                    ps.y -= gl_z_sizes[i].y / 2. + .02;
                     ps.y -= clamp(ps.y, EPS, h);
                     vec2 po = vec2(length(ps.xz), ps.y);
                     po.x -= clamp(po.x, mix(EPS,.18,${features.Studs}.), .28);
