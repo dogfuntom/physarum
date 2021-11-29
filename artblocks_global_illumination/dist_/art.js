@@ -5,7 +5,7 @@
     //     tokenData.hash = window.location.hash.slice(1)
     // }
     // arr = arr.slice(0, 10)
-    tokenData.hash = `0x5448e7f563c7a1405bec2e245b63c3ac3a1a6cd57242a3efc0bc54bf0941db5a`
+    tokenData.hash = `0xe0a1ad28a17e0f2c291c93f6f5a3fe00203d6c349a44f16a7d51f09d57e64170`
     console.log(tokenData.hash)
     // console.clear();
     let S, ss, R, t, RL, SH
@@ -47,7 +47,14 @@
         // console.log(tokenData.hash)
         S = Uint32Array.from([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
         RL = (ar, p) => ar[ar.length * R() ** (p || 1) | 0]
-        SH = (ar) => { return ar.sort(() => R() - 0.5) }
+        SH = (a) => {
+            for (let i = a.length - 1; i > 0; i--) {
+              let j = Math.floor(R() * (i + 1));
+              [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a
+          }
+
     
         vertices = []
     
@@ -134,8 +141,11 @@
             .match(/(.{30})/g).map(d=>d.match(/(.{6})/g).map(v=>'#'+v))[features.Palette]
     
         let badColor = palette.pop()
-        palette = SH(palette)
         palette.push(badColor)
+        console.log('RANDOM',R().toFixed(3))
+        console.log(palette)
+        palette = SH(palette)
+        console.log(palette)
         if (features.ColorScheme == 2) palette = palette.slice(0, 2)
     }
     
@@ -448,13 +458,14 @@
     
     
         placeBlocks()
+
+        console.log(blocks)
     
         /*begin render*/
         findViewBox()
     
         u_palette = palette.map(c => color(c).levels.slice(0, 3)).flat().map(d => d / 255)
         u_colors = blocks.map(b => [b.color, b.color2, b.texture]).flat()
-    
     
         // console.log(blocks.map(b=>b.type))
         // console.log(blocks.filter(b=>b.type==7))
