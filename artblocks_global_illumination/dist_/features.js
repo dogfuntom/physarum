@@ -45,8 +45,8 @@ function calculateFeatures(tokenData) {
     let renderSize;
     // let pixDensInit
     let splits;
-    let maxDelay = 80;
-    let adaptFrames = 4;
+    let maxDelay = 40;
+    let adaptFrames = 10;
     let size, gSize;
         
 

@@ -38,8 +38,8 @@
     let renderSize;
     // let pixDensInit
     let splits;
-    let maxDelay = 80;
-    let adaptFrames = 4;
+    let maxDelay = 40;
+    let adaptFrames = 10;
     let size, gSize;
         
 
@@ -442,6 +442,7 @@
 
         size = min(windowHeight, windowWidth)
         let canvas = createCanvas(size, size)
+        // let canvas = createCanvas(size, size, WEBGL)
         canvas.style("image-rendering", "pixelated");
         // gSize = min(size, 1024)
         b = createGraphics(2048, 2048, WEBGL);
@@ -594,6 +595,11 @@ float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){retur
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
     
         // pixelDensity(b.pixelDensity())
+        // let qs = 1;
+        // texture(b)
+        // textureMode(NORMAL);
+        // b.setInterpolation(NEAREST, NEAREST);
+        // quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
         image(b,0,0,width,height);
 
         // if(floor(u_tick)==0){
@@ -630,6 +636,11 @@ float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){retur
         s.setUniform('res', renderSize)
         let qs = 1;
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
+        // let qs = 1;
+        // textureMode(NORMAL);
+        // texture(b)
+        // quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
+
         image(
           b,
           size * i,
