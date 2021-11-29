@@ -43,8 +43,9 @@ function calculateFeatures(tokenData) {
     let viewBox
     // new
     let renderSize;
+    // let pixDensInit
     let splits;
-    let maxDelay = 40;
+    let maxDelay = 80;
     let adaptFrames = 4;
     let size, gSize;
         
@@ -463,6 +464,7 @@ function calculateFeatures(tokenData) {
         // gSize = min(size, 1024)
         b = createGraphics(2048, 2048, WEBGL);
         b.pixelDensity(64/2048)
+        // pixDensInit = pixelDensity()
         b.fill(0);
       
         // tokenData.hash=arr.pop().hash
@@ -839,6 +841,7 @@ function calculateFeatures(tokenData) {
 
 
     function draw() {
+        // console.log('NOLOOPED')
         // size — width and height of canvas
         // renderSize — running window
         // gSize — size of a texture
@@ -860,10 +863,13 @@ function calculateFeatures(tokenData) {
 
         if (b.width*b.pixelDensity() > gSize || u_tick > adaptFrames && delay + delayPrev > maxDelay * 2 ) {
             state = "render";
-          u_tick = 0;
+            u_tick = 0;
             // noLoop()
             // background('red')
-          return;
+
+            // pixelDensity(pixDensInit)
+            // image(b,0,0,width,height);
+            return;
         }
     
         // adapt
@@ -872,24 +878,13 @@ function calculateFeatures(tokenData) {
         let qs = 1
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
     
-        // b.save('b.png');
-        image(
-          b,
-          0,
-          0,
-          width,
-          height,
-        //   gSize / 2 - renderSize / 2,
-        //   gSize / 2 - renderSize / 2,
-        //   renderSize,
-        //   renderSize
-        );
+        // pixelDensity(b.pixelDensity())
+        image(b,0,0,width,height);
         // noLoop()
       } else {
         // frameRate(1)
-        // pixelDensity(density)
         let renderSize = b.width*b.pixelDensity()
-        splits = size * 2 / renderSize;
+        splits = size * pixelDensity() / renderSize;
         // splits = ceil(size / renderSize);
         let i = (u_tick % ceil(splits)) / splits;
         let j = floor(u_tick / ceil(splits)) / splits;
