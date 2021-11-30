@@ -43,7 +43,7 @@ function calculateFeatures(tokenData) {
     let viewBox
     // new
     let renderSize;
-    // let pixDensInit
+    let pixDensInit
     let splits;
     let maxDelay = 40;
     let adaptFrames = 10;
@@ -55,13 +55,16 @@ function calculateFeatures(tokenData) {
         // console.log(tokenData.hash)
         S = Uint32Array.from([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
         RL = (ar, p) => ar[ar.length * R() ** (p || 1) | 0]
-        SH = (a) => {
-            for (let i = a.length - 1; i > 0; i--) {
-              let j = Math.floor(R() * (i + 1));
-              [a[i], a[j]] = [a[j], a[i]];
-            }
-            return a
-          }
+        // SH = (a) => {
+        //     for (let i = a.length - 1; i > 0; i--) {
+        //       let j = Math.floor(R() * (i + 1));
+        //       [a[i], a[j]] = [a[j], a[i]];
+        //     }
+        //     return a
+        //   }
+        SH = (ar) => ar.map(a=>[a,R()]).sort((a,b)=>a[1]-b[1]).map(a=>a[0])
+        // SH = (ar) => {let br=[.Array(ar.length)].map(x=>)}
+        // SH = (ar) => ar.reduce((sum,el,i,ar)=>{let r=Math.floor(R() * (i + 1));sum.push()})
 
     
         vertices = []

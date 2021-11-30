@@ -43,7 +43,7 @@ function calculateFeatures(tokenData) {
     let viewBox
     // new
     let renderSize;
-    // let pixDensInit
+    let pixDensInit
     let splits;
     let maxDelay = 40;
     let adaptFrames = 10;
@@ -55,13 +55,16 @@ function calculateFeatures(tokenData) {
         // console.log(tokenData.hash)
         S = Uint32Array.from([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
         RL = (ar, p) => ar[ar.length * R() ** (p || 1) | 0]
-        SH = (a) => {
-            for (let i = a.length - 1; i > 0; i--) {
-              let j = Math.floor(R() * (i + 1));
-              [a[i], a[j]] = [a[j], a[i]];
-            }
-            return a
-          }
+        // SH = (a) => {
+        //     for (let i = a.length - 1; i > 0; i--) {
+        //       let j = Math.floor(R() * (i + 1));
+        //       [a[i], a[j]] = [a[j], a[i]];
+        //     }
+        //     return a
+        //   }
+        SH = (ar) => ar.map(a=>[a,R()]).sort((a,b)=>a[1]-b[1]).map(a=>a[0])
+        // SH = (ar) => {let br=[.Array(ar.length)].map(x=>)}
+        // SH = (ar) => ar.reduce((sum,el,i,ar)=>{let r=Math.floor(R() * (i + 1));sum.push()})
 
     
         vertices = []
@@ -460,12 +463,13 @@ function calculateFeatures(tokenData) {
 
         size = min(windowHeight, windowWidth)
         let canvas = createCanvas(size, size)
+        
         // let canvas = createCanvas(size, size, WEBGL)
         canvas.style("image-rendering", "pixelated");
         // gSize = min(size, 1024)
         b = createGraphics(2048, 2048, WEBGL);
-        b.pixelDensity(64/2048)
-        // pixDensInit = pixelDensity()
+        b.pixelDensity(32/2048)
+        pixDensInit = pixelDensity()
         b.fill(0);
         // noStroke();
       
@@ -860,16 +864,16 @@ function calculateFeatures(tokenData) {
         console.log(b.pixelDensity())
     
         // adapt
-        if (b.width*b.pixelDensity() > gSize || u_tick > adaptFrames && delay + delayPrev > maxDelay * 2 ) {
+        if (b.width*b.pixelDensity() > gSize || u_tick > adaptFrames * 2&& delay + delayPrev > maxDelay * 2 ) {
             state = "render";
             u_tick = 0;
             // noLoop()
             // background('red')
-            // pixelDensity(pixDensInit)
+            pixelDensity(pixDensInit)
             // image(b,0,0,width,height);
             return;
         }
-    
+
         // adapt
         s.setUniform("vb", [0, 0, 1, 1]);
         s.setUniform("res", b.width*b.pixelDensity());
@@ -882,9 +886,15 @@ function calculateFeatures(tokenData) {
         // textureMode(NORMAL);
         // b.setInterpolation(NEAREST, NEAREST);
         // quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
-        image(b,0,0,width,height);
+        // image(b,0,0,width,height);
 
         // if(floor(u_tick)==0){
+            let cnv = document.querySelectorAll('canvas')
+            let dataURI = cnv[1].toDataURL()
+            console.log(dataURI);
+            cnv[0].style.background = `url(${dataURI})`;
+            cnv[0].style.backgroundSize = `cover`;
+    
         //     scale(width*pixelDensity()/64)
         //     // console.log('ПОЕХАЛИ',u_tick,64)
         //     for(let i = 0; i<(64)**2; i++){
@@ -894,7 +904,13 @@ function calculateFeatures(tokenData) {
         //         rect(x-.1, y-.1, 1.2, 1.2)
         //     }
         // }
-        if (floor(u_tick) % adaptFrames == 0) b.pixelDensity(b.pixelDensity()*2)
+
+
+
+        if (floor(u_tick) % adaptFrames == 0) {
+            b.pixelDensity(b.pixelDensity()*2)
+            pixelDensity(b.pixelDensity())
+        }        
         // noLoop()
       } else {
         // frameRate(1)
