@@ -5,8 +5,7 @@ const { GlslMinify } = require('webpack-glsl-minify/build/minify')
 const minifyOptions = {
   compress: {
     dead_code: true,
-    // drop_console: true,
-    drop_console: false,
+    drop_console: true,
     drop_debugger: true,
     keep_classnames: false,
     keep_fargs: false,
@@ -20,7 +19,7 @@ const minifyOptions = {
   mangle: {
     eval: true,
     properties: {
-      reserved: ['image', 'setUniform', 'shader']
+      reserved: ['image', 'setUniform', 'shader','pixelDensity','quad']
       // regex: /^(size|span)$/,
     },
     keep_classnames: false,
@@ -49,8 +48,8 @@ try {
       let dataArt = data.replaceAll(/\/\*begin features\*\/(.|\n)*?\/\*end features\*\//gm, '');
       minifyJs(dataArt, minifyOptions).then((c) => {
         let art = c.code
-        art += `'tx shvembldr piter'`
-        fs.writeFileSync("dist_/art.js", dataArt);
+        art += `'tx shvembldr piter stranger'`
+        fs.writeFileSync("dist_/art.js", art);
       })
 
       let dataFeatures = data.replaceAll(/\/\*begin render\*\/(.|\n)*?\/\*end render\*\//gm, '');
