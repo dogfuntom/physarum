@@ -530,6 +530,7 @@ function calculateFeatures(tokenData) {
         uniform V gl_z_palette[20];
         uniform sampler2D gl_z_backbuffer;
         uniform float gl_z_tick;
+        uniform float gl_z_shade;
         uniform float gl_z_res;
         // uniform float gl_z_res_render;
         uniform vec4 gl_z_vb;
@@ -756,7 +757,7 @@ function calculateFeatures(tokenData) {
                 // o += step(.5,fract(length(uv)*4.));
                 o += c;
             }
-            gl_FragColor = vec4(o/8.,1);
+            gl_FragColor = vec4(o*gl_z_shade/8.,1);
         }`/*glsl*/)
         b.shader(s);
         s.setUniform('palette', u_palette)
@@ -923,6 +924,10 @@ function calculateFeatures(tokenData) {
         let viewbox = [i, j, tileSize, tileSize];
         console.log('viewbox', viewbox)
         s.setUniform("vb", viewbox);
+        s.setUniform("shade", Math.random());
+        let shade = Math.random()
+        console.log(shade)
+        s.setUniform("shade", shade);
         // s.setUniform("k", tileSize * density);
         s.setUniform('res', renderSize)
         let qs = 1;
@@ -932,7 +937,7 @@ function calculateFeatures(tokenData) {
         // texture(b)
         // quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
 
-        image(
+        image( 
           b,
           size * i,
           size * (1 - j - tileSize),
