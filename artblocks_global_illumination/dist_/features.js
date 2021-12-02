@@ -29,7 +29,7 @@ function calculateFeatures(tokenData) {
     const typeBlock = 0, typeBeak2x2 = 3, typeBeak2x2Flipped = 4,
         typeArc = 5, typePillar = 6, typeEye = 7
     const maxMaxTry = 30
-    let u_camAngYZ = .95532, u_camAngXZ
+    let u_camAngYZ = .95532, u_camAngXZ, numberOfBlockTypes
     // let gs, blocksNumber, fitnessFunctionNumber, maxTry, extra
     let s, b, canvas
     let u_palette
@@ -223,13 +223,11 @@ function calculateFeatures(tokenData) {
     
         // карта высот. В тех местах, где заплетная клетка, уходит в минус бесконечность. Чтобы точно было меньше, чем в запретной карте высот
         // обратим внимание, что икс снаружи, потом зет. Обычно наоборот, если что.
-        blocksHeightMap = Array(gs)
-            .fill()
+        blocksHeightMap = [...Array(gs)]
             .map(() => Array(gs).fill(0))
         // запретная карта высот. Ну, как запретная. Просто нельзя ставить деталь ножкой на
         // на клетку, если карта высот в этой клетке меньше карты запрета.
-        disallowedHeightMap = Array(gs)
-            .fill()
+        disallowedHeightMap = [...Array(gs)]
             .map(() => Array(gs).fill(0))
     
         for (let n = 0; n < blocksNumber; n++) {
