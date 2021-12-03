@@ -7,7 +7,7 @@ function calculateFeatures(tokenData) {
     //     tokenData.hash = window.location.hash.slice(1)
     // }
     // arr = arr.slice(0, 10)
-    tokenData.hash = `0x61b6634474b4bd9cc3f1ffc4fe5c69992c93f463591ee37e4501608dad5a8f86`
+    // tokenData.hash = `0x61b6634474b4bd9cc3f1ffc4fe5c69992c93f463591ee37e4501608dad5a8f86`
     console.log(tokenData.hash)
     // console.clear();
     let S, ss, R, t, RL, SH
@@ -453,7 +453,9 @@ function calculateFeatures(tokenData) {
     // let size = [100, 100]
 
     let density
+    let div // FIXME
     function setup() {
+        div = createDiv('').class('debug').size(800, 100); // FIXME
         // density = displayDensity()
         // density = 1
         // pixelDensity(density)
@@ -528,7 +530,7 @@ function calculateFeatures(tokenData) {
         uniform V gl_z_palette[20];
         uniform sampler2D gl_z_backbuffer;
         uniform float gl_z_tick;
-        uniform float gl_z_shade;
+        uniform float gl_z_aa;
         uniform float gl_z_res;
         // uniform float gl_z_res_render;
         uniform vec4 gl_z_vb;
@@ -635,6 +637,7 @@ function calculateFeatures(tokenData) {
             vec2 uv, uvI = (gl_FragCoord.xy * 2. - gl_z_res)/gl_z_res;
 
             for(float A = 0.; A < 8.; A++){
+                if(A >= gl_z_aa) break;
                 gl = 0.;
                 float d = 0., e = 1e9, ep, j;
 
@@ -755,10 +758,11 @@ function calculateFeatures(tokenData) {
                 // o += step(.5,fract(length(uv)*4.));
                 o += c;
             }
-            gl_FragColor = vec4(o*gl_z_shade/8.,1);
+            gl_FragColor = vec4(o/gl_z_aa,1);
         }`/*glsl*/)
         b.shader(s);
         s.setUniform('palette', u_palette)
+        s.setUniform("aa", 8);// Math.random()); // FIXME
         // s.setUniform("size", size * 2);
         b.background(palette[0])
 
@@ -837,6 +841,7 @@ function calculateFeatures(tokenData) {
 
 
 
+    
 
     function draw() {
         // console.log('NOLOOPED')
@@ -857,19 +862,23 @@ function calculateFeatures(tokenData) {
     
         // adapt
         if (b.width*b.pixelDensity() > gSize || u_tick > adaptFrames&& delay + delayPrev > maxDelay * 2 ) {
+            document.querySelector('div.debug').innerHTML += b.width*b.pixelDensity()
+
             state = "render";
             u_tick = 0;
             // noLoop()
             // background('red')
             pixelDensity(pixDensInit)
             // image(b,0,0,width,height);
+            if(b.width*b.pixelDensity() < 256)
+                s.setUniform("aa", 1);
+
             return;
         }
 
         // adapt
         s.setUniform("vb", [0, 0, 1, 1]);
         s.setUniform("res", b.width*b.pixelDensity());
-        s.setUniform("shade", 1);// Math.random()); // FIXME
         let qs = 1
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
     
@@ -921,16 +930,26 @@ function calculateFeatures(tokenData) {
         console.log('tileSize', tileSize, 'splits', splits, 'renderSize', renderSize)
         console.log('b.width', b.width)
         let viewbox = [i, j, tileSize, tileSize];
+        // div.html('viewbox: ' + viewbox);
+        // document.querySelector('div.debug').innerHTML = Object.keys(s).filter(d=>d=='_renderer').map(key=>JSON.stringify(Object.keys(s[key])));//.filter(d=>d=='vb').map(key2=>JSON.stringify(s[key][key2])))
+        // document.querySelector('div.debug').innerHTML = Object.keys(s).map(k=>k+': '+s[k]+'<br><br>')
+        // document.querySelector('div.debug').innerHTML = Object.keys(s[Object.keys(s).filter(d=>d=='attributes')]).map(k=>k+': '+s[k]).join('<br>')
+        // document.querySelector('div.debug').innerHTML = Object.keys(s)
+        // document.querySelector('div.debug').innerHTML += '<br><br>'
+        // document.querySelector('div.debug').innerHTML += s['uniforms']
+        // document.querySelector('div.debug').innerHTML = Object.keys(b).map(k=>k+': '+b[k]+'<br><br>')
+        // document.querySelectorAll('canvas')[0].style.position='static'
+        // document.querySelectorAll('canvas')[1].style.position='static'
+        // document.querySelectorAll('canvas')[1].style.display='block'
+        // document.querySelectorAll('canvas')[1].style.width='100%'
+        // document.querySelectorAll('canvas')[1].style.height='100%'
         console.log('viewbox', viewbox)
         s.setUniform("vb", viewbox);
-        s.setUniform("shade", 1);// Math.random()); // FIXME
-        let shade = Math.random()
-        console.log(shade)
         // s.setUniform("shade", shade);
         // s.setUniform("k", tileSize * density);
         s.setUniform('res', renderSize)
         let qs = 1;
-        b.background('yellow')
+        b.background('yellow') // FIXME
         b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
         // let qs = 1;
         // textureMode(NORMAL);
