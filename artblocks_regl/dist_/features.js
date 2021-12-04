@@ -149,11 +149,12 @@ function calculateFeatures(tokenData) {
         // ][features.Palette]
     
         palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
-            .match(/(.{30})/g).map(d=>d.match(/(.{6})/g).map(v=>'#'+v))[features.Palette]
-    
+            .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features.Palette]
+            console.log('palette',palette)
+
         let badColor = palette.pop()
         palette.push(badColor)
-        console.log(palette)
+        // console.log(palette)
         palette = SH(palette)
         console.log(palette)
         if (features.ColorScheme == 2) palette = palette.slice(0, 2)
@@ -438,7 +439,7 @@ function calculateFeatures(tokenData) {
     
         placeBlocks()
 
-        console.log(blocks)
+        // console.log(blocks)
     
         
     
@@ -489,10 +490,10 @@ function calculateFeatures(tokenData) {
         canvas_.width = size_
         canvas_.height = size_
         var regl = createREGL(canvas_)
-        console.log(regl)
-        console.log('regl')
+        // console.log(regl)
+        // console.log('regl')
         
-        console.log(uniforms)
+        // console.log(uniforms)
         
         const drawTriangle = regl({
             frag: `precision highp float;
@@ -755,7 +756,7 @@ function calculateFeatures(tokenData) {
         
             uniforms: {
                 z_res: regl.prop('res'),
-                z_palette: [...Array(20*3)].fill(.5),
+                z_palette: u_palette,
                 z_aa: 1,
                 z_vb: [0,0,1,1],
             },
@@ -764,8 +765,8 @@ function calculateFeatures(tokenData) {
           })
         
           drawTriangle({res: size_})
-          console.log(size_)
-          console.log(window.devicePixelRatio)
+        //   console.log(size_)
+        //   console.log(window.devicePixelRatio)
     }
     
     

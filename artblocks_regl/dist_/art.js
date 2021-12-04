@@ -142,11 +142,12 @@
         // ][features.Palette]
     
         palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
-            .match(/(.{30})/g).map(d=>d.match(/(.{6})/g).map(v=>'#'+v))[features.Palette]
-    
+            .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features.Palette]
+            console.log('palette',palette)
+
         let badColor = palette.pop()
         palette.push(badColor)
-        console.log(palette)
+        // console.log(palette)
         palette = SH(palette)
         console.log(palette)
         if (features.ColorScheme == 2) palette = palette.slice(0, 2)
@@ -442,8 +443,8 @@
         // density = 1
         // pixelDensity(density)
 
-        size = min(windowHeight, windowWidth)
-        let canvas = createCanvas(size, size)
+        // size = min(windowHeight, windowWidth)
+        // let canvas = createCanvas(size, size)
         document.querySelector('div.debug').innerHTML = `
         pixelDensity(): ${pixelDensity()}<br>
         size: ${size}<br>
@@ -452,12 +453,12 @@
         `
         
         // let canvas = createCanvas(size, size, WEBGL)
-        canvas.style("image-rendering", "pixelated");
+        // canvas.style("image-rendering", "pixelated");
         // gSize = min(size, 1024)
-        b = createGraphics(2048, 2048, WEBGL);
-        b.pixelDensity(64/2048)
-        pixDensInit = pixelDensity()
-        b.fill(0);
+        // b = createGraphics(2048, 2048, WEBGL);
+        // b.pixelDensity(64/2048)
+        // pixDensInit = pixelDensity()
+        // b.fill(0);
         // noStroke();
       
         // tokenData.hash=arr.pop().hash
@@ -472,12 +473,15 @@
     
         placeBlocks()
 
-        console.log(blocks)
+        // console.log(blocks)
     
         /*begin render*/
         findViewBox()
     
-        u_palette = palette.map(c => color(c).levels.slice(0, 3)).flat().map(d => d / 255)
+        // u_palette = palette.map(c=>color(c).levels.slice(0,3)).flat().map(d=>d/255)
+        u_palette = palette.map(c=>c.match(/(.{2})/g).map(v=>Number("0x"+v)/255)).flat()
+        console.log(u_palette)
+        // console.log(u_palette)
         u_colors = blocks.map(b => [b.color, b.color2, b.texture]).flat()
     
         // console.log(blocks.map(b=>b.type))
@@ -492,266 +496,266 @@
             `colors[${i}]=ivec3(${b.color},${b.color2},${b.texture});`).join('')
         uniforms += blocks.map((b, i) =>
             `roty[${i}]=vec2(${b.rot},${b.type});`).join('')
-        console.log(uniforms)
+        // console.log(uniforms)
     
     
-        s = b.createShader(`precision highp float;attribute vec3 aPosition;void main() { gl_Position = vec4(aPosition,1.0);}`,
-        `precision highp float;
-        // #define BLOCKS_NUMBER_MAX 60
-        // #define PI 3.1415
-        // #define S smoothstep
-        // #define V vec3
-        // #define v vec2
-        // float rnd(float x) {return fract(54321.987 * sin(987.12345 * mod(x,12.34567)));}
-        // mat2 rot(float a) {return mat2(cos(a),-sin(a),sin(a),cos(a));}
-        // #define STEPS 4e2
-        // #define EPS .001
-        // float sabs(float p) {return sqrt(abs(p)*abs(p)+5e-5);}
-        // float smax(float a, float b) {return (a+b+sabs(a-b))*.5;}
+        // s = b.createShader(`precision highp float;attribute vec3 aPosition;void main() { gl_Position = vec4(aPosition,1.0);}`,
+        // `precision highp float;
+        // // #define BLOCKS_NUMBER_MAX 60
+        // // #define PI 3.1415
+        // // #define S smoothstep
+        // // #define V vec3
+        // // #define v vec2
+        // // float rnd(float x) {return fract(54321.987 * sin(987.12345 * mod(x,12.34567)));}
+        // // mat2 rot(float a) {return mat2(cos(a),-sin(a),sin(a),cos(a));}
+        // // #define STEPS 4e2
+        // // #define EPS .001
+        // // float sabs(float p) {return sqrt(abs(p)*abs(p)+5e-5);}
+        // // float smax(float a, float b) {return (a+b+sabs(a-b))*.5;}
         
         
-        // vec3 gl_z_positions[BLOCKS_NUMBER_MAX];
-        // vec3 gl_z_sizes[BLOCKS_NUMBER_MAX];
-        // vec2 gl_z_roty[BLOCKS_NUMBER_MAX];
-        // ivec3 gl_z_colors[BLOCKS_NUMBER_MAX];
+        // // vec3 gl_z_positions[BLOCKS_NUMBER_MAX];
+        // // vec3 gl_z_sizes[BLOCKS_NUMBER_MAX];
+        // // vec2 gl_z_roty[BLOCKS_NUMBER_MAX];
+        // // ivec3 gl_z_colors[BLOCKS_NUMBER_MAX];
         
-        // uniform V gl_z_palette[20];
-        // uniform sampler2D gl_z_backbuffer;
-        // uniform float gl_z_tick;
-        // uniform float gl_z_aa;
-        // uniform float gl_z_res;
-        // // uniform float gl_z_res_render;
-        // uniform vec4 gl_z_vb;
+        // // uniform V gl_z_palette[20];
+        // // uniform sampler2D gl_z_backbuffer;
+        // // uniform float gl_z_tick;
+        // // uniform float gl_z_aa;
+        // // uniform float gl_z_res;
+        // // // uniform float gl_z_res_render;
+        // // uniform vec4 gl_z_vb;
 
-        // ivec3 colIds;
-        // float gl;
-        // float camDist = 1e2;
-        // // v u_res = v(${width}, ${height})*${pixelDensity() + 1e-6};
+        // // ivec3 colIds;
+        // // float gl;
+        // // float camDist = 1e2;
+        // // // v u_res = v(${width}, ${height})*${pixelDensity() + 1e-6};
         
-        // float cyl(V p, V s, float cornerR) {
-        //     // s.x — height
-        //     // s.y — thickness
-        //     // s.x — radius
-        //     p.y -= clamp(p.y, -s.x, s.x);
-        //     float len = length(p.xz) - s.z;
-        //     len -= clamp(len, -s.y, s.y);
-        //     float cyl = length(v(len, p.y)) - cornerR;
-        //     return cyl;
-        // }
+        // // float cyl(V p, V s, float cornerR) {
+        // //     // s.x — height
+        // //     // s.y — thickness
+        // //     // s.x — radius
+        // //     p.y -= clamp(p.y, -s.x, s.x);
+        // //     float len = length(p.xz) - s.z;
+        // //     len -= clamp(len, -s.y, s.y);
+        // //     float cyl = length(v(len, p.y)) - cornerR;
+        // //     return cyl;
+        // // }
         
-        // int eye;
+        // // int eye;
         
-        // float dist(V p) {
-        //     colIds = ivec3(0, 0, -1);
-        //     p.x = abs(p.x);
-        //     float res = p.y + 1.; // floor plane
-        //     for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
-        //         eye = 0;
-        //         if(i >= ${blocks.length})
-        //             break;
-        //         V pb = p;
-        //         pb -= gl_z_positions[i];
-        //         pb.xz *= rot(gl_z_roty[i].x * PI / 2.);
+        // // float dist(V p) {
+        // //     colIds = ivec3(0, 0, -1);
+        // //     p.x = abs(p.x);
+        // //     float res = p.y + 1.; // floor plane
+        // //     for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
+        // //         eye = 0;
+        // //         if(i >= ${blocks.length})
+        // //             break;
+        // //         V pb = p;
+        // //         pb -= gl_z_positions[i];
+        // //         pb.xz *= rot(gl_z_roty[i].x * PI / 2.);
         
-        //         // box
-        //         float cornerR = .01;
-        //         float gap = .008;
-        //         float block;
+        // //         // box
+        // //         float cornerR = .01;
+        // //         float gap = .008;
+        // //         float block;
     
-        //         // if(gl_z_roty[i].y == 0. || gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4. || gl_z_roty[i].y == 5. || gl_z_roty[i].y == 6.) {
-        //         V s = gl_z_sizes[i] - 2. * (cornerR + gap);
-        //         block = length(pb - clamp(pb, -(s)/2., (s)/2.)) - cornerR * 1.4;
-        //         // }
+        // //         // if(gl_z_roty[i].y == 0. || gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4. || gl_z_roty[i].y == 5. || gl_z_roty[i].y == 6.) {
+        // //         V s = gl_z_sizes[i] - 2. * (cornerR + gap);
+        // //         block = length(pb - clamp(pb, -(s)/2., (s)/2.)) - cornerR * 1.4;
+        // //         // }
         
-        //         if(gl_z_roty[i].y == 5.) { // arc
-        //             float cyl = length(pb.zy) - .5;
-        //             float box = max(abs(pb.z) - .5, abs(pb.y + gl_z_sizes[i].y / 2.) - 1.);
-        //             float hole = min(cyl, box);
-        //             block = max(block, -hole);
-        //         }
+        // //         if(gl_z_roty[i].y == 5.) { // arc
+        // //             float cyl = length(pb.zy) - .5;
+        // //             float box = max(abs(pb.z) - .5, abs(pb.y + gl_z_sizes[i].y / 2.) - 1.);
+        // //             float hole = min(cyl, box);
+        // //             block = max(block, -hole);
+        // //         }
         
-        //         if(gl_z_roty[i].y == 6.) { // pillar
-        //             float cyl_ = length(pb.zx) - .15;
-        //             float sph = cyl(pb + V(0, gl_z_sizes[i].y - .5, 0) / 2., V(.2, .25, .2), cornerR);
-        //             block = max(block, min(cyl_, sph));
-        //         }
+        // //         if(gl_z_roty[i].y == 6.) { // pillar
+        // //             float cyl_ = length(pb.zx) - .15;
+        // //             float sph = cyl(pb + V(0, gl_z_sizes[i].y - .5, 0) / 2., V(.2, .25, .2), cornerR);
+        // //             block = max(block, min(cyl_, sph));
+        // //         }
         
-        //         // studs
-        //         if(gl_z_roty[i].y != 6.) { // not pillar
-        //             V ps = pb;
-        //             v l = gl_z_sizes[i].xz;
-        //             ps.xz += (l - 1.) / 2.;
-        //             ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
-        //             float h = .24;
-        //             ps.y -= gl_z_sizes[i].y / 2. + .02;
-        //             ps.y -= clamp(ps.y, EPS, h);
-        //             vec2 po = vec2(length(ps.xz), ps.y);
-        //             po.x -= clamp(po.x, mix(EPS,.18,${features.Studs}.), .28);
-        //             float stud = length(po)-EPS;
-        //             block = min(stud, block);
-        //         }
+        // //         // studs
+        // //         if(gl_z_roty[i].y != 6.) { // not pillar
+        // //             V ps = pb;
+        // //             v l = gl_z_sizes[i].xz;
+        // //             ps.xz += (l - 1.) / 2.;
+        // //             ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
+        // //             float h = .24;
+        // //             ps.y -= gl_z_sizes[i].y / 2. + .02;
+        // //             ps.y -= clamp(ps.y, EPS, h);
+        // //             vec2 po = vec2(length(ps.xz), ps.y);
+        // //             po.x -= clamp(po.x, mix(EPS,.18,${features.Studs}.), .28);
+        // //             float stud = length(po)-EPS;
+        // //             block = min(stud, block);
+        // //         }
         
-        //         if(pb.z<0.15 && (gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4.)) { // beak
-        //             block = smax(block, (-pb.z*.8-(gl_z_roty[i].y == 3. ? -1. : 1.)*pb.y-.5)/1.4142);
-        //         }
+        // //         if(pb.z<0.15 && (gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4.)) { // beak
+        // //             block = smax(block, (-pb.z*.8-(gl_z_roty[i].y == 3. ? -1. : 1.)*pb.y-.5)/1.4142);
+        // //         }
         
         
-        //         if(gl_z_roty[i].y == 7.) { // eye
-        //             float eye_ = cyl(pb, V(.2, .25, .2), cornerR);
-        //             block = eye_;
-        //             if(eye_ < EPS) {
-        //                 eye = 1;
-        //             }
-        //         }
+        // //         if(gl_z_roty[i].y == 7.) { // eye
+        // //             float eye_ = cyl(pb, V(.2, .25, .2), cornerR);
+        // //             block = eye_;
+        // //             if(eye_ < EPS) {
+        // //                 eye = 1;
+        // //             }
+        // //         }
         
-        //         if(block < res) {
-        //             res = block;
-        //             colIds = gl_z_colors[i];
-        //         }
-        //         if(res < EPS)
-        //             break;
-        //     }
-        //     return res;
-        // }
+        // //         if(block < res) {
+        // //             res = block;
+        // //             colIds = gl_z_colors[i];
+        // //         }
+        // //         if(res < EPS)
+        // //             break;
+        // //     }
+        // //     return res;
+        // // }
         
-        // V norm(V p) {
-        //     v e = v(.01, 0.);
-        //     return normalize(V(dist(p + e.xyy) - dist(p - e.xyy), dist(p + e.yxy) - dist(p - e.yxy), dist(p + e.yyx) - dist(p - e.yyx)));
-        // }
-        void main() {
-            // V o = V(0);
-            // ${uniforms}
-            // vec2 uv, uvI = (gl_FragCoord.xy * 2. - gl_z_res)/gl_z_res;
+        // // V norm(V p) {
+        // //     v e = v(.01, 0.);
+        // //     return normalize(V(dist(p + e.xyy) - dist(p - e.xyy), dist(p + e.yxy) - dist(p - e.yxy), dist(p + e.yyx) - dist(p - e.yyx)));
+        // // }
+        // void main() {
+        //     // V o = V(0);
+        //     // ${uniforms}
+        //     // vec2 uv, uvI = (gl_FragCoord.xy * 2. - gl_z_res)/gl_z_res;
 
-            // for(float A = 0.; A < 8.; A++){
-            //     if(A >= gl_z_aa) break;
-            //     gl = 0.;
-            //     float d = 0., e = 1e9, ep, j;
+        //     // for(float A = 0.; A < 8.; A++){
+        //     //     if(A >= gl_z_aa) break;
+        //     //     gl = 0.;
+        //     //     float d = 0., e = 1e9, ep, j;
 
-            //     float fl = floor(A/2.);
-            //     float fr = mod(A,2.);
-            //     vec2 pos = vec2(fr/2.,fl/4.)-.5;
-            //     if(mod(fl, 2.)==0.) pos.x += .25; //https://bit.ly/30g2DXs
+        //     //     float fl = floor(A/2.);
+        //     //     float fr = mod(A,2.);
+        //     //     vec2 pos = vec2(fr/2.,fl/4.)-.5;
+        //     //     if(mod(fl, 2.)==0.) pos.x += .25; //https://bit.ly/30g2DXs
 
-            //     // pos *= 0.;
+        //     //     // pos *= 0.;
         
-            //     // float gl_z_tick = mod(f,8.);
-            //     // float fl = floor(gl_z_tick/2.);
-            //     // float fr = mod(gl_z_tick,2.);
-            //     // vec2 pos = vec2(fr/2.,fract(fl/2.));
-            //     // if(floor(fl/2.)==1.) pos += .25;
+        //     //     // float gl_z_tick = mod(f,8.);
+        //     //     // float fl = floor(gl_z_tick/2.);
+        //     //     // float fr = mod(gl_z_tick,2.);
+        //     //     // vec2 pos = vec2(fr/2.,fract(fl/2.));
+        //     //     // if(floor(fl/2.)==1.) pos += .25;
         
-            //     // float fl = floor(gl_z_tick/4.);
-            //     // float fr = mod(gl_z_tick,4.);
-            //     // vec2 pos = vec2(fr/4.,fl/8.);
-            //     // if(mod(fl, 2.)==0.) pos.x += 1./8.; // https://bit.ly/3qFnhLs
+        //     //     // float fl = floor(gl_z_tick/4.);
+        //     //     // float fr = mod(gl_z_tick,4.);
+        //     //     // vec2 pos = vec2(fr/4.,fl/8.);
+        //     //     // if(mod(fl, 2.)==0.) pos.x += 1./8.; // https://bit.ly/3qFnhLs
 
-            //     vec2 uv = uvI;
-            //     uv += pos * 2. / gl_z_res;
-            //     // uv /= gl_z_res/gl_z_res_render;
-            //     // uv -= 1.;
-            //     // uv /= 2.;
-            //     uv = uv * .5 + .5;
-            //     uv *= gl_z_vb.zw;
-            //     uv += gl_z_vb.xy;
-            //     uv = uv * 2. - 1.;
+        //     //     vec2 uv = uvI;
+        //     //     uv += pos * 2. / gl_z_res;
+        //     //     // uv /= gl_z_res/gl_z_res_render;
+        //     //     // uv -= 1.;
+        //     //     // uv /= 2.;
+        //     //     uv = uv * .5 + .5;
+        //     //     uv *= gl_z_vb.zw;
+        //     //     uv += gl_z_vb.xy;
+        //     //     uv = uv * 2. - 1.;
 
-            //     V p, ro = V(uv * float(${viewBox.scale}) + 
-            //     v(${viewBox.offset.x},
-            //     ${viewBox.offset.y}), -camDist), 
-            //     rd = V(0, 0, .9 + .1 * rnd(length(uv)));
-            //     bool outline = false;
-            //     for(float i = 0.; i < STEPS; i++) {
-            //         j = i;
-            //         p = d * rd + ro;
-            //         p.z -= camDist;
-            //         p.yz *= rot(${u_camAngYZ});
-            //         p.xz *= rot(${u_camAngXZ});
-            //         d += e = dist(p);
-            //         if(ep < e && e < .01) {
-            //             // gl_FragColor = vec4(0);
-            //             outline = true;
-            //             break;
-            //         }
-            //         ep = e;
-            //         if(e < EPS || e > camDist*2.)
-            //             break;
-            //     }
-            //     V c;
-            //     if(!outline) {
-            //         V col1, col2;
-            //         for(int j = 0; j < 20; j++) {
-            //             if(colIds[0] == j)
-            //                 col1 = gl_z_palette[j];
-            //             if(colIds[1] == j)
-            //                 col2 = gl_z_palette[j];
-            //         }
+        //     //     V p, ro = V(uv * float(${viewBox.scale}) + 
+        //     //     v(${viewBox.offset.x},
+        //     //     ${viewBox.offset.y}), -camDist), 
+        //     //     rd = V(0, 0, .9 + .1 * rnd(length(uv)));
+        //     //     bool outline = false;
+        //     //     for(float i = 0.; i < STEPS; i++) {
+        //     //         j = i;
+        //     //         p = d * rd + ro;
+        //     //         p.z -= camDist;
+        //     //         p.yz *= rot(${u_camAngYZ});
+        //     //         p.xz *= rot(${u_camAngXZ});
+        //     //         d += e = dist(p);
+        //     //         if(ep < e && e < .01) {
+        //     //             // gl_FragColor = vec4(0);
+        //     //             outline = true;
+        //     //             break;
+        //     //         }
+        //     //         ep = e;
+        //     //         if(e < EPS || e > camDist*2.)
+        //     //             break;
+        //     //     }
+        //     //     V c;
+        //     //     if(!outline) {
+        //     //         V col1, col2;
+        //     //         for(int j = 0; j < 20; j++) {
+        //     //             if(colIds[0] == j)
+        //     //                 col1 = gl_z_palette[j];
+        //     //             if(colIds[1] == j)
+        //     //                 col2 = gl_z_palette[j];
+        //     //         }
             
-            //         V col = col1;
+        //     //         V col = col1;
             
-            //         // Texturing
-            //         //
-            //         // layers
-            //         if(colIds.z == 1)
-            //             if(sin(p.y * PI * 3.) > 0.)
-            //                 col = col2;
-            //         if(colIds.z == 2)
-            //             if(sin((p.x + fract(gl_z_positions[0].x - gl_z_sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
-            //                 col = col2;
+        //     //         // Texturing
+        //     //         //
+        //     //         // layers
+        //     //         if(colIds.z == 1)
+        //     //             if(sin(p.y * PI * 3.) > 0.)
+        //     //                 col = col2;
+        //     //         if(colIds.z == 2)
+        //     //             if(sin((p.x + fract(gl_z_positions[0].x - gl_z_sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
+        //     //                 col = col2;
                             
-            //         // pride
-            //         if(${features.ColorScheme} == 3)
-            //             col = sin(length(p) / max(float(${gs}), float(${features.Height})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+        //     //         // pride
+        //     //         if(${features.ColorScheme} == 3)
+        //     //             col = sin(length(p) / max(float(${gs}), float(${features.Height})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
                     
-            //         if(eye == 1) {
-            //             col = V(0);
-            //             V pe = p + fract(${gs}. / 2.);
-            //             pe = fract(pe) - .5;
-            //             col += step(.3, length(pe.xz));
-            //             col += step(-.1, -length(pe.xz + .1));
-            //         }
+        //     //         if(eye == 1) {
+        //     //             col = V(0);
+        //     //             V pe = p + fract(${gs}. / 2.);
+        //     //             pe = fract(pe) - .5;
+        //     //             col += step(.3, length(pe.xz));
+        //     //             col += step(-.1, -length(pe.xz + .1));
+        //     //         }
                             
-            //         if(colIds.z == -1) {
-            //             c = gl_z_palette[0];
-            //             if(length(c) > .4){
-            //                 c *= smoothstep(5., 0., length(uv + v(${features.BackgroundLight}, -1)));
-            //             }
-            //             // c = V(1,0,1);
-            //             if(${features.ColorScheme} == 3){
-            //                 c = V(.2);
-            //             }
-            //             if(sin(length(pow(abs(uv), v(${features.BackgroundType}))) * 32.) > 0.)
-            //                 c *= .95;
-            //         } else {
-            //             c = V(1,0,1);
-            //             // shading
-            //             c = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(V(0, 1, 1))) * .2 + .8) * col;
+        //     //         if(colIds.z == -1) {
+        //     //             c = gl_z_palette[0];
+        //     //             if(length(c) > .4){
+        //     //                 c *= smoothstep(5., 0., length(uv + v(${features.BackgroundLight}, -1)));
+        //     //             }
+        //     //             // c = V(1,0,1);
+        //     //             if(${features.ColorScheme} == 3){
+        //     //                 c = V(.2);
+        //     //             }
+        //     //             if(sin(length(pow(abs(uv), v(${features.BackgroundType}))) * 32.) > 0.)
+        //     //                 c *= .95;
+        //     //         } else {
+        //     //             c = V(1,0,1);
+        //     //             // shading
+        //     //             c = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(V(0, 1, 1))) * .2 + .8) * col;
                         
-            //             // glare
-            //             c += pow(abs(dot(norm(p), normalize(V(0., 3., 1.)))), 40.);
-            //             // c.r = 1.;
-            //         }
-            //     }
+        //     //             // glare
+        //     //             c += pow(abs(dot(norm(p), normalize(V(0., 3., 1.)))), 40.);
+        //     //             // c.r = 1.;
+        //     //         }
+        //     //     }
                 
-            //     // gazya
-            //     if(${features.ColorScheme} == 4)
-            //         c = (V(10. / j));
+        //     //     // gazya
+        //     //     if(${features.ColorScheme} == 4)
+        //     //         c = (V(10. / j));
             
-            //     // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
-            //     // gl_FragColor=vec4(uv,0,1);
-            //     // gl_FragColor = vec4(o, 1);
-            //     // gl_FragColor = mix(texture2D(gl_z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (gl_z_tick + 1.));
-            //     // o += step(.5,fract(length(uv)*4.));
-            //     o += c;
-            // }
-            // gl_FragColor = vec4(o/gl_z_aa,1);
-            gl_FragColor = vec4(1,0,0,1);
-        }`)
-        b.shader(s);
-        s.setUniform('palette', u_palette)
-        s.setUniform("aa", 8);// Math.random()); // FIXME
-        // s.setUniform("size", size * 2);
-        b.background(palette[0])
+        //     //     // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
+        //     //     // gl_FragColor=vec4(uv,0,1);
+        //     //     // gl_FragColor = vec4(o, 1);
+        //     //     // gl_FragColor = mix(texture2D(gl_z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (gl_z_tick + 1.));
+        //     //     // o += step(.5,fract(length(uv)*4.));
+        //     //     o += c;
+        //     // }
+        //     // gl_FragColor = vec4(o/gl_z_aa,1);
+        //     gl_FragColor = vec4(1,0,0,1);
+        // }`)
+        // b.shader(s);
+        // s.setUniform('palette', u_palette)
+        // s.setUniform("aa", 8);// Math.random()); // FIXME
+        // // s.setUniform("size", size * 2);
+        // b.background(palette[0])
 
         /*end render*/
     
@@ -783,10 +787,10 @@
         canvas_.width = size_
         canvas_.height = size_
         var regl = createREGL(canvas_)
-        console.log(regl)
-        console.log('regl')
+        // console.log(regl)
+        // console.log('regl')
         
-        console.log(uniforms)
+        // console.log(uniforms)
         
         const drawTriangle = regl({
             frag: `precision highp float;
@@ -1049,7 +1053,7 @@
         
             uniforms: {
                 z_res: regl.prop('res'),
-                z_palette: [...Array(20*3)].fill(.5),
+                z_palette: u_palette,
                 z_aa: 1,
                 z_vb: [0,0,1,1],
             },
@@ -1058,8 +1062,8 @@
           })
         
           drawTriangle({res: size_})
-          console.log(size_)
-          console.log(window.devicePixelRatio)
+        //   console.log(size_)
+        //   console.log(window.devicePixelRatio)
     }
     
     
@@ -1069,7 +1073,7 @@
     
     /*begin render*/
     // FIXME
-    let timeStart = +new Date()
+    // let timeStart = +new Date()
 
 
     // function draw() {
@@ -1088,9 +1092,9 @@
     //     window.document.title = 50-u_tick > 0 ? floor(50-u_tick) : '👾'
     // }
 
-    let tPrev = +new Date();
-    let state = "adapt";
-    let delayPrev, delay = 0
+    // let tPrev = +new Date();
+    // let state = "adapt";
+    // let delayPrev, delay = 0
     
 
 
@@ -1098,145 +1102,145 @@
 
     
 
-    function draw() {
-        // console.log('NOLOOPED')
-        // size — width and height of canvas
-        // renderSize — running window
-        // gSize — size of a texture
-        // tileSize — unit of viewport 0…1
-      if (state == "adapt") {
-        // adapt
-        let t = +new Date();
-        let delayPrev = delay;
-        delay = t - tPrev;
-        tPrev = t;
+    // function draw() {
+    //     // console.log('NOLOOPED')
+    //     // size — width and height of canvas
+    //     // renderSize — running window
+    //     // gSize — size of a texture
+    //     // tileSize — unit of viewport 0…1
+    //   if (state == "adapt") {
+    //     // adapt
+    //     let t = +new Date();
+    //     let delayPrev = delay;
+    //     delay = t - tPrev;
+    //     tPrev = t;
     
-        // adapt
-        console.log('u_tick',u_tick)
-        console.log(b.pixelDensity())
+    //     // adapt
+    //     console.log('u_tick',u_tick)
+    //     console.log(b.pixelDensity())
     
-        // adapt
-        if (b.width*b.pixelDensity() > gSize || u_tick > adaptFrames&& (delay + delayPrev)/2 > maxDelay ) {
-            document.querySelector('div.debug').innerHTML += b.width*b.pixelDensity()
+    //     // adapt
+    //     if (b.width*b.pixelDensity() > gSize || u_tick > adaptFrames&& (delay + delayPrev)/2 > maxDelay ) {
+    //         document.querySelector('div.debug').innerHTML += b.width*b.pixelDensity()
             
-            state = "render";
-            u_tick = 0;
-            // noLoop()
-            // background('red')
-            pixelDensity(pixDensInit)
-            // image(b,0,0,width,height);
-            if((delay + delayPrev)/2 > maxDelay * 2)
-                s.setUniform("aa", 4);
-            if((delay + delayPrev)/2 > maxDelay * 4)
-                s.setUniform("aa", 1);
-            document.querySelector('div.debug').innerHTML += `
-            (delay + delayPrev)/2: ${(delay + delayPrev)/2}<br>
-            `
-            return;
-        }
+    //         state = "render";
+    //         u_tick = 0;
+    //         // noLoop()
+    //         // background('red')
+    //         pixelDensity(pixDensInit)
+    //         // image(b,0,0,width,height);
+    //         if((delay + delayPrev)/2 > maxDelay * 2)
+    //             s.setUniform("aa", 4);
+    //         if((delay + delayPrev)/2 > maxDelay * 4)
+    //             s.setUniform("aa", 1);
+    //         document.querySelector('div.debug').innerHTML += `
+    //         (delay + delayPrev)/2: ${(delay + delayPrev)/2}<br>
+    //         `
+    //         return;
+    //     }
 
-        // adapt
-        s.setUniform("vb", [0, 0, 1, 1]);
-        s.setUniform("res", b.width*b.pixelDensity());
-        let qs = 1
-        b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
+    //     // adapt
+    //     s.setUniform("vb", [0, 0, 1, 1]);
+    //     s.setUniform("res", b.width*b.pixelDensity());
+    //     let qs = 1
+    //     b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
     
-        // pixelDensity(b.pixelDensity())
-        // let qs = 1;
-        // texture(b)
-        // textureMode(NORMAL);
-        // b.setInterpolation(NEAREST, NEAREST);
-        // quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
-        // image(b,0,0,width,height);
+    //     // pixelDensity(b.pixelDensity())
+    //     // let qs = 1;
+    //     // texture(b)
+    //     // textureMode(NORMAL);
+    //     // b.setInterpolation(NEAREST, NEAREST);
+    //     // quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
+    //     // image(b,0,0,width,height);
 
-        // if(floor(u_tick)==0){
-            let cnv = document.querySelectorAll('canvas')
-            let dataURI = cnv[1].toDataURL()
-            // console.log(dataURI);
-            cnv[0].style.background = `url(${dataURI})`;
-            cnv[0].style.backgroundSize = `cover`;
+    //     // if(floor(u_tick)==0){
+    //         let cnv = document.querySelectorAll('canvas')
+    //         let dataURI = cnv[1].toDataURL()
+    //         // console.log(dataURI);
+    //         cnv[0].style.background = `url(${dataURI})`;
+    //         cnv[0].style.backgroundSize = `cover`;
     
-        //     scale(width*pixelDensity()/64)
-        //     // console.log('ПОЕХАЛИ',u_tick,64)
-        //     for(let i = 0; i<(64)**2; i++){
-        //         let [x, y] = [i%(64), floor(i/64)]
-        //         // console.log('x, y', x, y, b.get(x,y))
-        //         fill(...b.get(x*64,(64*pixelDensity()-1-y)*64))
-        //         rect(x-.1, y-.1, 1.2, 1.2)
-        //     }
-        // }
+    //     //     scale(width*pixelDensity()/64)
+    //     //     // console.log('ПОЕХАЛИ',u_tick,64)
+    //     //     for(let i = 0; i<(64)**2; i++){
+    //     //         let [x, y] = [i%(64), floor(i/64)]
+    //     //         // console.log('x, y', x, y, b.get(x,y))
+    //     //         fill(...b.get(x*64,(64*pixelDensity()-1-y)*64))
+    //     //         rect(x-.1, y-.1, 1.2, 1.2)
+    //     //     }
+    //     // }
 
 
 
-        if (floor(u_tick) % adaptFrames == 0) {
-            b.pixelDensity(b.pixelDensity()*2)
-            pixelDensity(b.pixelDensity())
-        }        
-        // noLoop()
-      } else {
-        // frameRate(1)
-        let renderSize = b.width*b.pixelDensity()
-        splits = size * pixelDensity() / renderSize;
-        // splits = ceil(size / renderSize);
-        let i = (u_tick % ceil(splits)) / splits;
-        let j = floor(u_tick / ceil(splits)) / splits;
-        if (j >= 1) {
-          noLoop();
-          return;
-        }
-        let tileSize = 1 / splits;
-        console.log('')
-        console.log('tileSize', tileSize, 'splits', splits, 'renderSize', renderSize)
-        console.log('b.width', b.width)
-        let viewbox = [i, j, tileSize, tileSize];
-        // div.html('viewbox: ' + viewbox);
-        // document.querySelector('div.debug').innerHTML = Object.keys(s).filter(d=>d=='_renderer').map(key=>JSON.stringify(Object.keys(s[key])));//.filter(d=>d=='vb').map(key2=>JSON.stringify(s[key][key2])))
-        // document.querySelector('div.debug').innerHTML = Object.keys(s).map(k=>k+': '+s[k]+'<br><br>')
-        // document.querySelector('div.debug').innerHTML = Object.keys(s[Object.keys(s).filter(d=>d=='attributes')]).map(k=>k+': '+s[k]).join('<br>')
-        // document.querySelector('div.debug').innerHTML = Object.keys(s)
-        // document.querySelector('div.debug').innerHTML += '<br><br>'
-        // document.querySelector('div.debug').innerHTML += s['uniforms']
-        // document.querySelector('div.debug').innerHTML = Object.keys(b).map(k=>k+': '+b[k]+'<br><br>')
-        // document.querySelectorAll('canvas')[0].style.position='static'
-        // document.querySelectorAll('canvas')[1].style.position='static'
-        // document.querySelectorAll('canvas')[1].style.display='block'
-        // document.querySelectorAll('canvas')[1].style.width='100%'
-        // document.querySelectorAll('canvas')[1].style.height='100%'
-        console.log('viewbox', viewbox)
-        s.setUniform("vb", viewbox);
-        // s.setUniform("shade", shade);
-        // s.setUniform("k", tileSize * density);
-        s.setUniform('res', renderSize)
-        let qs = 1;
-        b.background('yellow') // FIXME
-        b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
-        // let qs = 1;
-        // textureMode(NORMAL);
-        // texture(b)
-        // quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
+    //     if (floor(u_tick) % adaptFrames == 0) {
+    //         b.pixelDensity(b.pixelDensity()*2)
+    //         pixelDensity(b.pixelDensity())
+    //     }        
+    //     // noLoop()
+    //   } else {
+    //     // frameRate(1)
+    //     let renderSize = b.width*b.pixelDensity()
+    //     splits = size * pixelDensity() / renderSize;
+    //     // splits = ceil(size / renderSize);
+    //     let i = (u_tick % ceil(splits)) / splits;
+    //     let j = floor(u_tick / ceil(splits)) / splits;
+    //     if (j >= 1) {
+    //       noLoop();
+    //       return;
+    //     }
+    //     let tileSize = 1 / splits;
+    //     console.log('')
+    //     console.log('tileSize', tileSize, 'splits', splits, 'renderSize', renderSize)
+    //     console.log('b.width', b.width)
+    //     let viewbox = [i, j, tileSize, tileSize];
+    //     // div.html('viewbox: ' + viewbox);
+    //     // document.querySelector('div.debug').innerHTML = Object.keys(s).filter(d=>d=='_renderer').map(key=>JSON.stringify(Object.keys(s[key])));//.filter(d=>d=='vb').map(key2=>JSON.stringify(s[key][key2])))
+    //     // document.querySelector('div.debug').innerHTML = Object.keys(s).map(k=>k+': '+s[k]+'<br><br>')
+    //     // document.querySelector('div.debug').innerHTML = Object.keys(s[Object.keys(s).filter(d=>d=='attributes')]).map(k=>k+': '+s[k]).join('<br>')
+    //     // document.querySelector('div.debug').innerHTML = Object.keys(s)
+    //     // document.querySelector('div.debug').innerHTML += '<br><br>'
+    //     // document.querySelector('div.debug').innerHTML += s['uniforms']
+    //     // document.querySelector('div.debug').innerHTML = Object.keys(b).map(k=>k+': '+b[k]+'<br><br>')
+    //     // document.querySelectorAll('canvas')[0].style.position='static'
+    //     // document.querySelectorAll('canvas')[1].style.position='static'
+    //     // document.querySelectorAll('canvas')[1].style.display='block'
+    //     // document.querySelectorAll('canvas')[1].style.width='100%'
+    //     // document.querySelectorAll('canvas')[1].style.height='100%'
+    //     console.log('viewbox', viewbox)
+    //     s.setUniform("vb", viewbox);
+    //     // s.setUniform("shade", shade);
+    //     // s.setUniform("k", tileSize * density);
+    //     s.setUniform('res', renderSize)
+    //     let qs = 1;
+    //     b.background('yellow') // FIXME
+    //     b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
+    //     // let qs = 1;
+    //     // textureMode(NORMAL);
+    //     // texture(b)
+    //     // quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
 
-        image( 
-          b,
-          size * i,
-          size * (1 - j - tileSize),
-          size * tileSize,
-          size * tileSize,
-        //   gSize / 2 - (gSize * tileSize * density) / 2,
-        //   gSize / 2 - (gSize * tileSize * density) / 2,
-        //   gSize * tileSize * density,
-        //   gSize * tileSize * density
-        );
-        console.log(          
-            'target region',
-            size * i,
-            size * (1 - j - tileSize),
-            size * tileSize,
-            size * tileSize
-        )
-      }
-      u_tick++;
-    //   if(u_tick > 13)noLoop()
-    }
+    //     image( 
+    //       b,
+    //       size * i,
+    //       size * (1 - j - tileSize),
+    //       size * tileSize,
+    //       size * tileSize,
+    //     //   gSize / 2 - (gSize * tileSize * density) / 2,
+    //     //   gSize / 2 - (gSize * tileSize * density) / 2,
+    //     //   gSize * tileSize * density,
+    //     //   gSize * tileSize * density
+    //     );
+    //     console.log(          
+    //         'target region',
+    //         size * i,
+    //         size * (1 - j - tileSize),
+    //         size * tileSize,
+    //         size * tileSize
+    //     )
+    //   }
+    //   u_tick++;
+    // //   if(u_tick > 13)noLoop()
+    // }
     
     
     /*end render*/
