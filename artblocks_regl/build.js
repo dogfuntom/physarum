@@ -2,6 +2,8 @@ const fs = require('fs')
 const minifyJs = require("terser").minify;
 const { GlslMinify } = require('webpack-glsl-minify/build/minify')
 
+/*glsl*/    /*glsl*/
+
 const minifyOptions = {
   compress: {
     dead_code: true,
@@ -18,12 +20,14 @@ const minifyOptions = {
   },
   mangle: {
     eval: true,
-    properties: {
-      reserved: ['image', 'setUniform', 'shader','pixelDensity','quad']
-      // regex: /^(size|span)$/,
-    },
+    properties: false,
+    // properties: {
+    //   reserved: ['image', 'setUniform', 'shader','pixelDensity','quad']
+    //   // regex: /^(size|span)$/,
+    // },
     keep_classnames: false,
-    keep_fnames: /^(setup|draw)$/,
+    keep_fnames: true,
+    // keep_fnames: /^(setup|draw)$/,
     toplevel: true,
   },
   module: false,
@@ -36,20 +40,20 @@ const minifyOptions = {
 try {
   (async () => {
     let data = fs.readFileSync('./index.js', 'utf8')
-    let [dataJs1, dataGlsl, dataJs2] = data.split('/*glsl*/')
+    // let [dataJs1, dataGlsl, dataJs2] = data.split('/*glsl*/')
     // dataGlsl = ''
-    dataGlsl = dataGlsl.slice(1, -1)
-    dataGlsl = dataGlsl.replaceAll('${', '${gl_z_')
-    new GlslMinify().execute(dataGlsl).then(result => {
-      dataGlsl = result.sourceCode
-      dataGlsl = dataGlsl.replaceAll('gl_z_', '')
-      data = dataJs1 + '`' + dataGlsl + '`' + dataJs2
+    // dataGlsl = dataGlsl.slice(1, -1)
+    // dataGlsl = dataGlsl.replaceAll('${', '${gl_z_')
+    // new GlslMinify().execute(dataGlsl).then(result => {
+      // dataGlsl = result.sourceCode
+      // dataGlsl = dataGlsl.replaceAll('gl_z_', '')
+      // data = dataJs1 + '`' + dataGlsl + '`' + dataJs2
 
       let dataArt = data.replaceAll(/\/\*begin features\*\/(.|\n)*?\/\*end features\*\//gm, '');
       minifyJs(dataArt, minifyOptions).then((c) => {
         let art = c.code
         art += `'tx shvembldr piter stranger'`
-        fs.writeFileSync("dist_/art.js", art);
+        fs.writeFileSync("dist_/art.js", dataArt/*art*/);
       })
 
       let dataFeatures = data.replaceAll(/\/\*begin render\*\/(.|\n)*?\/\*end render\*\//gm, '');
@@ -59,7 +63,7 @@ try {
       //   fs.writeFileSync("dist/features.js", features);
       // })
 
-    });
+    // });
   })();
 
 } catch (err) {
