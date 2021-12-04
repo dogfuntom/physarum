@@ -462,12 +462,18 @@ function calculateFeatures(tokenData) {
 
         size = min(windowHeight, windowWidth)
         let canvas = createCanvas(size, size)
+        document.querySelector('div.debug').innerHTML = `
+        pixelDensity(): ${pixelDensity()}<br>
+        size: ${size}<br>
+        displayDensity(): ${displayDensity()}<br>
+        windowWidth: ${windowWidth}<br>
+        `
         
         // let canvas = createCanvas(size, size, WEBGL)
         canvas.style("image-rendering", "pixelated");
         // gSize = min(size, 1024)
         b = createGraphics(2048, 2048, WEBGL);
-        b.pixelDensity(32/2048)
+        b.pixelDensity(64/2048)
         pixDensInit = pixelDensity()
         b.fill(0);
         // noStroke();
@@ -861,18 +867,23 @@ function calculateFeatures(tokenData) {
         console.log(b.pixelDensity())
     
         // adapt
-        if (b.width*b.pixelDensity() > gSize || u_tick > adaptFrames&& delay + delayPrev > maxDelay * 2 ) {
+        if (b.width*b.pixelDensity() > gSize || u_tick > adaptFrames&& (delay + delayPrev)/2 > maxDelay ) {
             document.querySelector('div.debug').innerHTML += b.width*b.pixelDensity()
-
+            
             state = "render";
             u_tick = 0;
             // noLoop()
             // background('red')
             pixelDensity(pixDensInit)
             // image(b,0,0,width,height);
+            // if((delay + delayPrev)/2 > maxDelay * 2)
             if(b.width*b.pixelDensity() < 256)
+                s.setUniform("aa", 4);
+            if((delay + delayPrev)/2 > maxDelay * 4)
                 s.setUniform("aa", 1);
-
+            document.querySelector('div.debug').innerHTML += `
+            (delay + delayPrev)/2: ${(delay + delayPrev)/2}<br>
+            `
             return;
         }
 
