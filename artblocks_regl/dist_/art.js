@@ -39,7 +39,7 @@
     let splits;
     let maxDelay = 40;
     let adaptFrames = 10;
-    let size, gSize;
+    let size, gSize, ts, cols;
         
 
     
@@ -521,6 +521,9 @@
         canvas_.style.height = size_/window.devicePixelRatio + 'px'
         canvas_.width = size_
         canvas_.height = size_
+        // ts=size_/(Math.ceil(size_/128/2)*2+1)
+        cols = (size_/128/2|0)*2+3
+        ts=size_/cols
         var regl = createREGL(gl)
         // console.log(regl)
         // console.log('regl')
@@ -799,14 +802,14 @@
                 box: {
                   x: regl.prop('x'),
                   y: regl.prop('y'),
-                  width: 128,
-                  height: 128
+                  width: ts+1,
+                  height: ts+1
                 }
             },
             count: 6
           })
         
-          let rows = (size_ / 128 | 0) + 1
+          let rows = (size_ / ts | 0) + 1
           let tick = 0;
 
           function* spiral() {
@@ -821,15 +824,12 @@
           let it = spiral()
           function frame(){
                 let [x, y] = it.next().value;
-                let xx = size_/2 - 128/2 + 128 * x
-            //   drawTriangle({res: size_, x: (tick%rows) * 128, y: (tick/rows|0)*128})
-              drawTriangle({res: size_, x: xx, y: size_/2 - 128/2 - 128 * y})
-              tick++
-              if(xx < size_)requestAnimationFrame(frame)
+            //   drawTriangle({res: size_, x: (tick%rows) * ts, y: (tick/rows|0)*ts})
+              drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x, y: size_/2 - ts/2 - ts * y})
+              if(++tick < cols**2)requestAnimationFrame(frame)
               console.log(tick)
           }
           frame()
-
     }
     
 
