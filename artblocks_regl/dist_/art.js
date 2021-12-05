@@ -145,7 +145,6 @@
         u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
             .slice(30*features.Palette, 30*(features.Palette+1)).match(/(.{2})/g).map(v=>Number("0x"+v)/255)
             // console.assert(palette, palette2)
-            console.log('palette',u_palette)
     }
     
     
@@ -238,7 +237,6 @@
     
             for (let try_ = 0; try_ < maxTry; try_++) {
                 bvt = JSON.parse(JSON.stringify(bvtInitial))
-                console.log(u_palette)
                 bvt.color = R() * 4 + 1 | 0
                 bvt.color2 = R() * 4 + 1 | 0
                 if (features.ColorScheme == 2) bvt.color = bvt.color2 = 1
@@ -442,11 +440,7 @@
 
         // size = min(windowHeight, windowWidth)
         // let canvas = createCanvas(size, size)
-        // document.querySelector('div.debug').innerHTML = `
-        // window.screen.availWidth: ${window.screen.availWidth}<br>
-        // window.screen.width * window.devicePixelRatio: ${window.screen.width * window.devicePixelRatio}<br>
-        // window.screen.width: ${window.screen.width}<br>
-        // `
+
         
         // let canvas = createCanvas(size, size, WEBGL)
         // canvas.style("image-rendering", "pixelated");
@@ -510,9 +504,10 @@
 
         let canvas_ = document.createElement('canvas')
         const gl = canvas_.getContext('webgl', {
-            antialias: true,
+            // antialias: true,
             preserveDrawingBuffer: true,
-          });        
+            // failIfMajorPerformanceCaveat: true,
+          });
         document.body.appendChild(canvas_)
         canvas_.style.background=`rgb(${u_palette.slice(0,3).map(v=>v*255)})`
         if(features.ColorScheme == 4 || features.ColorScheme == 3) canvas_.style.background = '#333'
@@ -522,8 +517,7 @@
         canvas_.width = size_
         canvas_.height = size_
         // ts=size_/(Math.ceil(size_/128/2)*2+1)
-        cols = (size_/128/2|0)*2+3
-        ts=size_/cols
+        let tsTarget = 16
         var regl = createREGL(gl)
         // console.log(regl)
         // console.log('regl')
@@ -531,7 +525,11 @@
         // console.log(uniforms)
 
         
-        
+        // document.querySelector('div.debug').innerHTML = `
+        // gl.failIfMajorPerformanceCaveat: ${gl.failIfMajorPerformanceCaveat}<br>
+        // `
+
+
         const drawTriangle = regl({
             frag: `precision highp float;
             #define BLOCKS_NUMBER_MAX 60
@@ -656,133 +654,136 @@
                 return normalize(V(dist(p + e.xyy) - dist(p - e.xyy), dist(p + e.yxy) - dist(p - e.yxy), dist(p + e.yyx) - dist(p - e.yyx)));
             }
             void main() {
-                V o = V(0);
-                ${uniforms}
-                vec2 uv, uvI = (gl_FragCoord.xy * 2. - z_res)/z_res;
+                // V o = V(0);
+                // ${uniforms}
+                // vec2 uv, uvI = (gl_FragCoord.xy * 2. - z_res)/z_res;
     
-                for(float A = 0.; A < 8.; A++){
-                    if(A >= z_aa) break;
-                    gl = 0.;
-                    float d = 0., e = 1e9, ep, j;
+                // for(float A = 0.; A < 8.; A++){
+                //     if(A >= z_aa) break;
+                //     gl = 0.;
+                //     float d = 0., e = 1e9, ep, j;
     
-                    float fl = floor(A/2.);
-                    float fr = mod(A,2.);
-                    vec2 pos = vec2(fr/2.,fl/4.)-.5;
-                    if(mod(fl, 2.)==0.) pos.x += .25; //https://bit.ly/30g2DXs
+                //     float fl = floor(A/2.);
+                //     float fr = mod(A,2.);
+                //     vec2 pos = vec2(fr/2.,fl/4.)-.5;
+                //     if(mod(fl, 2.)==0.) pos.x += .25; //https://bit.ly/30g2DXs
     
-                    // pos *= 0.;
+                //     // pos *= 0.;
             
-                    // float z_tick = mod(f,8.);
-                    // float fl = floor(z_tick/2.);
-                    // float fr = mod(z_tick,2.);
-                    // vec2 pos = vec2(fr/2.,fract(fl/2.));
-                    // if(floor(fl/2.)==1.) pos += .25;
+                //     // float z_tick = mod(f,8.);
+                //     // float fl = floor(z_tick/2.);
+                //     // float fr = mod(z_tick,2.);
+                //     // vec2 pos = vec2(fr/2.,fract(fl/2.));
+                //     // if(floor(fl/2.)==1.) pos += .25;
             
-                    // float fl = floor(z_tick/4.);
-                    // float fr = mod(z_tick,4.);
-                    // vec2 pos = vec2(fr/4.,fl/8.);
-                    // if(mod(fl, 2.)==0.) pos.x += 1./8.; // https://bit.ly/3qFnhLs
+                //     // float fl = floor(z_tick/4.);
+                //     // float fr = mod(z_tick,4.);
+                //     // vec2 pos = vec2(fr/4.,fl/8.);
+                //     // if(mod(fl, 2.)==0.) pos.x += 1./8.; // https://bit.ly/3qFnhLs
     
-                    vec2 uv = uvI;
-                    uv += pos * 2. / z_res;
-                    // uv /= z_res/z_res_render;
-                    // uv -= 1.;
-                    // uv /= 2.;
-                    uv = uv * .5 + .5;
-                    uv *= z_vb.zw;
-                    uv += z_vb.xy;
-                    uv = uv * 2. - 1.;
+                //     vec2 uv = uvI;
+
+                //     pos*=0.; // FIXME
+
+                //     uv += pos * 2. / z_res;
+                //     // uv /= z_res/z_res_render;
+                //     // uv -= 1.;
+                //     // uv /= 2.;
+                //     uv = uv * .5 + .5;
+                //     uv *= z_vb.zw;
+                //     uv += z_vb.xy;
+                //     uv = uv * 2. - 1.;
     
-                    V p, ro = V(uv * float(${viewBox.scale}) + 
-                    v(${viewBox.offset.x},
-                    ${viewBox.offset.y}), -camDist), 
-                    rd = V(0, 0, .9 + .1 * rnd(length(uv)));
-                    bool outline = false;
-                    for(float i = 0.; i < STEPS; i++) {
-                        j = i;
-                        p = d * rd + ro;
-                        p.z -= camDist;
-                        p.yz *= rot(${u_camAngYZ});
-                        p.xz *= rot(${u_camAngXZ});
-                        d += e = dist(p);
-                        if(ep < e && e < .01) {
-                            // gl_FragColor = vec4(0);
-                            outline = true;
-                            break;
-                        }
-                        ep = e;
-                        if(e < EPS || e > camDist*2.)
-                            break;
-                    }
-                    V c;
-                    if(!outline) {
-                        V col1, col2;
-                        for(int j = 0; j < 20; j++) {
-                            if(colIds[0] == j)
-                                col1 = z_palette[j];
-                            if(colIds[1] == j)
-                                col2 = z_palette[j];
-                        }
+                //     V p, ro = V(uv * float(${viewBox.scale}) + 
+                //     v(${viewBox.offset.x},
+                //     ${viewBox.offset.y}), -camDist), 
+                //     rd = V(0, 0, .9 + .1 * rnd(length(uv)));
+                //     bool outline = false;
+                //     for(float i = 0.; i < STEPS; i++) {
+                //         j = i;
+                //         p = d * rd + ro;
+                //         p.z -= camDist;
+                //         p.yz *= rot(${u_camAngYZ});
+                //         p.xz *= rot(${u_camAngXZ});
+                //         d += e = dist(p);
+                //         if(ep < e && e < .01) {
+                //             // gl_FragColor = vec4(0);
+                //             outline = true;
+                //             break;
+                //         }
+                //         ep = e;
+                //         if(e < EPS || e > camDist*2.)
+                //             break;
+                //     }
+                //     V c;
+                //     if(!outline) {
+                //         V col1, col2;
+                //         for(int j = 0; j < 20; j++) {
+                //             if(colIds[0] == j)
+                //                 col1 = z_palette[j];
+                //             if(colIds[1] == j)
+                //                 col2 = z_palette[j];
+                //         }
                 
-                        V col = col1;
+                //         V col = col1;
                 
-                        // Texturing
-                        //
-                        // layers
-                        if(colIds.z == 1)
-                            if(sin(p.y * PI * 3.) > 0.)
-                                col = col2;
-                        if(colIds.z == 2)
-                            if(sin((p.x + fract(positions[0].x - sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
-                                col = col2;
+                //         // Texturing
+                //         //
+                //         // layers
+                //         if(colIds.z == 1)
+                //             if(sin(p.y * PI * 3.) > 0.)
+                //                 col = col2;
+                //         if(colIds.z == 2)
+                //             if(sin((p.x + fract(positions[0].x - sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
+                //                 col = col2;
                                 
-                        // pride
-                        if(${features.ColorScheme} == 3)
-                            col = sin(length(p) / max(float(${gs}), float(${features.Height})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+                //         // pride
+                //         if(${features.ColorScheme} == 3)
+                //             col = sin(length(p) / max(float(${gs}), float(${features.Height})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
                         
-                        if(eye == 1) {
-                            col = V(0);
-                            V pe = p + fract(${gs}. / 2.);
-                            pe = fract(pe) - .5;
-                            col += step(.3, length(pe.xz));
-                            col += step(-.1, -length(pe.xz + .1));
-                        }
+                //         if(eye == 1) {
+                //             col = V(0);
+                //             V pe = p + fract(${gs}. / 2.);
+                //             pe = fract(pe) - .5;
+                //             col += step(.3, length(pe.xz));
+                //             col += step(-.1, -length(pe.xz + .1));
+                //         }
                                 
-                        if(colIds.z == -1) {
-                            c = z_palette[0];
-                            if(length(c) > .4){
-                                c *= smoothstep(5., 0., length(uv + v(${features.BackgroundLight}, -1)));
-                            }
-                            // c = V(1,0,1);
-                            if(${features.ColorScheme} == 3){
-                                c = V(.2);
-                            }
-                            if(sin(length(pow(abs(uv), v(${features.BackgroundType}))) * 32.) > 0.)
-                                c *= .95;
-                        } else {
-                            c = V(1,0,1);
-                            // shading
-                            c = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(V(0, 1, 1))) * .2 + .8) * col;
+                //         if(colIds.z == -1) {
+                //             c = z_palette[0];
+                //             if(length(c) > .4){
+                //                 c *= smoothstep(5., 0., length(uv + v(${features.BackgroundLight}, -1)));
+                //             }
+                //             // c = V(1,0,1);
+                //             if(${features.ColorScheme} == 3){
+                //                 c = V(.2);
+                //             }
+                //             if(sin(length(pow(abs(uv), v(${features.BackgroundType}))) * 32.) > 0.)
+                //                 c *= .95;
+                //         } else {
+                //             c = V(1,0,1);
+                //             // shading
+                //             c = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(V(0, 1, 1))) * .2 + .8) * col;
                             
-                            // glare
-                            c += pow(abs(dot(norm(p), normalize(V(0., 3., 1.)))), 40.);
-                            // c.r = 1.;
-                        }
-                    }
+                //             // glare
+                //             c += pow(abs(dot(norm(p), normalize(V(0., 3., 1.)))), 40.);
+                //             // c.r = 1.;
+                //         }
+                //     }
                     
-                    // gazya
-                    if(${features.ColorScheme} == 4)
-                        c = (V(10. / j));
+                //     // gazya
+                //     if(${features.ColorScheme} == 4)
+                //         c = (V(10. / j));
                 
-                    // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
-                    // gl_FragColor=vec4(uv,0,1);
-                    // gl_FragColor = vec4(o, 1);
-                    // gl_FragColor = mix(texture2D(z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (z_tick + 1.));
-                    // o += step(.5,fract(length(uv)*4.));
-                    o += c;
-                }
-                gl_FragColor = vec4(o/z_aa,1);
-                // gl_FragColor = vec4(gl_FragCoord.xy/z_res,0,1);
+                //     // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
+                //     // gl_FragColor=vec4(uv,0,1);
+                //     // gl_FragColor = vec4(o, 1);
+                //     // gl_FragColor = mix(texture2D(z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (z_tick + 1.));
+                //     // o += step(.5,fract(length(uv)*4.));
+                //     o += c;
+                // }
+                // gl_FragColor = vec4(o/z_aa,1);
+                gl_FragColor = vec4(vec3(mod(gl_FragCoord.x/2.+gl_FragCoord.y/2.,2.)),1);
             }`,
           
             vert: `attribute vec2 position;void main() {gl_Position = vec4(position, 0, 1);}`,
@@ -794,18 +795,18 @@
             uniforms: {
                 z_res: regl.prop('res'),
                 z_palette: u_palette,
-                z_aa: 8,
+                z_aa: 8,//regl.prop('aa'),
                 z_vb: [0,0,1,1],
             },
-            scissor: {
-                enable: true,
-                box: {
-                  x: regl.prop('x'),
-                  y: regl.prop('y'),
-                  width: ts+1,
-                  height: ts+1
-                }
-            },
+            // scissor: {
+            //     enable: true,
+            //     box: {
+            //       x: regl.prop('x'),
+            //       y: regl.prop('y'),
+            //       width: regl.prop('ts_'),
+            //       height: regl.prop('ts_')
+            //     }
+            // },
             count: 6
           })
         
@@ -820,16 +821,43 @@
               d=-d,m++
             }
           }
-          
           let it = spiral()
-          function frame(){
-                let [x, y] = it.next().value;
-            //   drawTriangle({res: size_, x: (tick%rows) * ts, y: (tick/rows|0)*ts})
-              drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x, y: size_/2 - ts/2 - ts * y})
-              if(++tick < cols**2)requestAnimationFrame(frame)
-              console.log(tick)
-          }
-          frame()
+          
+        //   function frame(){
+        //         let [x, y] = it.next().value;
+        //     //   drawTriangle({res: size_, x: (tick%rows) * ts, y: (tick/rows|0)*ts})
+        //       drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x, y: size_/2 - ts/2 - ts * y})
+        //       if(++tick < cols**2)requestAnimationFrame(frame)
+        //       console.log(tick)
+        //   }
+        //   frame()
+
+        drawTriangle({res: size_, x: size_/2-tsTarget/2, y: size_/2-tsTarget/2, ts_:tsTarget, aa: 8})
+
+        t = +new Date()
+        let resFound = false
+        let aa = 8
+        let fr = regl.frame(function (context) {
+          console.log('tsTarget',tsTarget)
+          cols = (size_/tsTarget/2|0)*2+3
+          ts=size_/cols
+          for(let i=0;i++<1;){
+            let [x, y] = it.next().value;
+            // drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x, y: size_/2 - ts/2 - ts * y, ts_:ts, aa: aa})
+            drawTriangle({res: size_, x: 0, y: 0, ts_:size_, aa: aa})
+          tick++
+        }
+        //   if(!resFound) {tsTarget *= 1.05, it = spiral(), tick=0}
+            tsTarget=8
+
+            // if(++tick > cols**2)
+            fr.cancel()
+            // if(!resFound && (new Date() - t > 100 || tsTarget > size_) ) {resFound = true;/* if(tsTarget < 64) {aa=1, tsTarget*=2}*/}
+            console.log(new Date() - t)
+            t = +new Date()
+          })
+        
+
     }
     
 
