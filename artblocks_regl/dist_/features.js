@@ -38,7 +38,6 @@ function calculateFeatures(tokenData) {
     let blocksHeightMap, disallowedHeightMap;
     let blocks
     let vertices
-    let palette
     let u_tick
     let viewBox
     // new
@@ -148,16 +147,12 @@ function calculateFeatures(tokenData) {
         //     ["#e4572e", "#29335c", "#a8c686", "#669bbc", "#f3a712"],
         // ][features.Palette]
     
-        palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
-            .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features.Palette]
-            console.log('palette',palette)
-
-        let badColor = palette.pop()
-        palette.push(badColor)
-        // console.log(palette)
-        palette = SH(palette)
-        console.log(palette)
-        if (features.ColorScheme == 2) palette = palette.slice(0, 2)
+        // palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
+            // .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features.Palette]
+        u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
+            .slice(30*features.Palette, 30*(features.Palette+1)).match(/(.{2})/g).map(v=>Number("0x"+v)/255)
+            // console.assert(palette, palette2)
+            console.log('palette',u_palette)
     }
     
     
@@ -250,8 +245,10 @@ function calculateFeatures(tokenData) {
     
             for (let try_ = 0; try_ < maxTry; try_++) {
                 bvt = JSON.parse(JSON.stringify(bvtInitial))
-                bvt.color = R() * (palette.length - 1 | 0) + 1
-                bvt.color2 = R() * (palette.length - 1 | 0) + 1
+                console.log(u_palette)
+                bvt.color = R() * 4 + 1 | 0
+                bvt.color2 = R() * 4 + 1 | 0
+                if (features.ColorScheme == 2) bvt.color = bvt.color2 = 1
                 bvt.texture = R() * 4 | 0
                 if (features.ColorScheme == 1) bvt.texture = 0
                 // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
@@ -436,7 +433,6 @@ function calculateFeatures(tokenData) {
     
         init()
     
-    
         placeBlocks()
 
         // console.log(blocks)
@@ -483,17 +479,25 @@ function calculateFeatures(tokenData) {
 
 
         let canvas_ = document.createElement('canvas')
+        const gl = canvas_.getContext('webgl', {
+            antialias: true,
+            preserveDrawingBuffer: true,
+          });        
         document.body.appendChild(canvas_)
+        canvas_.style.background=`rgb(${u_palette.slice(0,3).map(v=>v*255)})`
+        if(features.ColorScheme == 4 || features.ColorScheme == 3) canvas_.style.background = '#333'
         let size_ = Math.min(window.innerWidth, window.innerHeight)*window.devicePixelRatio
         canvas_.style.width = size_/window.devicePixelRatio + 'px'
         canvas_.style.height = size_/window.devicePixelRatio + 'px'
         canvas_.width = size_
         canvas_.height = size_
-        var regl = createREGL(canvas_)
+        var regl = createREGL(gl)
         // console.log(regl)
         // console.log('regl')
         
         // console.log(uniforms)
+
+        
         
         const drawTriangle = regl({
             frag: `precision highp float;
@@ -757,19 +761,49 @@ function calculateFeatures(tokenData) {
             uniforms: {
                 z_res: regl.prop('res'),
                 z_palette: u_palette,
-                z_aa: 1,
+                z_aa: 8,
                 z_vb: [0,0,1,1],
             },
-          
+            scissor: {
+                enable: true,
+                box: {
+                  x: regl.prop('x'),
+                  y: regl.prop('y'),
+                  width: 128,
+                  height: 128
+                }
+            },
             count: 6
           })
         
-          drawTriangle({res: size_})
-        //   console.log(size_)
-        //   console.log(window.devicePixelRatio)
+          let rows = (size_ / 128 | 0) + 1
+          let tick = 0;
+
+          function* spiral() {
+            let [x,y,d,m] = [0,0,1,1];
+            while (1) {
+              while (2 * x * d < m) yield [x, y], x += d
+              while (2 * y * d < m) yield [x, y], y += d
+              d=-d,m++
+            }
+          }
+          
+          let it = spiral()
+          function frame(){
+                let [x, y] = it.next().value;
+                let xx = size_/2 - 128/2 + 128 * x
+            //   drawTriangle({res: size_, x: (tick%rows) * 128, y: (tick/rows|0)*128})
+              drawTriangle({res: size_, x: xx, y: size_/2 - 128/2 - 128 * y})
+              tick++
+              if(xx < size_)requestAnimationFrame(frame)
+              console.log(tick)
+          }
+          frame()
+
     }
     
-    
+
+
     
     
     

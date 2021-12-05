@@ -31,7 +31,6 @@
     let blocksHeightMap, disallowedHeightMap;
     let blocks
     let vertices
-    let palette
     let u_tick
     let viewBox
     // new
@@ -141,16 +140,12 @@
         //     ["#e4572e", "#29335c", "#a8c686", "#669bbc", "#f3a712"],
         // ][features.Palette]
     
-        palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
-            .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features.Palette]
-            console.log('palette',palette)
-
-        let badColor = palette.pop()
-        palette.push(badColor)
-        // console.log(palette)
-        palette = SH(palette)
-        console.log(palette)
-        if (features.ColorScheme == 2) palette = palette.slice(0, 2)
+        // palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
+            // .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features.Palette]
+        u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
+            .slice(30*features.Palette, 30*(features.Palette+1)).match(/(.{2})/g).map(v=>Number("0x"+v)/255)
+            // console.assert(palette, palette2)
+            console.log('palette',u_palette)
     }
     
     
@@ -243,8 +238,10 @@
     
             for (let try_ = 0; try_ < maxTry; try_++) {
                 bvt = JSON.parse(JSON.stringify(bvtInitial))
-                bvt.color = R() * (palette.length - 1 | 0) + 1
-                bvt.color2 = R() * (palette.length - 1 | 0) + 1
+                console.log(u_palette)
+                bvt.color = R() * 4 + 1 | 0
+                bvt.color2 = R() * 4 + 1 | 0
+                if (features.ColorScheme == 2) bvt.color = bvt.color2 = 1
                 bvt.texture = R() * 4 | 0
                 if (features.ColorScheme == 1) bvt.texture = 0
                 // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
@@ -445,12 +442,11 @@
 
         // size = min(windowHeight, windowWidth)
         // let canvas = createCanvas(size, size)
-        document.querySelector('div.debug').innerHTML = `
-        pixelDensity(): ${pixelDensity()}<br>
-        size: ${size}<br>
-        displayDensity(): ${displayDensity()}<br>
-        windowWidth: ${windowWidth}<br>
-        `
+        // document.querySelector('div.debug').innerHTML = `
+        // window.screen.availWidth: ${window.screen.availWidth}<br>
+        // window.screen.width * window.devicePixelRatio: ${window.screen.width * window.devicePixelRatio}<br>
+        // window.screen.width: ${window.screen.width}<br>
+        // `
         
         // let canvas = createCanvas(size, size, WEBGL)
         // canvas.style("image-rendering", "pixelated");
@@ -470,7 +466,6 @@
     
         init()
     
-    
         placeBlocks()
 
         // console.log(blocks)
@@ -478,14 +473,8 @@
         /*begin render*/
         findViewBox()
     
-        // u_palette = palette.map(c=>color(c).levels.slice(0,3)).flat().map(d=>d/255)
-        u_palette = palette.map(c=>c.match(/(.{2})/g).map(v=>Number("0x"+v)/255)).flat()
         console.log(u_palette)
-        // console.log(u_palette)
         u_colors = blocks.map(b => [b.color, b.color2, b.texture]).flat()
-    
-        // console.log(blocks.map(b=>b.type))
-        // console.log(blocks.filter(b=>b.type==7))
     
         let uniforms = ``
         uniforms += blocks.map((b, i) =>
@@ -496,266 +485,6 @@
             `colors[${i}]=ivec3(${b.color},${b.color2},${b.texture});`).join('')
         uniforms += blocks.map((b, i) =>
             `roty[${i}]=vec2(${b.rot},${b.type});`).join('')
-        // console.log(uniforms)
-    
-    
-        // s = b.createShader(`precision highp float;attribute vec3 aPosition;void main() { gl_Position = vec4(aPosition,1.0);}`,
-        // `precision highp float;
-        // // #define BLOCKS_NUMBER_MAX 60
-        // // #define PI 3.1415
-        // // #define S smoothstep
-        // // #define V vec3
-        // // #define v vec2
-        // // float rnd(float x) {return fract(54321.987 * sin(987.12345 * mod(x,12.34567)));}
-        // // mat2 rot(float a) {return mat2(cos(a),-sin(a),sin(a),cos(a));}
-        // // #define STEPS 4e2
-        // // #define EPS .001
-        // // float sabs(float p) {return sqrt(abs(p)*abs(p)+5e-5);}
-        // // float smax(float a, float b) {return (a+b+sabs(a-b))*.5;}
-        
-        
-        // // vec3 gl_z_positions[BLOCKS_NUMBER_MAX];
-        // // vec3 gl_z_sizes[BLOCKS_NUMBER_MAX];
-        // // vec2 gl_z_roty[BLOCKS_NUMBER_MAX];
-        // // ivec3 gl_z_colors[BLOCKS_NUMBER_MAX];
-        
-        // // uniform V gl_z_palette[20];
-        // // uniform sampler2D gl_z_backbuffer;
-        // // uniform float gl_z_tick;
-        // // uniform float gl_z_aa;
-        // // uniform float gl_z_res;
-        // // // uniform float gl_z_res_render;
-        // // uniform vec4 gl_z_vb;
-
-        // // ivec3 colIds;
-        // // float gl;
-        // // float camDist = 1e2;
-        // // // v u_res = v(${width}, ${height})*${pixelDensity() + 1e-6};
-        
-        // // float cyl(V p, V s, float cornerR) {
-        // //     // s.x — height
-        // //     // s.y — thickness
-        // //     // s.x — radius
-        // //     p.y -= clamp(p.y, -s.x, s.x);
-        // //     float len = length(p.xz) - s.z;
-        // //     len -= clamp(len, -s.y, s.y);
-        // //     float cyl = length(v(len, p.y)) - cornerR;
-        // //     return cyl;
-        // // }
-        
-        // // int eye;
-        
-        // // float dist(V p) {
-        // //     colIds = ivec3(0, 0, -1);
-        // //     p.x = abs(p.x);
-        // //     float res = p.y + 1.; // floor plane
-        // //     for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
-        // //         eye = 0;
-        // //         if(i >= ${blocks.length})
-        // //             break;
-        // //         V pb = p;
-        // //         pb -= gl_z_positions[i];
-        // //         pb.xz *= rot(gl_z_roty[i].x * PI / 2.);
-        
-        // //         // box
-        // //         float cornerR = .01;
-        // //         float gap = .008;
-        // //         float block;
-    
-        // //         // if(gl_z_roty[i].y == 0. || gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4. || gl_z_roty[i].y == 5. || gl_z_roty[i].y == 6.) {
-        // //         V s = gl_z_sizes[i] - 2. * (cornerR + gap);
-        // //         block = length(pb - clamp(pb, -(s)/2., (s)/2.)) - cornerR * 1.4;
-        // //         // }
-        
-        // //         if(gl_z_roty[i].y == 5.) { // arc
-        // //             float cyl = length(pb.zy) - .5;
-        // //             float box = max(abs(pb.z) - .5, abs(pb.y + gl_z_sizes[i].y / 2.) - 1.);
-        // //             float hole = min(cyl, box);
-        // //             block = max(block, -hole);
-        // //         }
-        
-        // //         if(gl_z_roty[i].y == 6.) { // pillar
-        // //             float cyl_ = length(pb.zx) - .15;
-        // //             float sph = cyl(pb + V(0, gl_z_sizes[i].y - .5, 0) / 2., V(.2, .25, .2), cornerR);
-        // //             block = max(block, min(cyl_, sph));
-        // //         }
-        
-        // //         // studs
-        // //         if(gl_z_roty[i].y != 6.) { // not pillar
-        // //             V ps = pb;
-        // //             v l = gl_z_sizes[i].xz;
-        // //             ps.xz += (l - 1.) / 2.;
-        // //             ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
-        // //             float h = .24;
-        // //             ps.y -= gl_z_sizes[i].y / 2. + .02;
-        // //             ps.y -= clamp(ps.y, EPS, h);
-        // //             vec2 po = vec2(length(ps.xz), ps.y);
-        // //             po.x -= clamp(po.x, mix(EPS,.18,${features.Studs}.), .28);
-        // //             float stud = length(po)-EPS;
-        // //             block = min(stud, block);
-        // //         }
-        
-        // //         if(pb.z<0.15 && (gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4.)) { // beak
-        // //             block = smax(block, (-pb.z*.8-(gl_z_roty[i].y == 3. ? -1. : 1.)*pb.y-.5)/1.4142);
-        // //         }
-        
-        
-        // //         if(gl_z_roty[i].y == 7.) { // eye
-        // //             float eye_ = cyl(pb, V(.2, .25, .2), cornerR);
-        // //             block = eye_;
-        // //             if(eye_ < EPS) {
-        // //                 eye = 1;
-        // //             }
-        // //         }
-        
-        // //         if(block < res) {
-        // //             res = block;
-        // //             colIds = gl_z_colors[i];
-        // //         }
-        // //         if(res < EPS)
-        // //             break;
-        // //     }
-        // //     return res;
-        // // }
-        
-        // // V norm(V p) {
-        // //     v e = v(.01, 0.);
-        // //     return normalize(V(dist(p + e.xyy) - dist(p - e.xyy), dist(p + e.yxy) - dist(p - e.yxy), dist(p + e.yyx) - dist(p - e.yyx)));
-        // // }
-        // void main() {
-        //     // V o = V(0);
-        //     // ${uniforms}
-        //     // vec2 uv, uvI = (gl_FragCoord.xy * 2. - gl_z_res)/gl_z_res;
-
-        //     // for(float A = 0.; A < 8.; A++){
-        //     //     if(A >= gl_z_aa) break;
-        //     //     gl = 0.;
-        //     //     float d = 0., e = 1e9, ep, j;
-
-        //     //     float fl = floor(A/2.);
-        //     //     float fr = mod(A,2.);
-        //     //     vec2 pos = vec2(fr/2.,fl/4.)-.5;
-        //     //     if(mod(fl, 2.)==0.) pos.x += .25; //https://bit.ly/30g2DXs
-
-        //     //     // pos *= 0.;
-        
-        //     //     // float gl_z_tick = mod(f,8.);
-        //     //     // float fl = floor(gl_z_tick/2.);
-        //     //     // float fr = mod(gl_z_tick,2.);
-        //     //     // vec2 pos = vec2(fr/2.,fract(fl/2.));
-        //     //     // if(floor(fl/2.)==1.) pos += .25;
-        
-        //     //     // float fl = floor(gl_z_tick/4.);
-        //     //     // float fr = mod(gl_z_tick,4.);
-        //     //     // vec2 pos = vec2(fr/4.,fl/8.);
-        //     //     // if(mod(fl, 2.)==0.) pos.x += 1./8.; // https://bit.ly/3qFnhLs
-
-        //     //     vec2 uv = uvI;
-        //     //     uv += pos * 2. / gl_z_res;
-        //     //     // uv /= gl_z_res/gl_z_res_render;
-        //     //     // uv -= 1.;
-        //     //     // uv /= 2.;
-        //     //     uv = uv * .5 + .5;
-        //     //     uv *= gl_z_vb.zw;
-        //     //     uv += gl_z_vb.xy;
-        //     //     uv = uv * 2. - 1.;
-
-        //     //     V p, ro = V(uv * float(${viewBox.scale}) + 
-        //     //     v(${viewBox.offset.x},
-        //     //     ${viewBox.offset.y}), -camDist), 
-        //     //     rd = V(0, 0, .9 + .1 * rnd(length(uv)));
-        //     //     bool outline = false;
-        //     //     for(float i = 0.; i < STEPS; i++) {
-        //     //         j = i;
-        //     //         p = d * rd + ro;
-        //     //         p.z -= camDist;
-        //     //         p.yz *= rot(${u_camAngYZ});
-        //     //         p.xz *= rot(${u_camAngXZ});
-        //     //         d += e = dist(p);
-        //     //         if(ep < e && e < .01) {
-        //     //             // gl_FragColor = vec4(0);
-        //     //             outline = true;
-        //     //             break;
-        //     //         }
-        //     //         ep = e;
-        //     //         if(e < EPS || e > camDist*2.)
-        //     //             break;
-        //     //     }
-        //     //     V c;
-        //     //     if(!outline) {
-        //     //         V col1, col2;
-        //     //         for(int j = 0; j < 20; j++) {
-        //     //             if(colIds[0] == j)
-        //     //                 col1 = gl_z_palette[j];
-        //     //             if(colIds[1] == j)
-        //     //                 col2 = gl_z_palette[j];
-        //     //         }
-            
-        //     //         V col = col1;
-            
-        //     //         // Texturing
-        //     //         //
-        //     //         // layers
-        //     //         if(colIds.z == 1)
-        //     //             if(sin(p.y * PI * 3.) > 0.)
-        //     //                 col = col2;
-        //     //         if(colIds.z == 2)
-        //     //             if(sin((p.x + fract(gl_z_positions[0].x - gl_z_sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
-        //     //                 col = col2;
-                            
-        //     //         // pride
-        //     //         if(${features.ColorScheme} == 3)
-        //     //             col = sin(length(p) / max(float(${gs}), float(${features.Height})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
-                    
-        //     //         if(eye == 1) {
-        //     //             col = V(0);
-        //     //             V pe = p + fract(${gs}. / 2.);
-        //     //             pe = fract(pe) - .5;
-        //     //             col += step(.3, length(pe.xz));
-        //     //             col += step(-.1, -length(pe.xz + .1));
-        //     //         }
-                            
-        //     //         if(colIds.z == -1) {
-        //     //             c = gl_z_palette[0];
-        //     //             if(length(c) > .4){
-        //     //                 c *= smoothstep(5., 0., length(uv + v(${features.BackgroundLight}, -1)));
-        //     //             }
-        //     //             // c = V(1,0,1);
-        //     //             if(${features.ColorScheme} == 3){
-        //     //                 c = V(.2);
-        //     //             }
-        //     //             if(sin(length(pow(abs(uv), v(${features.BackgroundType}))) * 32.) > 0.)
-        //     //                 c *= .95;
-        //     //         } else {
-        //     //             c = V(1,0,1);
-        //     //             // shading
-        //     //             c = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(V(0, 1, 1))) * .2 + .8) * col;
-                        
-        //     //             // glare
-        //     //             c += pow(abs(dot(norm(p), normalize(V(0., 3., 1.)))), 40.);
-        //     //             // c.r = 1.;
-        //     //         }
-        //     //     }
-                
-        //     //     // gazya
-        //     //     if(${features.ColorScheme} == 4)
-        //     //         c = (V(10. / j));
-            
-        //     //     // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
-        //     //     // gl_FragColor=vec4(uv,0,1);
-        //     //     // gl_FragColor = vec4(o, 1);
-        //     //     // gl_FragColor = mix(texture2D(gl_z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (gl_z_tick + 1.));
-        //     //     // o += step(.5,fract(length(uv)*4.));
-        //     //     o += c;
-        //     // }
-        //     // gl_FragColor = vec4(o/gl_z_aa,1);
-        //     gl_FragColor = vec4(1,0,0,1);
-        // }`)
-        // b.shader(s);
-        // s.setUniform('palette', u_palette)
-        // s.setUniform("aa", 8);// Math.random()); // FIXME
-        // // s.setUniform("size", size * 2);
-        // b.background(palette[0])
 
         /*end render*/
     
@@ -780,17 +509,25 @@
 
 
         let canvas_ = document.createElement('canvas')
+        const gl = canvas_.getContext('webgl', {
+            antialias: true,
+            preserveDrawingBuffer: true,
+          });        
         document.body.appendChild(canvas_)
+        canvas_.style.background=`rgb(${u_palette.slice(0,3).map(v=>v*255)})`
+        if(features.ColorScheme == 4 || features.ColorScheme == 3) canvas_.style.background = '#333'
         let size_ = Math.min(window.innerWidth, window.innerHeight)*window.devicePixelRatio
         canvas_.style.width = size_/window.devicePixelRatio + 'px'
         canvas_.style.height = size_/window.devicePixelRatio + 'px'
         canvas_.width = size_
         canvas_.height = size_
-        var regl = createREGL(canvas_)
+        var regl = createREGL(gl)
         // console.log(regl)
         // console.log('regl')
         
         // console.log(uniforms)
+
+        
         
         const drawTriangle = regl({
             frag: `precision highp float;
@@ -1054,19 +791,49 @@
             uniforms: {
                 z_res: regl.prop('res'),
                 z_palette: u_palette,
-                z_aa: 1,
+                z_aa: 8,
                 z_vb: [0,0,1,1],
             },
-          
+            scissor: {
+                enable: true,
+                box: {
+                  x: regl.prop('x'),
+                  y: regl.prop('y'),
+                  width: 128,
+                  height: 128
+                }
+            },
             count: 6
           })
         
-          drawTriangle({res: size_})
-        //   console.log(size_)
-        //   console.log(window.devicePixelRatio)
+          let rows = (size_ / 128 | 0) + 1
+          let tick = 0;
+
+          function* spiral() {
+            let [x,y,d,m] = [0,0,1,1];
+            while (1) {
+              while (2 * x * d < m) yield [x, y], x += d
+              while (2 * y * d < m) yield [x, y], y += d
+              d=-d,m++
+            }
+          }
+          
+          let it = spiral()
+          function frame(){
+                let [x, y] = it.next().value;
+                let xx = size_/2 - 128/2 + 128 * x
+            //   drawTriangle({res: size_, x: (tick%rows) * 128, y: (tick/rows|0)*128})
+              drawTriangle({res: size_, x: xx, y: size_/2 - 128/2 - 128 * y})
+              tick++
+              if(xx < size_)requestAnimationFrame(frame)
+              console.log(tick)
+          }
+          frame()
+
     }
     
-    
+
+
     
     
     
