@@ -783,7 +783,7 @@
                 //     o += c;
                 // }
                 // gl_FragColor = vec4(o/z_aa,1);
-                gl_FragColor = vec4(vec3(mod(gl_FragCoord.x/2.+gl_FragCoord.y/2.,2.)),1);
+                gl_FragColor = vec4(vec3(mod(gl_FragCoord.x/8.+gl_FragCoord.y/8.,2.)),1);
             }`,
           
             vert: `attribute vec2 position;void main() {gl_Position = vec4(position, 0, 1);}`,
