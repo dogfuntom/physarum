@@ -493,7 +493,7 @@ function calculateFeatures(tokenData) {
         // ts=size_/(Math.ceil(size_/128/2)*2+1)
         let tsTarget = 16
         var regl = createREGL(gl)
-        // console.log(regl)
+        // console.log('size_',size_)
         // console.log('regl')
         
         // console.log(uniforms)
@@ -745,7 +745,7 @@ function calculateFeatures(tokenData) {
                     
                     // gazya
                     if(${features.ColorScheme} == 4)
-                        c = (V(10. / j));
+                        c = (V(7. / j));
                 
                     // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
                     // gl_FragColor=vec4(uv,0,1);
@@ -813,8 +813,8 @@ function calculateFeatures(tokenData) {
         tsTarget=32
         cols = (size_/tsTarget/2|0)*2+3
         ts=size_/cols
-    let fr = regl.frame(function (context) {
-        console.log('steps',steps)
+        let fr = regl.frame(function (context) {
+            // console.log('steps',steps)
             for(let i=0;i++<steps;){
                 let [x, y] = it.next().value;
                 drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x, y: size_/2 - ts/2 - ts * y, ts_:ts+1, aa: aa})
@@ -825,14 +825,14 @@ function calculateFeatures(tokenData) {
             // if(!resFound && (new Date() - t > 100 || tsTarget > size_) ) {resFound = true;/* if(tsTarget < 64) {aa=1, tsTarget*=2}*/}
             if(new Date() - t > 60) steps = Math.max(1,steps-4)
             if(new Date() - t < 30) steps+=4
-            console.log(new Date() - t)
+            // console.log(new Date() - t)
             t = +new Date()
             // document.querySelector('div.debug').innerHTML = `
             //     tick: ${tick}<br>
             //     cols**2: ${cols**2}<br>
             //     cols: ${cols}<br>
             //     `
-            if(tick > cols**2)fr.cancel()
+            if(tick > cols**2) fr.cancel()
         })
         
 
