@@ -5,7 +5,7 @@
     //     tokenData.hash = window.location.hash.slice(1)
     // }
     // arr = arr.slice(0, 10)
-    // tokenData.hash = `0x61b6634474b4bd9cc3f1ffc4fe5c69992c93f463591ee37e4501608dad5a8f86`
+    tokenData.hash = `0x61b6634474b4bd9cc3f1ffc4fe5c69992c93f463591ee37e4501608dad5a8f86`
     console.log(tokenData.hash)
     // console.clear();
     let S, ss, R, t, RL, SH
@@ -502,22 +502,30 @@
         
 
 
-        let canvas_ = document.createElement('canvas')
-        const gl = canvas_.getContext('webgl', {
-            // antialias: true,
-            preserveDrawingBuffer: true,
-            failIfMajorPerformanceCaveat: true,
-          });
-        document.body.appendChild(canvas_)
-        canvas_.style.background=`rgb(${u_palette.slice(0,3).map(v=>v*255)})`
-        if(features.ColorScheme == 4 || features.ColorScheme == 3) canvas_.style.background = '#333'
         let size_ = Math.min(window.innerWidth, window.innerHeight)*window.devicePixelRatio
-        canvas_.style.width = size_/window.devicePixelRatio + 'px'
-        canvas_.style.height = size_/window.devicePixelRatio + 'px'
-        canvas_.width = size_
-        canvas_.height = size_
+        let tsTarget = 64
+        cols = (size_/tsTarget/2|0)*2+3
+        ts=size_/cols
+        let offscreen = document.createElement('canvas')
+        let canvasBig = document.createElement('canvas')
+        var contextBig = canvasBig.getContext("2d")
+        const gl = offscreen.getContext("webgl")
+        document.body.appendChild(canvasBig)
+        document.body.appendChild(offscreen)
+        offscreen.style.opacity = .001
+        canvasBig.style.background=`rgb(${u_palette.slice(0,3).map(v=>v*255)})`
+        if(features.ColorScheme == 4 || features.ColorScheme == 3) canvasBig.style.background = '#333'
         // ts=size_/(Math.ceil(size_/128/2)*2+1)
-        let tsTarget = 16
+
+
+        offscreen.width = ts
+        offscreen.height = ts
+        canvasBig.style.width = size_/window.devicePixelRatio + 'px'
+        canvasBig.style.height = size_/window.devicePixelRatio + 'px'
+        canvasBig.width = size_
+        canvasBig.height = size_
+
+
         var regl = createREGL(gl)
         // console.log('size_',size_)
         // console.log('regl')
@@ -793,17 +801,8 @@
             uniforms: {
                 z_res: regl.prop('res'),
                 z_palette: u_palette,
-                z_aa: 8,//regl.prop('aa'),
-                z_vb: [0,0,1,1],
-            },
-            scissor: {
-                enable: true,
-                box: {
-                  x: regl.prop('x'),
-                  y: regl.prop('y'),
-                  width: regl.prop('ts_'),
-                  height: regl.prop('ts_')
-                }
+                z_aa: 8,
+                z_vb: regl.prop('vb'),
             },
             count: 6
           })
@@ -830,26 +829,38 @@
         //   }
         //   frame()
 
+        // drawTriangle({res: ts, x: 0, y: 0, ts_:ts})
         // drawTriangle({res: size_, x: size_/2-tsTarget/2, y: size_/2-tsTarget/2, ts_:tsTarget, aa: 8})
+
+
+
 
         t = +new Date()
         let resFound = false
         let aa = 8
         let steps = 1
-        tsTarget=32
-        cols = (size_/tsTarget/2|0)*2+3
-        ts=size_/cols
         let fr = regl.frame(function (context) {
             // console.log('steps',steps)
             for(let i=0;i++<steps;){
                 let [x, y] = it.next().value;
-                drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x, y: size_/2 - ts/2 - ts * y, ts_:ts+1, aa: aa})
+                // drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x, y: size_/2 - ts/2 - ts * y, ts_:ts+1, aa: aa})
+                drawTriangle({res: ts, vb: [.5+x/cols,.5+y/cols,1/cols,1/cols]})
+                // drawTriangle({res: ts, vb: [tick/cols**2,.4,.2,.2]})
+                // drawTriangle({res: ts, vb: [.4,.4,.6,.6]})
+                // let bitmap = offscreen.transferToImageBitmap()
+                // regl._gl.flush()
+                // let bitmap = offscreen.toDataURL()
+                // contextBig.transferFromImageBitmap(bitmap)
+                contextBig.drawImage(offscreen, size_/2 - ts/2 + ts * x, size_/2 - ts/2 - ts * y);
+                // canvasBig.style.background='url('+bitmap+')'
+                // canvasBig.style.backgroundSize='contain'
+                
                 tick++
             }
             //   if(!resFound) {tsTarget *= 1.05, it = spiral(), tick=0}
 
             // if(!resFound && (new Date() - t > 100 || tsTarget > size_) ) {resFound = true;/* if(tsTarget < 64) {aa=1, tsTarget*=2}*/}
-            if(new Date() - t > 60) steps = Math.max(1,steps-4)
+            if(new Date() - t > 100) steps = Math.max(1,steps-4)
             if(new Date() - t < 30) steps+=4
             // console.log(new Date() - t)
             t = +new Date()
