@@ -808,45 +808,51 @@ function calculateFeatures(tokenData) {
 
 
 
-
         t = +new Date()
         let resFound = false
         let aa = 8
-        let steps = 1
-        let fr = regl.frame(function (context) {
-            // console.log('steps',steps)
-            for(let i=0;i++<steps;){
-                let [x, y] = it.next().value;
-                // drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x, y: size_/2 - ts/2 - ts * y, ts_:ts+1, aa: aa})
-                drawTriangle({res: ts, vb: [.5+x/cols,.5+y/cols,1/cols,1/cols]})
-                // drawTriangle({res: ts, vb: [tick/cols**2,.4,.2,.2]})
-                // drawTriangle({res: ts, vb: [.4,.4,.6,.6]})
-                // let bitmap = offscreen.transferToImageBitmap()
-                // regl._gl.flush()
-                // let bitmap = offscreen.toDataURL()
-                // contextBig.transferFromImageBitmap(bitmap)
-                contextBig.drawImage(offscreen, size_/2 - ts/2 + ts * x, size_/2 - ts/2 - ts * y);
-                // canvasBig.style.background='url('+bitmap+')'
-                // canvasBig.style.backgroundSize='contain'
-                
-                tick++
+        let steps = 2
+        // function start() {
+            // let fr = regl.frame(function (context) {
+            function frame () {
+                // console.log('steps',steps)
+                for(let i=0;i++<steps;){
+                    let [x, y] = it.next().value;
+                    console.log('x,y',x,y)
+                    // drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x, y: size_/2 - ts/2 - ts * y, ts_:ts+1, aa: aa})
+                    drawTriangle({res: ts, vb: [.5+x/cols,.5+y/cols,1/cols,1/cols]})
+                    // drawTriangle({res: ts, vb: [tick/cols**2,.4,.2,.2]})
+                    // drawTriangle({res: ts, vb: [.4,.4,.6,.6]})
+                    // let bitmap = offscreen.transferToImageBitmap()
+                    // regl._gl.flush()
+                    // let bitmap = offscreen.toDataURL()
+                    // contextBig.transferFromImageBitmap(bitmap)
+                    contextBig.drawImage(offscreen, size_/2 - ts/2 + ts * x, size_/2 - ts/2 - ts * y);
+                    // canvasBig.style.background='url('+bitmap+')'
+                    // canvasBig.style.backgroundSize='contain'
+                    
+                    tick++
+                }
+                //   if(!resFound) {tsTarget *= 1.05, it = spiral(), tick=0}
+
+                // if(!resFound && (new Date() - t > 100 || tsTarget > size_) ) {resFound = true;/* if(tsTarget < 64) {aa=1, tsTarget*=2}*/}
+                // if(new Date() - t > 100) steps = Math.max(1,steps-4)
+                // if(new Date() - t < 30) steps+=4
+                // console.log(new Date() - t)
+                t = +new Date()
+                // document.querySelector('div.debug').innerHTML = `
+                //     tick: ${tick}<br>
+                //     cols**2: ${cols**2}<br>
+                //     cols: ${cols}<br>
+                //     `
+                // if(tick > cols**2)
+                //     fr.cancel()
+            // })
+                requestAnimationFrame(frame)
             }
-            //   if(!resFound) {tsTarget *= 1.05, it = spiral(), tick=0}
-
-            // if(!resFound && (new Date() - t > 100 || tsTarget > size_) ) {resFound = true;/* if(tsTarget < 64) {aa=1, tsTarget*=2}*/}
-            if(new Date() - t > 100) steps = Math.max(1,steps-4)
-            if(new Date() - t < 30) steps+=4
-            // console.log(new Date() - t)
-            t = +new Date()
-            // document.querySelector('div.debug').innerHTML = `
-            //     tick: ${tick}<br>
-            //     cols**2: ${cols**2}<br>
-            //     cols: ${cols}<br>
-            //     `
-            if(tick > cols**2) fr.cancel()
-        })
-        
-
+        // }
+        setTimeout(frame, 1000)
+        // frame()
     }
     
 
