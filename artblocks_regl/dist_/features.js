@@ -477,6 +477,11 @@ function calculateFeatures(tokenData) {
 
 
         let size_ = Math.min(window.innerWidth, window.innerHeight)*window.devicePixelRatio
+
+        let h = size_
+        let w = Math.floor(64000/size_)
+
+
         let tsTarget = 64
         cols = (size_/tsTarget/2|0)*2+3
         ts=size_/cols
@@ -492,8 +497,8 @@ function calculateFeatures(tokenData) {
         // ts=size_/(Math.ceil(size_/128/2)*2+1)
 
 
-        offscreen.width = ts
-        offscreen.height = ts
+        offscreen.width = w
+        offscreen.height = h
         canvasBig.style.width = size_/window.devicePixelRatio + 'px'
         canvasBig.style.height = size_/window.devicePixelRatio + 'px'
         canvasBig.width = size_
@@ -535,7 +540,7 @@ function calculateFeatures(tokenData) {
             
             uniform V z_palette[20];
             uniform float z_aa;
-            uniform float z_res;
+            uniform vec2 z_res;
             uniform vec4 z_vb;
     
             ivec3 colIds;
@@ -764,6 +769,7 @@ function calculateFeatures(tokenData) {
                 }
                 gl_FragColor = vec4(o/z_aa,1);
                 // gl_FragColor = vec4(vec3(mod(gl_FragCoord.x/2.+gl_FragCoord.y/2.,2.)),1);
+                // gl_FragColor = vec4(1,0,0,1);
             }`,
           
             vert: `attribute vec2 position;void main() {gl_Position = vec4(position, 0, 1);}`,
@@ -775,8 +781,17 @@ function calculateFeatures(tokenData) {
             uniforms: {
                 z_res: regl.prop('res'),
                 z_palette: u_palette,
-                z_aa: 8,
+                z_aa: 1,
                 z_vb: regl.prop('vb'),
+            },
+            scissor: {
+                enable: true,
+                box: {
+                  x: regl.prop('x'),
+                  y: regl.prop('y'),
+                  width: regl.prop('w'),
+                  height: regl.prop('h')
+                }
             },
             count: 6
           })
@@ -809,50 +824,21 @@ function calculateFeatures(tokenData) {
 
 
         t = +new Date()
-        let resFound = false
-        let aa = 8
-        let steps = 2
-        // function start() {
-            // let fr = regl.frame(function (context) {
-            function frame () {
-                // console.log('steps',steps)
-                for(let i=0;i++<steps;){
-                    let [x, y] = it.next().value;
-                    console.log('x,y',x,y)
-                    // drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x, y: size_/2 - ts/2 - ts * y, ts_:ts+1, aa: aa})
-                    drawTriangle({res: ts, vb: [.5+x/cols,.5+y/cols,1/cols,1/cols]})
-                    // drawTriangle({res: ts, vb: [tick/cols**2,.4,.2,.2]})
-                    // drawTriangle({res: ts, vb: [.4,.4,.6,.6]})
-                    // let bitmap = offscreen.transferToImageBitmap()
-                    // regl._gl.flush()
-                    // let bitmap = offscreen.toDataURL()
-                    // contextBig.transferFromImageBitmap(bitmap)
-                    contextBig.drawImage(offscreen, size_/2 - ts/2 + ts * x, size_/2 - ts/2 - ts * y);
-                    // canvasBig.style.background='url('+bitmap+')'
-                    // canvasBig.style.backgroundSize='contain'
-                    
-                    tick++
-                }
-                //   if(!resFound) {tsTarget *= 1.05, it = spiral(), tick=0}
-
-                // if(!resFound && (new Date() - t > 100 || tsTarget > size_) ) {resFound = true;/* if(tsTarget < 64) {aa=1, tsTarget*=2}*/}
-                // if(new Date() - t > 100) steps = Math.max(1,steps-4)
-                // if(new Date() - t < 30) steps+=4
-                // console.log(new Date() - t)
-                t = +new Date()
-                // document.querySelector('div.debug').innerHTML = `
-                //     tick: ${tick}<br>
-                //     cols**2: ${cols**2}<br>
-                //     cols: ${cols}<br>
-                //     `
-                // if(tick > cols**2)
-                //     fr.cancel()
-            // })
-                requestAnimationFrame(frame)
-            }
-        // }
-        setTimeout(frame, 1000)
-        // frame()
+        let xCurr = 0
+        let wCurr = 1
+        
+        let fr = regl.frame(function (context) {
+            // console.log('xCurr',xCurr)
+            // console.log('wCurr',wCurr)
+            drawTriangle({res: [xCurr+wCurr,size_], vb: [xCurr/size_,.0,(xCurr+wCurr)/size_,1], x: 0, y: 0, h: h, w: wCurr})
+            contextBig.drawImage(offscreen, xCurr, 0);
+            xCurr += wCurr
+            if(new Date() - t > 100) wCurr = Math.max(1,wCurr-4)
+            if(new Date() - t < 30) wCurr= Math.min(w, wCurr+4)
+            t = +new Date()
+            if(xCurr > size_)
+                fr.cancel()
+        })
     }
     
 
