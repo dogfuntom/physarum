@@ -809,7 +809,7 @@ function calculateFeatures(tokenData) {
             uniforms: {
                 res: regl.prop('res'),
                 palette: u_palette,
-                aa: 1,
+                aa: regl.prop('aa'),
                 vb: regl.prop('vb'),
             },
             scissor: {
@@ -826,12 +826,14 @@ function calculateFeatures(tokenData) {
         
         t = +new Date()
         let wCurr = 1
+        let aa = 1
         let pass = 0
         let step = Math.floor(size_/32)
         let xCurr = -step
         
         let fr = regl.frame(function (context) {
-            drawTriangle({res: [xCurr+wCurr,size_], vb: [xCurr/size_,.0,(xCurr+wCurr)/size_,1], x: 0, y: 0, h: size_, w: wCurr})
+            console.log(context)
+            drawTriangle({res: [xCurr+wCurr,size_], vb: [xCurr/size_,.0,(xCurr+wCurr)/size_,1], x: 0, y: 0, h: size_, w: wCurr, aa})
             if(pass==0){
                 contextBig.drawImage(offscreen, 0, 0, .01, size_, xCurr-step/2, 0, step, size_);
                 xCurr += step
@@ -839,6 +841,7 @@ function calculateFeatures(tokenData) {
                     // fr.cancel()
                     xCurr = 0
                     pass = 1
+                    aa = 8
                     // contextBig.globalAlpha = .5
                 }
             }
@@ -846,7 +849,7 @@ function calculateFeatures(tokenData) {
                 window.document.title = (xCurr/size_).toFixed(3)
                 contextBig.drawImage(offscreen, xCurr, 0);
                 xCurr += wCurr
-                if(new Date() - t > 160) wCurr = Math.max(1,wCurr-4)
+                if(new Date() - t > 160) {wCurr = Math.max(1,wCurr-4); if(wCurr < 2) aa=1}
                 if(new Date() - t < 80) wCurr= Math.min(w, wCurr+4)
                 t = +new Date()
                 if(xCurr > size_){
