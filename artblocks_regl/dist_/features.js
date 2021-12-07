@@ -7,7 +7,7 @@ function calculateFeatures(tokenData) {
     //     tokenData.hash = window.location.hash.slice(1)
     // }
     // arr = arr.slice(0, 10)
-    tokenData.hash = `0x61b6634474b4bd9cc3f1ffc4fe5c69992c93f463591ee37e4501608dad5a8f86`
+    // tokenData.hash = `0x61b6634474b4bd9cc3f1ffc4fe5c69992c93f463591ee37e4501608dad5a8f86`
     console.log(tokenData.hash)
     // console.clear();
     let S, ss, R, t, RL, SH
@@ -824,21 +824,40 @@ function calculateFeatures(tokenData) {
 
 
         t = +new Date()
-        let xCurr = 0
         let wCurr = 1
+        let pass = 0
+        let step = Math.floor(size_/32)
+        let xCurr = -step
         
+        // setTimeout(start,100)
+        // function start(){
         let fr = regl.frame(function (context) {
-            // console.log('xCurr',xCurr)
-            // console.log('wCurr',wCurr)
             drawTriangle({res: [xCurr+wCurr,size_], vb: [xCurr/size_,.0,(xCurr+wCurr)/size_,1], x: 0, y: 0, h: h, w: wCurr})
-            contextBig.drawImage(offscreen, xCurr, 0);
-            xCurr += wCurr
-            if(new Date() - t > 100) wCurr = Math.max(1,wCurr-4)
-            if(new Date() - t < 30) wCurr= Math.min(w, wCurr+4)
-            t = +new Date()
-            if(xCurr > size_)
-                fr.cancel()
+            if(pass==0){
+                contextBig.drawImage(offscreen, 0, 0, .01, size_, xCurr-step/2, 0, step, size_);
+                xCurr += step
+                if(xCurr > size_){
+                    // fr.cancel()
+                    xCurr = 0
+                    pass = 1
+                    // contextBig.globalAlpha = .5
+                }
+            }
+            else{
+                window.document.title = (xCurr/size_).toFixed(3)
+                contextBig.drawImage(offscreen, xCurr, 0);
+                xCurr += wCurr
+                if(new Date() - t > 160) wCurr = Math.max(1,wCurr-4)
+                if(new Date() - t < 80) wCurr= Math.min(w, wCurr+4)
+                t = +new Date()
+                if(xCurr > size_){
+                    window.document.title = '👾'
+                    fr.cancel()
+                }
+            }
         })
+        // }
+
     }
     
 
