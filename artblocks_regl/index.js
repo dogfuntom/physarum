@@ -230,10 +230,10 @@ function calculateFeatures(tokenData) {
             let fitness, maxFitness = -9e9
             let bv
             let bvt
-            let isExtra = false
+            let isExtra = 0
             let bvtInitial = RL(blocksVariants)
             if (n >= blocksNumber - extra && features.ColorScheme != 4)
-                bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6, maxTry = 6, isExtra = true
+                bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6, maxTry = 6, isExtra = 1
             // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
             // тот, что лучше подходит под критерий.
             // Открытый вопрос, что делать, если ничего не подошло. Варианты:
@@ -253,7 +253,7 @@ function calculateFeatures(tokenData) {
                 // надо или его копию делать, или ещё чего.
     
                 // есть ли смысл тут сделать глубокую копию? Есть. И всё в ней хранить.
-                bvt.symX = true
+                bvt.symX = 1
                 bvt.rot = R() * 4 | 0 // (blockSizeTry.x%2==0 && blockSizeTry.z%2==0)?floor(R(4)):floor(R(2))*2
                 if (bvt.type == typeEye) bvt.rot = 0
                 let makeMask = () => Array(9).fill(Array(9).fill(1))
@@ -452,36 +452,12 @@ function calculateFeatures(tokenData) {
     let div // FIXME
     function setup() {
         div = createDiv('').class('debug').size(800, 100); // FIXME
-        // density = displayDensity()
-        // density = 1
-        // pixelDensity(density)
-
-        // size = min(windowHeight, windowWidth)
-        // let canvas = createCanvas(size, size)
-
-        
-        // let canvas = createCanvas(size, size, WEBGL)
-        // canvas.style("image-rendering", "pixelated");
-        // gSize = min(size, 1024)
-        // b = createGraphics(2048, 2048, WEBGL);
-        // b.pixelDensity(64/2048)
-        // pixDensInit = pixelDensity()
-        // b.fill(0);
-        // noStroke();
-      
-        // tokenData.hash=arr.pop().hash
-        // Below part needs changing if hash changes
-        // pixelDensity(1)
-        
-        
         /*end render*/
     
         init()
     
         placeBlocks()
 
-        // console.log(blocks)
-    
         /*begin render*/
         findViewBox()
     
@@ -538,48 +514,37 @@ function calculateFeatures(tokenData) {
         return features
         /*end features*/
 
+        /*begin render*/
+
+
 
         let size_ = Math.min(window.innerWidth, window.innerHeight)*window.devicePixelRatio
-
-        let h = size_
         let w = Math.floor(64000/size_)
-
-
-        let tsTarget = 64
-        cols = (size_/tsTarget/2|0)*2+3
-        ts=size_/cols
         let offscreen = document.createElement('canvas')
         let canvasBig = document.createElement('canvas')
         var contextBig = canvasBig.getContext("2d")
-        const gl = offscreen.getContext("webgl")
-        document.body.appendChild(canvasBig)
         document.body.appendChild(offscreen)
-        offscreen.style.opacity = .001
+        document.body.appendChild(canvasBig)
+        offscreen.style.width = offscreen.style.height = 8
         canvasBig.style.background=`rgb(${u_palette.slice(0,3).map(v=>v*255)})`
         if(features.ColorScheme == 4 || features.ColorScheme == 3) canvasBig.style.background = '#333'
-        // ts=size_/(Math.ceil(size_/128/2)*2+1)
 
 
         offscreen.width = w
-        offscreen.height = h
+        offscreen.height = size_
         canvasBig.style.width = size_/window.devicePixelRatio + 'px'
         canvasBig.style.height = size_/window.devicePixelRatio + 'px'
         canvasBig.width = size_
         canvasBig.height = size_
 
 
-        var regl = createREGL(gl)
-        // console.log('size_',size_)
-        // console.log('regl')
-        
-        // console.log(uniforms)
+        var regl = createREGL(offscreen)
 
-        
-
-
+        console.log('regl.limits.maxViewportDims',regl.limits.maxViewportDims)
+        console.log('regl.limits.maxRenderbufferSize',regl.limits.maxRenderbufferSize)
 
         const drawTriangle = regl({
-            frag: `precision highp float;
+            frag: /*glsl*/`precision highp float;
             #define BLOCKS_NUMBER_MAX 60
             #define PI 3.1415
             #define S smoothstep
@@ -592,19 +557,19 @@ function calculateFeatures(tokenData) {
             float sabs(float p) {return sqrt(abs(p)*abs(p)+5e-5);}
             float smax(float a, float b) {return (a+b+sabs(a-b))*.5;}
             
-            // vec3 z_positions[BLOCKS_NUMBER_MAX];
-            vec3 positions[BLOCKS_NUMBER_MAX];
-            // vec3 z_sizes[BLOCKS_NUMBER_MAX];
-            vec3 sizes[BLOCKS_NUMBER_MAX];
-            // vec2 z_roty[BLOCKS_NUMBER_MAX];
-            vec2 roty[BLOCKS_NUMBER_MAX];
-            // ivec3 z_colors[BLOCKS_NUMBER_MAX];
-            ivec3 colors[BLOCKS_NUMBER_MAX];
+            // vec3 positions[BLOCKS_NUMBER_MAX];
+            vec3 gl_z_positions[BLOCKS_NUMBER_MAX];
+            // vec3 sizes[BLOCKS_NUMBER_MAX];
+            vec3 gl_z_sizes[BLOCKS_NUMBER_MAX];
+            // vec2 roty[BLOCKS_NUMBER_MAX];
+            vec2 gl_z_roty[BLOCKS_NUMBER_MAX];
+            // ivec3 gl_z_colors[BLOCKS_NUMBER_MAX];
+            ivec3 gl_z_colors[BLOCKS_NUMBER_MAX];
             
-            uniform V z_palette[20];
-            uniform float z_aa;
-            uniform vec2 z_res;
-            uniform vec4 z_vb;
+            uniform V gl_z_palette[20];
+            uniform float gl_z_aa;
+            uniform vec2 gl_z_res;
+            uniform vec4 gl_z_vb;
     
             ivec3 colIds;
             float gl;
@@ -633,40 +598,40 @@ function calculateFeatures(tokenData) {
                     if(i >= ${blocks.length})
                         break;
                     V pb = p;
-                    pb -= positions[i];
-                    pb.xz *= rot(roty[i].x * PI / 2.);
+                    pb -= gl_z_positions[i];
+                    pb.xz *= rot(gl_z_roty[i].x * PI / 2.);
             
                     // box
                     float cornerR = .01;
                     float gap = .008;
                     float block;
         
-                    // if(roty[i].y == 0. || roty[i].y == 3. || roty[i].y == 4. || roty[i].y == 5. || roty[i].y == 6.) {
-                    V s = sizes[i] - 2. * (cornerR + gap);
+                    // if(gl_z_roty[i].y == 0. || gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4. || gl_z_roty[i].y == 5. || gl_z_roty[i].y == 6.) {
+                    V s = gl_z_sizes[i] - 2. * (cornerR + gap);
                     block = length(pb - clamp(pb, -(s)/2., (s)/2.)) - cornerR * 1.4;
                     // }
             
-                    if(roty[i].y == 5.) { // arc
+                    if(gl_z_roty[i].y == 5.) { // arc
                         float cyl = length(pb.zy) - .5;
-                        float box = max(abs(pb.z) - .5, abs(pb.y + sizes[i].y / 2.) - 1.);
+                        float box = max(abs(pb.z) - .5, abs(pb.y + gl_z_sizes[i].y / 2.) - 1.);
                         float hole = min(cyl, box);
                         block = max(block, -hole);
                     }
             
-                    if(roty[i].y == 6.) { // pillar
+                    if(gl_z_roty[i].y == 6.) { // pillar
                         float cyl_ = length(pb.zx) - .15;
-                        float sph = cyl(pb + V(0, sizes[i].y - .5, 0) / 2., V(.2, .25, .2), cornerR);
+                        float sph = cyl(pb + V(0, gl_z_sizes[i].y - .5, 0) / 2., V(.2, .25, .2), cornerR);
                         block = max(block, min(cyl_, sph));
                     }
             
                     // studs
-                    if(roty[i].y != 6.) { // not pillar
+                    if(gl_z_roty[i].y != 6.) { // not pillar
                         V ps = pb;
-                        v l = sizes[i].xz;
+                        v l = gl_z_sizes[i].xz;
                         ps.xz += (l - 1.) / 2.;
                         ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
                         float h = .24;
-                        ps.y -= sizes[i].y / 2. + .02;
+                        ps.y -= gl_z_sizes[i].y / 2. + .02;
                         ps.y -= clamp(ps.y, EPS, h);
                         vec2 po = vec2(length(ps.xz), ps.y);
                         po.x -= clamp(po.x, mix(EPS,.18,${features.Studs}.), .28);
@@ -674,12 +639,12 @@ function calculateFeatures(tokenData) {
                         block = min(stud, block);
                     }
             
-                    if(pb.z<0.15 && (roty[i].y == 3. || roty[i].y == 4.)) { // beak
-                        block = smax(block, (-pb.z*.8-(roty[i].y == 3. ? -1. : 1.)*pb.y-.5)/1.4142);
+                    if(pb.z<0.15 && (gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4.)) { // beak
+                        block = smax(block, (-pb.z*.8-(gl_z_roty[i].y == 3. ? -1. : 1.)*pb.y-.5)/1.4142);
                     }
             
             
-                    if(roty[i].y == 7.) { // eye
+                    if(gl_z_roty[i].y == 7.) { // eye
                         float eye_ = cyl(pb, V(.2, .25, .2), cornerR);
                         block = eye_;
                         if(eye_ < EPS) {
@@ -689,7 +654,7 @@ function calculateFeatures(tokenData) {
             
                     if(block < res) {
                         res = block;
-                        colIds = colors[i];
+                        colIds = gl_z_colors[i];
                     }
                     if(res < EPS)
                         break;
@@ -704,10 +669,10 @@ function calculateFeatures(tokenData) {
             void main() {
                 V o = V(0);
                 ${uniforms}
-                vec2 uv, uvI = (gl_FragCoord.xy * 2. - z_res)/z_res;
+                vec2 uv, uvI = (gl_FragCoord.xy * 2. - gl_z_res)/gl_z_res;
     
                 for(float A = 0.; A < 8.; A++){
-                    if(A >= z_aa) break;
+                    if(A >= gl_z_aa) break;
                     gl = 0.;
                     float d = 0., e = 1e9, ep, j;
     
@@ -718,14 +683,14 @@ function calculateFeatures(tokenData) {
     
                     // pos *= 0.;
             
-                    // float z_tick = mod(f,8.);
-                    // float fl = floor(z_tick/2.);
-                    // float fr = mod(z_tick,2.);
+                    // float tick = mod(f,8.);
+                    // float fl = floor(tick/2.);
+                    // float fr = mod(tick,2.);
                     // vec2 pos = vec2(fr/2.,fract(fl/2.));
                     // if(floor(fl/2.)==1.) pos += .25;
             
-                    // float fl = floor(z_tick/4.);
-                    // float fr = mod(z_tick,4.);
+                    // float fl = floor(tick/4.);
+                    // float fr = mod(tick,4.);
                     // vec2 pos = vec2(fr/4.,fl/8.);
                     // if(mod(fl, 2.)==0.) pos.x += 1./8.; // https://bit.ly/3qFnhLs
     
@@ -733,13 +698,13 @@ function calculateFeatures(tokenData) {
 
                     // pos*=0.; // FIXME
 
-                    uv += pos * 2. / z_res;
-                    // uv /= z_res/z_res_render;
+                    uv += pos * 2. / gl_z_res;
+                    // uv /= res/res_render;
                     // uv -= 1.;
                     // uv /= 2.;
                     uv = uv * .5 + .5;
-                    uv *= z_vb.zw;
-                    uv += z_vb.xy;
+                    uv *= gl_z_vb.zw;
+                    uv += gl_z_vb.xy;
                     uv = uv * 2. - 1.;
     
                     V p, ro = V(uv * float(${viewBox.scale}) + 
@@ -768,9 +733,9 @@ function calculateFeatures(tokenData) {
                         V col1, col2;
                         for(int j = 0; j < 20; j++) {
                             if(colIds[0] == j)
-                                col1 = z_palette[j];
+                                col1 = gl_z_palette[j];
                             if(colIds[1] == j)
-                                col2 = z_palette[j];
+                                col2 = gl_z_palette[j];
                         }
                 
                         V col = col1;
@@ -782,7 +747,7 @@ function calculateFeatures(tokenData) {
                             if(sin(p.y * PI * 3.) > 0.)
                                 col = col2;
                         if(colIds.z == 2)
-                            if(sin((p.x + fract(positions[0].x - sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
+                            if(sin((p.x + fract(gl_z_positions[0].x - gl_z_sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
                                 col = col2;
                                 
                         // pride
@@ -798,7 +763,7 @@ function calculateFeatures(tokenData) {
                         }
                                 
                         if(colIds.z == -1) {
-                            c = z_palette[0];
+                            c = gl_z_palette[0];
                             if(length(c) > .4){
                                 c *= smoothstep(5., 0., length(uv + v(${features.BackgroundLight}, -1)));
                             }
@@ -826,26 +791,26 @@ function calculateFeatures(tokenData) {
                     // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
                     // gl_FragColor=vec4(uv,0,1);
                     // gl_FragColor = vec4(o, 1);
-                    // gl_FragColor = mix(texture2D(z_backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (z_tick + 1.));
+                    // gl_FragColor = mix(texture2D(backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (tick + 1.));
                     // o += step(.5,fract(length(uv)*4.));
                     o += c;
                 }
-                gl_FragColor = vec4(o/z_aa,1);
+                gl_FragColor = vec4(o/gl_z_aa,1);
                 // gl_FragColor = vec4(vec3(mod(gl_FragCoord.x/2.+gl_FragCoord.y/2.,2.)),1);
                 // gl_FragColor = vec4(1,0,0,1);
-            }`,
+            }`/*glsl*/,
           
-            vert: `attribute vec2 position;void main() {gl_Position = vec4(position, 0, 1);}`,
+            vert: `attribute vec2 position;void main(){gl_Position=vec4(position,0,1);}`,
           
             attributes: {
               position: [[-1, -1], [-1, 1], [1, -1], [-1, 1], [1, -1], [1, 1]]
             },
         
             uniforms: {
-                z_res: regl.prop('res'),
-                z_palette: u_palette,
-                z_aa: 1,
-                z_vb: regl.prop('vb'),
+                res: regl.prop('res'),
+                palette: u_palette,
+                aa: 1,
+                vb: regl.prop('vb'),
             },
             scissor: {
                 enable: true,
@@ -859,43 +824,14 @@ function calculateFeatures(tokenData) {
             count: 6
           })
         
-          let rows = (size_ / ts | 0) + 1
-          let tick = 0;
-
-          function* spiral() {
-            let [x,y,d,m] = [0,0,1,1];
-            while (1) {
-              while (2 * x * d < m) yield [x, y], x += d
-              while (2 * y * d < m) yield [x, y], y += d
-              d=-d,m++
-            }
-          }
-          let it = spiral()
-          
-        //   function frame(){
-        //         let [x, y] = it.next().value;
-        //     //   drawTriangle({res: size_, x: (tick%rows) * ts, y: (tick/rows|0)*ts})
-        //       drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x, y: size_/2 - ts/2 - ts * y})
-        //       if(++tick < cols**2)requestAnimationFrame(frame)
-        //       console.log(tick)
-        //   }
-        //   frame()
-
-        // drawTriangle({res: ts, x: 0, y: 0, ts_:ts})
-        // drawTriangle({res: size_, x: size_/2-tsTarget/2, y: size_/2-tsTarget/2, ts_:tsTarget, aa: 8})
-
-
-
         t = +new Date()
         let wCurr = 1
         let pass = 0
         let step = Math.floor(size_/32)
         let xCurr = -step
         
-        // setTimeout(start,100)
-        // function start(){
         let fr = regl.frame(function (context) {
-            drawTriangle({res: [xCurr+wCurr,size_], vb: [xCurr/size_,.0,(xCurr+wCurr)/size_,1], x: 0, y: 0, h: h, w: wCurr})
+            drawTriangle({res: [xCurr+wCurr,size_], vb: [xCurr/size_,.0,(xCurr+wCurr)/size_,1], x: 0, y: 0, h: size_, w: wCurr})
             if(pass==0){
                 contextBig.drawImage(offscreen, 0, 0, .01, size_, xCurr-step/2, 0, step, size_);
                 xCurr += step
@@ -919,186 +855,6 @@ function calculateFeatures(tokenData) {
                 }
             }
         })
-        // }
-
     }
-    
 
-
-    
-    
-    
-    
-    /*begin render*/
-    // FIXME
-    // let timeStart = +new Date()
-
-
-    // function draw() {
-    //     console.log('u_tick', u_tick)
-    //     if (++u_tick > 8.5) {
-    //         // preloader.remove()
-    //         noLoop()
-    //         // save(`${tokenData.hash}.png`)
-    //         // let gl = canvas.getContext('webgl')
-    //         // gl.getExtension('WEBGL_lose_context').loseContext()
-    //         // gl = b.getContext('webgl')
-    //         // document.querySelector('canvas').getContext('webgl').getExtension('WEBGL_lose_context').loseContext()
-    //         // setTimeout(setup, 500)
-    //         console.log('time', new Date() - timeStart)
-    //     }
-    //     window.document.title = 50-u_tick > 0 ? floor(50-u_tick) : '👾'
-    // }
-
-    // let tPrev = +new Date();
-    // let state = "adapt";
-    // let delayPrev, delay = 0
-    
-
-
-
-
-    
-
-    // function draw() {
-    //     // console.log('NOLOOPED')
-    //     // size — width and height of canvas
-    //     // renderSize — running window
-    //     // gSize — size of a texture
-    //     // tileSize — unit of viewport 0…1
-    //   if (state == "adapt") {
-    //     // adapt
-    //     let t = +new Date();
-    //     let delayPrev = delay;
-    //     delay = t - tPrev;
-    //     tPrev = t;
-    
-    //     // adapt
-    //     console.log('u_tick',u_tick)
-    //     console.log(b.pixelDensity())
-    
-    //     // adapt
-    //     if (b.width*b.pixelDensity() > gSize || u_tick > adaptFrames&& (delay + delayPrev)/2 > maxDelay ) {
-    //         document.querySelector('div.debug').innerHTML += b.width*b.pixelDensity()
-            
-    //         state = "render";
-    //         u_tick = 0;
-    //         // noLoop()
-    //         // background('red')
-    //         pixelDensity(pixDensInit)
-    //         // image(b,0,0,width,height);
-    //         if((delay + delayPrev)/2 > maxDelay * 2)
-    //             s.setUniform("aa", 4);
-    //         if((delay + delayPrev)/2 > maxDelay * 4)
-    //             s.setUniform("aa", 1);
-    //         document.querySelector('div.debug').innerHTML += `
-    //         (delay + delayPrev)/2: ${(delay + delayPrev)/2}<br>
-    //         `
-    //         return;
-    //     }
-
-    //     // adapt
-    //     s.setUniform("vb", [0, 0, 1, 1]);
-    //     s.setUniform("res", b.width*b.pixelDensity());
-    //     let qs = 1
-    //     b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
-    
-    //     // pixelDensity(b.pixelDensity())
-    //     // let qs = 1;
-    //     // texture(b)
-    //     // textureMode(NORMAL);
-    //     // b.setInterpolation(NEAREST, NEAREST);
-    //     // quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
-    //     // image(b,0,0,width,height);
-
-    //     // if(floor(u_tick)==0){
-    //         let cnv = document.querySelectorAll('canvas')
-    //         let dataURI = cnv[1].toDataURL()
-    //         // console.log(dataURI);
-    //         cnv[0].style.background = `url(${dataURI})`;
-    //         cnv[0].style.backgroundSize = `cover`;
-    
-    //     //     scale(width*pixelDensity()/64)
-    //     //     // console.log('ПОЕХАЛИ',u_tick,64)
-    //     //     for(let i = 0; i<(64)**2; i++){
-    //     //         let [x, y] = [i%(64), floor(i/64)]
-    //     //         // console.log('x, y', x, y, b.get(x,y))
-    //     //         fill(...b.get(x*64,(64*pixelDensity()-1-y)*64))
-    //     //         rect(x-.1, y-.1, 1.2, 1.2)
-    //     //     }
-    //     // }
-
-
-
-    //     if (floor(u_tick) % adaptFrames == 0) {
-    //         b.pixelDensity(b.pixelDensity()*2)
-    //         pixelDensity(b.pixelDensity())
-    //     }        
-    //     // noLoop()
-    //   } else {
-    //     // frameRate(1)
-    //     let renderSize = b.width*b.pixelDensity()
-    //     splits = size * pixelDensity() / renderSize;
-    //     // splits = ceil(size / renderSize);
-    //     let i = (u_tick % ceil(splits)) / splits;
-    //     let j = floor(u_tick / ceil(splits)) / splits;
-    //     if (j >= 1) {
-    //       noLoop();
-    //       return;
-    //     }
-    //     let tileSize = 1 / splits;
-    //     console.log('')
-    //     console.log('tileSize', tileSize, 'splits', splits, 'renderSize', renderSize)
-    //     console.log('b.width', b.width)
-    //     let viewbox = [i, j, tileSize, tileSize];
-    //     // div.html('viewbox: ' + viewbox);
-    //     // document.querySelector('div.debug').innerHTML = Object.keys(s).filter(d=>d=='_renderer').map(key=>JSON.stringify(Object.keys(s[key])));//.filter(d=>d=='vb').map(key2=>JSON.stringify(s[key][key2])))
-    //     // document.querySelector('div.debug').innerHTML = Object.keys(s).map(k=>k+': '+s[k]+'<br><br>')
-    //     // document.querySelector('div.debug').innerHTML = Object.keys(s[Object.keys(s).filter(d=>d=='attributes')]).map(k=>k+': '+s[k]).join('<br>')
-    //     // document.querySelector('div.debug').innerHTML = Object.keys(s)
-    //     // document.querySelector('div.debug').innerHTML += '<br><br>'
-    //     // document.querySelector('div.debug').innerHTML += s['uniforms']
-    //     // document.querySelector('div.debug').innerHTML = Object.keys(b).map(k=>k+': '+b[k]+'<br><br>')
-    //     // document.querySelectorAll('canvas')[0].style.position='static'
-    //     // document.querySelectorAll('canvas')[1].style.position='static'
-    //     // document.querySelectorAll('canvas')[1].style.display='block'
-    //     // document.querySelectorAll('canvas')[1].style.width='100%'
-    //     // document.querySelectorAll('canvas')[1].style.height='100%'
-    //     console.log('viewbox', viewbox)
-    //     s.setUniform("vb", viewbox);
-    //     // s.setUniform("shade", shade);
-    //     // s.setUniform("k", tileSize * density);
-    //     s.setUniform('res', renderSize)
-    //     let qs = 1;
-    //     b.background('yellow') // FIXME
-    //     b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
-    //     // let qs = 1;
-    //     // textureMode(NORMAL);
-    //     // texture(b)
-    //     // quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
-
-    //     image( 
-    //       b,
-    //       size * i,
-    //       size * (1 - j - tileSize),
-    //       size * tileSize,
-    //       size * tileSize,
-    //     //   gSize / 2 - (gSize * tileSize * density) / 2,
-    //     //   gSize / 2 - (gSize * tileSize * density) / 2,
-    //     //   gSize * tileSize * density,
-    //     //   gSize * tileSize * density
-    //     );
-    //     console.log(          
-    //         'target region',
-    //         size * i,
-    //         size * (1 - j - tileSize),
-    //         size * tileSize,
-    //         size * tileSize
-    //     )
-    //   }
-    //   u_tick++;
-    // //   if(u_tick > 13)noLoop()
-    // }
-    
-    
     /*end render*/
