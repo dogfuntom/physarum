@@ -7,7 +7,7 @@ function calculateFeatures(tokenData) {
     //     tokenData.hash = window.location.hash.slice(1)
     // }
     // arr = arr.slice(0, 10)
-    // tokenData.hash = `0x61b6634474b4bd9cc3f1ffc4fe5c69992c93f463591ee37e4501608dad5a8f86`
+    tokenData.hash = `0xcb1cb23a90b4e5ec4c54075a1887ea413e29dbe307ea74e2fecc068f5d7373ce`
     console.log(tokenData.hash)
     // console.clear();
     let S, ss, R, t, RL, SH
@@ -150,12 +150,17 @@ function calculateFeatures(tokenData) {
         // palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
             // .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features.Palette]
         u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
-            .slice(30*features.Palette, 30*(features.Palette+1)).match(/(.{2})/g).map(v=>Number("0x"+v)/255)
-            // console.assert(palette, palette2)
+            .slice(30*features.Palette, 30*(features.Palette+1))
+        console.log('u_palette', u_palette)
+        let palette_bg = R()*3+1|0
+        u_palette = u_palette.substring(6*palette_bg) + u_palette.substring(0, 6*palette_bg)
+        console.log('u_palette', u_palette)
+        u_palette = u_palette.match(/(.{2})/g).map(v=>Number("0x"+v)/255)
+        // FIXME кодгольфнуть как-нибудь :-)
     }
     
     
-    function placeBlocks() {
+    function placeBlocks() { // FIXME перейти к массивам
         let blocksVariants = SH([
             { // beak
                 size: [2, 1, 2],
@@ -400,7 +405,7 @@ function calculateFeatures(tokenData) {
                         ])
                     }
     
-                    /*begin features*/
+                    /*begin ////// features*/
                     features.BlocksNumber++
                     if (bv.type == typeEye) features.Eyes++
                     if (bv.type == typePillar) features.Aerials++
@@ -409,7 +414,7 @@ function calculateFeatures(tokenData) {
                         if (bv.type == typeEye) features.Eyes++
                         if (bv.type == typePillar) features.Aerials++
                     }
-                    /*end features*/
+                    /*end ////// features*/
     
     
                 }// else console.log('bv.pos.y is NaN')

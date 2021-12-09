@@ -7,7 +7,7 @@ function calculateFeatures(tokenData) {
     //     tokenData.hash = window.location.hash.slice(1)
     // }
     // arr = arr.slice(0, 10)
-    // tokenData.hash = `0x61b6634474b4bd9cc3f1ffc4fe5c69992c93f463591ee37e4501608dad5a8f86`
+    tokenData.hash = `0xcb1cb23a90b4e5ec4c54075a1887ea413e29dbe307ea74e2fecc068f5d7373ce`
     console.log(tokenData.hash)
     // console.clear();
     let S, ss, R, t, RL, SH
@@ -150,12 +150,17 @@ function calculateFeatures(tokenData) {
         // palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
             // .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features.Palette]
         u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
-            .slice(30*features.Palette, 30*(features.Palette+1)).match(/(.{2})/g).map(v=>Number("0x"+v)/255)
-            // console.assert(palette, palette2)
+            .slice(30*features.Palette, 30*(features.Palette+1))
+        console.log('u_palette', u_palette)
+        let palette_bg = R()*3+1|0
+        u_palette = u_palette.substring(6*palette_bg) + u_palette.substring(0, 6*palette_bg)
+        console.log('u_palette', u_palette)
+        u_palette = u_palette.match(/(.{2})/g).map(v=>Number("0x"+v)/255)
+        // FIXME кодгольфнуть как-нибудь :-)
     }
     
     
-    function placeBlocks() {
+    function placeBlocks() { // FIXME перейти к массивам
         let blocksVariants = SH([
             { // beak
                 size: [2, 1, 2],
@@ -400,7 +405,7 @@ function calculateFeatures(tokenData) {
                         ])
                     }
     
-                    /*begin features*/
+                    /*begin ////// features*/
                     features.BlocksNumber++
                     if (bv.type == typeEye) features.Eyes++
                     if (bv.type == typePillar) features.Aerials++
@@ -409,7 +414,7 @@ function calculateFeatures(tokenData) {
                         if (bv.type == typeEye) features.Eyes++
                         if (bv.type == typePillar) features.Aerials++
                     }
-                    /*end features*/
+                    /*end ////// features*/
     
     
                 }// else console.log('bv.pos.y is NaN')
@@ -519,9 +524,12 @@ function calculateFeatures(tokenData) {
 
 
         let size_ = Math.min(window.innerWidth, window.innerHeight)*window.devicePixelRatio
-        let w = Math.floor(64000/size_)
-        let offscreen = document.createElement('canvas')
         let canvasBig = document.createElement('canvas')
+        canvasBig.style.width = size_/window.devicePixelRatio + 'px'
+        canvasBig.style.height = size_/window.devicePixelRatio + 'px'
+        size_ = min(size_, 2048)
+        let w = Math.floor(64000/size_) // FIXME 64000 может заменить на что-то динамическое?
+        let offscreen = document.createElement('canvas')
         var contextBig = canvasBig.getContext("2d")
         document.body.appendChild(offscreen)
         document.body.appendChild(canvasBig)
@@ -532,8 +540,6 @@ function calculateFeatures(tokenData) {
 
         offscreen.width = w
         offscreen.height = size_
-        canvasBig.style.width = size_/window.devicePixelRatio + 'px'
-        canvasBig.style.height = size_/window.devicePixelRatio + 'px'
         canvasBig.width = size_
         canvasBig.height = size_
 
@@ -623,18 +629,31 @@ function calculateFeatures(tokenData) {
                         float sph = cyl(pb + V(0, gl_z_sizes[i].y - .5, 0) / 2., V(.2, .25, .2), cornerR);
                         block = max(block, min(cyl_, sph));
                     }
+
+                    // float tube = 
             
                     // studs
                     if(gl_z_roty[i].y != 6.) { // not pillar
                         V ps = pb;
+                        // repetition
                         v l = gl_z_sizes[i].xz;
                         ps.xz += (l - 1.) / 2.;
                         ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
-                        float h = .24;
+                        
+                        // position
                         ps.y -= gl_z_sizes[i].y / 2. + .02;
+
+                        // clamp height
+                        float h = .24;
                         ps.y -= clamp(ps.y, EPS, h);
+
+                        // torus
                         vec2 po = vec2(length(ps.xz), ps.y);
+
+                        // hole clamping
                         po.x -= clamp(po.x, mix(EPS,.18,${features.Studs}.), .28);
+
+
                         float stud = length(po)-EPS;
                         block = min(stud, block);
                     }
@@ -752,7 +771,7 @@ function calculateFeatures(tokenData) {
                                 
                         // pride
                         if(${features.ColorScheme} == 3)
-                            col = sin(length(p) / max(float(${gs}), float(${features.Height})) * 6.28 * 2. - V(0, PI * 2. / 3., PI * 4. / 3.)) * .5 + .5;
+                            col = sin((length(p) / max(float(${gs}), float(${features.Height})) * 2. - V(0, .3, .6)) * 6.28) * .5 + .5;
                         
                         if(eye == 1) {
                             col = V(0);
@@ -826,14 +845,15 @@ function calculateFeatures(tokenData) {
         
         t = +new Date()
         let wCurr = 1
-        let aa = 1
+        let aa = 8
         let pass = 0
-        let step = Math.floor(size_/32)
+        let step = Math.floor(size_/64)
         let xCurr = -step
+
+        let secondPhaseTimer
         
         let fr = regl.frame(function (context) {
-            console.log(context)
-            console.log(aa)
+            // console.log(context)
             drawTriangle({res: [xCurr+wCurr,size_], vb: [xCurr/size_,.0,(xCurr+wCurr)/size_,1], x: 0, y: 0, h: size_, w: wCurr, aa})
             if(pass==0){
                 contextBig.drawImage(offscreen, 0, 0, .01, size_, xCurr-step/2, 0, step, size_);
@@ -842,7 +862,25 @@ function calculateFeatures(tokenData) {
                     // fr.cancel()
                     xCurr = 0
                     pass = 1
-                    if(size_< 2000 && context.time < 1)aa = 8
+                    // if(size < 1200 && new Date() - t < 2000)aa = 8
+                    // На самом деле тут сложность рендера зависит только от высоты картинки. t = k * size_ * 64. Где k — время на рендер одного пикселя. На следующем этапе время будет зависеть T = k * size^2. То есть мы можем разрешить рендер с антиалиасингом, если финальное время не превышает 10 секунд. Например: T = k * size^2 = t/size_/64 * size^2 = t * size_ / 64 =  < 10 
+                    // Айбля. На самом деле первый проход в 8 раз быстрее прохода с аа. То есть надо ещё на 8 умножить.
+                    // if((new Date() - t) * size_ / 64 * 8 < 10000)
+                    aa = 1
+                    // if((new Date() - t) * size_ / 64 * 8 / 146 * features.BlocksNumber / 29 < 4000)
+                        aa = 8
+                    console.log('(new Date() - t)', (new Date() - t))
+                    console.log('(new Date() - t) * size_ / 64 * 8 / 146', (new Date() - t) * size_ / 64 * 8 / 146 * features.BlocksNumber / 29)
+                    console.log(aa)
+
+                    secondPhaseTimer = +new Date()
+
+                    // size_ < 3200
+                    // хочу, чтобы:
+                    // - На медленных девайсах не висло, пусть и картинка отстойная.
+                    // - если скорость хоть немного приемлимая, пускай рендерит нормально.
+                    //   - Может надо какой-то коэффициент? Типа, если время рендера будет не слишком большим, то фиг с ним, рендерим 8 аа.
+                    // - На больше размерах всегда картинка была с AA=1
                     // contextBig.globalAlpha = .5
                 }
             }
@@ -856,6 +894,7 @@ function calculateFeatures(tokenData) {
                 t = +new Date()
                 if(xCurr > size_){
                     window.document.title = '👾'
+                    console.log('FINISHED in ', new Date() - secondPhaseTimer)
                     fr.cancel()
                 }
             }
