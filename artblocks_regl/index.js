@@ -587,6 +587,11 @@ function calculateFeatures(tokenData) {
             float camDist = 1e2;
             // v u_res = v(${width}, ${height})*${pixelDensity() + 1e-6};
             
+
+
+
+
+
             float cyl(V p, V s, float cornerR) {
                 // s.x — height
                 // s.y — thickness
@@ -597,6 +602,10 @@ function calculateFeatures(tokenData) {
                 float cyl = length(v(len, p.y)) - cornerR;
                 return cyl;
             }
+
+
+
+
             
             int eye;
 
@@ -638,15 +647,29 @@ function calculateFeatures(tokenData) {
                         float hole = min(cyl, box);
                         block = max(block, -hole);
                     }
+
+
+
                     // TODO reuse code for eye and the base of an
                     if(gl_z_roty[i].y == 6.) { // pillar
                         // float cyl_ = length(pb.zx) - .15;
-                        float cyl_ = tube(pb+vec3(0,1.5,0),3.5,.15,0.);
-                        // float sph = cyl(pb + V(0, gl_z_sizes[i].y - .5, 0) / 2., V(.2, .25, .2), cornerR);
-                        float cyl_ = tube(pb+vec3(0,2,0),3.5,.15,0.);
+
+                        float cyl_ = tube(pb+vec3(0,1.6-cornerR*2.,0),3.6-cornerR*2.,.15,0.);
+                        // float sph = cyl(
+                        //     pb + V(0, 0, 0) / 2., 
+                        //     V(.2, .25, .2), 
+                        //     0.);
+                        // s.x — height
+                        // s.y — thickness
+                        // s.x — radius
+                        float sph = tube(pb+vec3(0,2.-cornerR*2.,0),.4-cornerR*2.,.45,0.);
                         block = min(cyl_, sph);
                     }
             
+
+
+
+
                     // studs
                     if(gl_z_roty[i].y != 6.) { // not pillar
                         V ps = pb;
@@ -668,7 +691,8 @@ function calculateFeatures(tokenData) {
             
             
                     if(gl_z_roty[i].y == 7.) { // eye
-                        float eye_ = cyl(pb, V(.2, .25, .2), cornerR);
+                        // float eye_ = cyl(pb, V(.2, .25, .2), cornerR);
+                        float eye_ = tube(pb+vec3(0,.25-cornerR*2.,0),.4-cornerR*2.,.45,0.);
                         block = eye_;
                         if(eye_ < EPS) {
                             eye = 1;
