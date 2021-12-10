@@ -7,7 +7,7 @@ function calculateFeatures(tokenData) {
     //     tokenData.hash = window.location.hash.slice(1)
     // }
     // arr = arr.slice(0, 10)
-    tokenData.hash = `0x36cd6a65a9949303468cbdf2b9ecae21cfac999127dbc90b1ca85381baadeb91`
+    // tokenData.hash = `0x36cd6a65a9949303468cbdf2b9ecae21cfac999127dbc90b1ca85381baadeb91`
     console.log(tokenData.hash)
     // console.clear();
     let S, ss, R, t, RL, SH
@@ -456,10 +456,10 @@ function calculateFeatures(tokenData) {
     // let size = [100, 100]
 
     let density
-    let div // FIXME
+    // let div // FIXME
     // function setup() {
-        div = document.createElement('div'),div.classList.add('debug'),div.style.width = '800px',div.style.height = '100px' // FIXME
-        document.body.appendChild(div) //FIXME
+        // div = document.createElement('div'),div.classList.add('debug'),div.style.width = '800px',div.style.height = '100px' // FIXME
+        // document.body.appendChild(div) //FIXME
         /*end render*/
     
         // try {
@@ -525,6 +525,7 @@ function calculateFeatures(tokenData) {
     
         // console.log(features)
         return features
+        }
         /*end features*/
 
         /*begin render*/
@@ -935,7 +936,7 @@ function calculateFeatures(tokenData) {
                 if(new Date() - t < 80) wCurr= Math.min(w, wCurr+4)
                 if(wCurr==1)slowDevice++
                 else slowDevice = 0
-                document.querySelector('.debug').innerHTML = slowDevice
+                // document.querySelector('.debug').innerHTML = slowDevice
                 if(slowDevice>8)aa=1
                 t = +new Date()
                 if(xCurr > size_){
