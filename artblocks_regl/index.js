@@ -17,11 +17,13 @@ function calculateFeatures(tokenData) {
     let M = Math
 
 
-    /*begin features*/
     let min = M.min
     let max = M.max
     let floor = M.floor
     let abs = M.abs
+    let cos = M.cos
+    let sin = M.sin
+    /*begin features*/
     /*end features*/
     
     
@@ -455,15 +457,16 @@ function calculateFeatures(tokenData) {
 
     let density
     let div // FIXME
-    function setup() {
-        div = createDiv('').class('debug').size(800, 100); // FIXME
+    // function setup() {
+        div = document.createElement('div'),div.classList.add('debug'),div.style.width = '800px',div.style.height = '100px' // FIXME
+        document.body.appendChild(div) //FIXME
         /*end render*/
     
-        try {
+        // try {
             init()
-        } catch (error) {
-            document.querySelector('.debug').innerHTML = error
-          }
+        // } catch (error) {
+        //     document.querySelector('.debug').innerHTML = error
+        //   }
     
     
         placeBlocks()
@@ -585,7 +588,6 @@ function calculateFeatures(tokenData) {
             ivec3 colIds;
             float gl;
             float camDist = 1e2;
-            // v u_res = v(${width}, ${height})*${pixelDensity() + 1e-6};
             
 
 
@@ -943,6 +945,6 @@ function calculateFeatures(tokenData) {
                 }
             }
         })
-    }
+    // }
 
     /*end render*/

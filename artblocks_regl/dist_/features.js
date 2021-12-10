@@ -17,11 +17,13 @@ function calculateFeatures(tokenData) {
     let M = Math
 
 
-    /*begin features*/
     let min = M.min
     let max = M.max
     let floor = M.floor
     let abs = M.abs
+    let cos = M.cos
+    let sin = M.sin
+    /*begin features*/
     /*end features*/
     
     
@@ -434,11 +436,11 @@ function calculateFeatures(tokenData) {
     
     
     
-        try {
+        // try {
             init()
-        } catch (error) {
-            document.querySelector('.debug').innerHTML = error
-          }
+        // } catch (error) {
+        //     document.querySelector('.debug').innerHTML = error
+        //   }
     
     
         placeBlocks()
