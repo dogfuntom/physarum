@@ -7,7 +7,7 @@ function calculateFeatures(tokenData) {
     //     tokenData.hash = window.location.hash.slice(1)
     // }
     // arr = arr.slice(0, 10)
-    tokenData.hash = `0xcb1cb23a90b4e5ec4c54075a1887ea413e29dbe307ea74e2fecc068f5d7373ce`
+    tokenData.hash = `0x36cd6a65a9949303468cbdf2b9ecae21cfac999127dbc90b1ca85381baadeb91`
     console.log(tokenData.hash)
     // console.clear();
     let S, ss, R, t, RL, SH
@@ -15,7 +15,8 @@ function calculateFeatures(tokenData) {
     //     tokenData.hash = window.location.hash.slice(1)
     // }
     let M = Math
-    
+
+
     /*begin features*/
     let min = M.min
     let max = M.max
@@ -48,7 +49,6 @@ function calculateFeatures(tokenData) {
     let adaptFrames = 10;
     let size, gSize, ts, cols;
         
-
     
     let init = () => {
         // console.log(tokenData.hash)
@@ -434,7 +434,12 @@ function calculateFeatures(tokenData) {
     
     
     
-        init()
+        try {
+            init()
+        } catch (error) {
+            document.querySelector('.debug').innerHTML = error
+          }
+    
     
         placeBlocks()
 

@@ -7,7 +7,7 @@ function calculateFeatures(tokenData) {
     //     tokenData.hash = window.location.hash.slice(1)
     // }
     // arr = arr.slice(0, 10)
-    tokenData.hash = `0xcb1cb23a90b4e5ec4c54075a1887ea413e29dbe307ea74e2fecc068f5d7373ce`
+    tokenData.hash = `0x36cd6a65a9949303468cbdf2b9ecae21cfac999127dbc90b1ca85381baadeb91`
     console.log(tokenData.hash)
     // console.clear();
     let S, ss, R, t, RL, SH
@@ -15,7 +15,8 @@ function calculateFeatures(tokenData) {
     //     tokenData.hash = window.location.hash.slice(1)
     // }
     let M = Math
-    
+
+
     /*begin features*/
     let min = M.min
     let max = M.max
@@ -48,7 +49,6 @@ function calculateFeatures(tokenData) {
     let adaptFrames = 10;
     let size, gSize, ts, cols;
         
-
     
     let init = () => {
         // console.log(tokenData.hash)
@@ -459,7 +459,12 @@ function calculateFeatures(tokenData) {
         div = createDiv('').class('debug').size(800, 100); // FIXME
         /*end render*/
     
-        init()
+        try {
+            init()
+        } catch (error) {
+            document.querySelector('.debug').innerHTML = error
+          }
+    
     
         placeBlocks()
 
@@ -594,6 +599,16 @@ function calculateFeatures(tokenData) {
             }
             
             int eye;
+
+            float tube(vec3 p, float h, float d, float innerHole){
+                // clamp height
+                p.y -= clamp(p.y, EPS, h);
+                // torus
+                vec2 po = vec2(length(p.xz), p.y);
+                // hole clamping
+                po.x -= clamp(po.x, innerHole, d);
+                return length(po)-EPS;
+            }
             
             float dist(V p) {
                 colIds = ivec3(0, 0, -1);
@@ -623,14 +638,14 @@ function calculateFeatures(tokenData) {
                         float hole = min(cyl, box);
                         block = max(block, -hole);
                     }
-            
+                    // TODO reuse code for eye and the base of an
                     if(gl_z_roty[i].y == 6.) { // pillar
-                        float cyl_ = length(pb.zx) - .15;
-                        float sph = cyl(pb + V(0, gl_z_sizes[i].y - .5, 0) / 2., V(.2, .25, .2), cornerR);
-                        block = max(block, min(cyl_, sph));
+                        // float cyl_ = length(pb.zx) - .15;
+                        float cyl_ = tube(pb+vec3(0,1.5,0),3.5,.15,0.);
+                        // float sph = cyl(pb + V(0, gl_z_sizes[i].y - .5, 0) / 2., V(.2, .25, .2), cornerR);
+                        float cyl_ = tube(pb+vec3(0,2,0),3.5,.15,0.);
+                        block = min(cyl_, sph);
                     }
-
-                    // float tube = 
             
                     // studs
                     if(gl_z_roty[i].y != 6.) { // not pillar
@@ -643,18 +658,7 @@ function calculateFeatures(tokenData) {
                         // position
                         ps.y -= gl_z_sizes[i].y / 2. + .02;
 
-                        // clamp height
-                        float h = .24;
-                        ps.y -= clamp(ps.y, EPS, h);
-
-                        // torus
-                        vec2 po = vec2(length(ps.xz), ps.y);
-
-                        // hole clamping
-                        po.x -= clamp(po.x, mix(EPS,.18,${features.Studs}.), .28);
-
-
-                        float stud = length(po)-EPS;
+                        float stud = tube(ps, .24, .28, mix(EPS,.18,${features.Studs}.));
                         block = min(stud, block);
                     }
             
