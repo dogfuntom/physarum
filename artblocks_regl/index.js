@@ -538,25 +538,28 @@ function calculateFeatures(tokenData) {
         canvasBig.style.height = size_/window.devicePixelRatio + 'px'
         size_ = min(size_, 2048)
         let w = Math.floor(64000/size_) // FIXME 64000 может заменить на что-то динамическое?
-        let offscreen = document.createElement('canvas')
-        var contextBig = canvasBig.getContext("2d")
-        document.body.appendChild(offscreen)
+        // let offscreen = document.createElement('canvas')
+        const gl = canvasBig.getContext('webgl', {
+            preserveDrawingBuffer: true,
+          });
+        //   var contextBig = canvasBig.getContext("2d")
+        // document.body.appendChild(offscreen)
         document.body.appendChild(canvasBig)
-        offscreen.style.width = offscreen.style.height = 8
+        // offscreen.style.width = offscreen.style.height = 8
         canvasBig.style.background=`rgb(${u_palette.slice(0,3).map(v=>v*255)})`
         if(features.ColorScheme == 4 || features.ColorScheme == 3) canvasBig.style.background = '#333'
 
 
-        offscreen.width = w
-        offscreen.height = size_
+        // offscreen.width = w
+        // offscreen.height = size_
         canvasBig.width = size_
         canvasBig.height = size_
 
 
-        var regl = createREGL(offscreen)
+        var regl = createREGL(gl)
 
-        console.log('regl.limits.maxViewportDims',regl.limits.maxViewportDims)
-        console.log('regl.limits.maxRenderbufferSize',regl.limits.maxRenderbufferSize)
+        // console.log('regl.limits.maxViewportDims',regl.limits.maxViewportDims)
+        // console.log('regl.limits.maxRenderbufferSize',regl.limits.maxRenderbufferSize)
 
         const drawTriangle = regl({
             frag: /*glsl*/`precision highp float;
@@ -887,7 +890,7 @@ function calculateFeatures(tokenData) {
         
         let fr = regl.frame(function (context) {
             // console.log(context)
-            drawTriangle({res: [xCurr+wCurr,size_], vb: [xCurr/size_,.0,(xCurr+wCurr)/size_,1], x: 0, y: 0, h: size_, w: wCurr, aa})
+            drawTriangle({res: [size_,size_], vb: [0,0,1,1], x: xCurr, y: 0, h: size_, w: wCurr, aa})
             // if(pass==0){
             //     contextBig.drawImage(offscreen, 0, 0, .01, size_, xCurr-step/2, 0, step, size_);
             //     xCurr += step
@@ -923,7 +926,7 @@ function calculateFeatures(tokenData) {
                 // TODO а вообще, надо уйти от дополнительного канваса
 
                 window.document.title = (xCurr/size_).toFixed(3)
-                contextBig.drawImage(offscreen, xCurr, 0);
+                // contextBig.drawImage(offscreen, xCurr, 0);
                 xCurr += wCurr
                 // if(new Date() - t > 160) {if(wCurr < 2 && context.tick > 40) aa=1; wCurr = Math.max(1,wCurr-4);}
                 if(new Date() - t > 160) wCurr = Math.max(1,wCurr-4)
