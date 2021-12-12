@@ -1,8 +1,9 @@
+try {
 /*begin features*/
 function calculateFeatures(tokenData) {
     /*end features*/ 
     
-    
+
     // if (window.location.hash) {
     //     tokenData.hash = window.location.hash.slice(1)
     // }
@@ -25,7 +26,9 @@ function calculateFeatures(tokenData) {
     let sin = M.sin
     /*begin features*/
     /*end features*/
+
     
+
     
     let rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
     
@@ -436,11 +439,7 @@ function calculateFeatures(tokenData) {
     
     
     
-        // try {
-            init()
-        // } catch (error) {
-        //     document.querySelector('.debug').innerHTML = error
-        //   }
+        init()
     
     
         placeBlocks()
@@ -487,3 +486,7 @@ function calculateFeatures(tokenData) {
         /*end features*/
 
         
+
+} catch (error) {
+    document.querySelector('.debug').innerHTML = error
+}
