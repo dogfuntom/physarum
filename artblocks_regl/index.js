@@ -1,8 +1,9 @@
+try {
 /*begin features*/
 function calculateFeatures(tokenData) {
     /*end features*/ 
     
-    
+
     // if (window.location.hash) {
     //     tokenData.hash = window.location.hash.slice(1)
     // }
@@ -25,7 +26,13 @@ function calculateFeatures(tokenData) {
     let sin = M.sin
     /*begin features*/
     /*end features*/
-    
+
+    /*begin render*/
+    let div = document.createElement('div')
+    div.classList.add('debug'),div.style.width = '100%',div.style.height = '100px' // FIXME
+    document.body.appendChild(div) //FIXME
+    /*end render*/
+
     
     let rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
     
@@ -458,15 +465,9 @@ function calculateFeatures(tokenData) {
     let density
     // let div // FIXME
     // function setup() {
-        // div = document.createElement('div'),div.classList.add('debug'),div.style.width = '800px',div.style.height = '100px' // FIXME
-        // document.body.appendChild(div) //FIXME
         /*end render*/
     
-        // try {
-            init()
-        // } catch (error) {
-        //     document.querySelector('.debug').innerHTML = error
-        //   }
+        init()
     
     
         placeBlocks()
@@ -539,6 +540,9 @@ function calculateFeatures(tokenData) {
         size_ = min(size_, 2048)
         let w = Math.floor(64000/size_) // FIXME 64000 может заменить на что-то динамическое?
         let offscreen = document.createElement('canvas')
+        offscreenContext = offscreen.getContext("webgl", {
+            
+        })
         var contextBig = canvasBig.getContext("2d")
         document.body.appendChild(offscreen)
         document.body.appendChild(canvasBig)
@@ -553,7 +557,7 @@ function calculateFeatures(tokenData) {
         canvasBig.height = size_
 
 
-        var regl = createREGL(offscreen)
+        var regl = createREGL(offscreenContext)
 
         console.log('regl.limits.maxViewportDims',regl.limits.maxViewportDims)
         console.log('regl.limits.maxRenderbufferSize',regl.limits.maxRenderbufferSize)
@@ -943,3 +947,7 @@ function calculateFeatures(tokenData) {
     // }
 
     /*end render*/
+
+} catch (error) {
+    document.querySelector('.debug').innerHTML = error
+}
