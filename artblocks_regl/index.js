@@ -57,7 +57,9 @@
         let maxDelay = 40;
         let adaptFrames = 10;
         let size, gSize, ts, cols;
-        let params_aa = new URLSearchParams(window.location.search).get("a");
+        // let params_aa = new URLSearchParams(window.location.search).get("a");
+        let params_aa = window.location.href.split('#')[1];
+        console.log(window.location.href.split('#')[1])
             
         
         let init = () => {
@@ -536,7 +538,7 @@
     
             let size_ = Math.min(window.innerWidth, window.innerHeight)*window.devicePixelRatio
             let canvas_ = document.createElement('canvas')
-            canvas_.style.width = size_/window.devicePixelRatio + 'px'
+            canvas_.style.width = size_/window.devicePixelRatio + 'px' // FIXME, а без этого совсем никак?
             canvas_.style.height = size_/window.devicePixelRatio + 'px'
             size_ = min(size_, 2048)
             const gl = canvas_.getContext('webgl', {
