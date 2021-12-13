@@ -53,6 +53,7 @@
         let maxDelay = 40;
         let adaptFrames = 10;
         let size, gSize, ts, cols;
+        let params_aa = new URLSearchParams(window.location.search).get("a");
             
         
         let init = () => {

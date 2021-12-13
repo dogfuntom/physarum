@@ -57,6 +57,7 @@
         let maxDelay = 40;
         let adaptFrames = 10;
         let size, gSize, ts, cols;
+        let params_aa = new URLSearchParams(window.location.search).get("a");
             
         
         let init = () => {
@@ -891,13 +892,13 @@
             let steps = 1
             tsTarget=32
             cols = (size_/tsTarget/2|0)*2+3
-            ts=size_/cols
+            ts=size_/cols | 0
             let slowDevice = 0
 
             let fr = regl.frame(function (context) {
                 for(let i=0;i++<steps;){
                     let [x, y] = it.next().value;
-                    drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x, y: size_/2 - ts/2 - ts * y, ts_:ts+1, aa: aa, vb:[0,0,1,1]})
+                    drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, ts_:ts, aa: aa, vb:[0,0,1,1]})
                     // drawTriangle({res: size_, x: 0, y: 0, w: size_, h: size_, aa: aa, vb:[0,0,1,1]})
 
                     tick++
@@ -906,12 +907,14 @@
     
                 // if(!resFound && (new Date() - t > 100 || tsTarget > size_) ) {resFound = true;/* if(tsTarget < 64) {aa=1, tsTarget*=2}*/}
                 console.log('new Date() - t',new Date() - t)
-                if(new Date() - t > 160) steps = 1
-                if(new Date() - t < 40) steps = steps * 2
+                if(new Date() - t > 160) steps = max(1,steps-2)
+                if(new Date() - t < 40) steps += 2
                 if(steps==1)slowDevice++
                 else slowDevice = max(0,slowDevice--)
                 console.log('slowDevice',slowDevice)
                 if(slowDevice>8)aa=1
+                // if(params_aa)aa = min(Number(params_aa),8)
+                if(params_aa)aa = Number(params_aa)
                 // console.log(new Date() - t)
                 t = +new Date()
                 // document.querySelector('div.debug').innerHTML = `
@@ -919,7 +922,7 @@
                 //     cols**2: ${cols**2}<br>
                 //     cols: ${cols}<br>
                 //     `
-                if(tick > cols**2) fr.cancel()
+                if(tick > (cols+2)**2) fr.cancel()
             })
     
     
