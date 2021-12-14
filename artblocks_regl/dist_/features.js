@@ -8,7 +8,7 @@
         //     tokenData.hash = window.location.hash.slice(1)
         // }
         // arr = arr.slice(0, 10)
-        // tokenData.hash = `0x36cd6a65a9949303468cbdf2b9ecae21cfac999127dbc90b1ca85381baadeb91`
+        tokenData.hash = `0x6e848975e7868e957ecf97e2c5bce193a3d8e412e1707ce0828d695b1aaf2759`
         console.log(tokenData.hash)
         // console.clear();
         let S, ss, R, t, RL, SH
