@@ -507,7 +507,7 @@
             // console.log('regl.limits.maxRenderbufferSize',regl.limits.maxRenderbufferSize)
     
             const drawTriangle = regl({
-                frag: /*glsl*/`precision mediump float;
+                frag: /*glsl*/`precision highp float;
                 #define BLOCKS_NUMBER_MAX 60
                 #define PI 3.1415
                 #define S smoothstep
@@ -625,7 +625,7 @@
                     for(float A = 0.; A < 8.; A++){
                         if(A >= gl_z_aa) break;
                         gl = 0.;
-                        highp float d = 0., e = 1e9, ep, j; // here highp
+                        float d = 0., e = 1e9, ep, j; // here highp
         
                         float fl = floor(A/2.);
                         float fr = mod(A,2.);
@@ -636,7 +636,7 @@
     
                         uv += pos * 2. / gl_z_res;
         
-                        highp V p, ro = V(uv * float(${viewBox[6]}) +
+                        V p, ro = V(uv * float(${viewBox[6]}) +
                             v(${viewBox[7]},
                             ${viewBox[8]}), -camDist), 
                            rd = V(0, 0, .9 + .1 * fract(1e3 * sin(1e3 * fract(length(uv)))));
