@@ -1,4 +1,3 @@
-// try {
     /*begin features*/
     function calculateFeatures(tokenData) {
         /*end features*/ 
@@ -8,7 +7,7 @@
         //     tokenData.hash = window.location.hash.slice(1)
         // }
         // arr = arr.slice(0, 10)
-        tokenData.hash = `0x6e848975e7868e957ecf97e2c5bce193a3d8e412e1707ce0828d695b1aaf2759`
+        // tokenData.hash = `0x6e848975e7868e957ecf97e2c5bce193a3d8e412e1707ce0828d695b1aaf2759`
         console.log(tokenData.hash)
         // console.clear();
         let S, ss, R, t, RL, SH
@@ -486,9 +485,110 @@
             }
             /*end features*/
     
-            
+            /*begin render*/
     
-    // } catch (error) {
-    //     document.querySelector('.debug').innerHTML = error
-    // }
+    
+    
+            let size_ = Math.min(window.innerWidth, window.innerHeight)*window.devicePixelRatio
+            let canvas_ = document.createElement('canvas')
+            canvas_.style.width = size_/window.devicePixelRatio + 'px' // FIXME, а без этого совсем никак?
+            canvas_.style.height = size_/window.devicePixelRatio + 'px'
+            size_ = min(size_, 2048)
+            const gl = canvas_.getContext('webgl', {
+                preserveDrawingBuffer: true,
+                // failIfMajorPerformanceCaveat: true,
+              });
+            document.body.appendChild(canvas_)
+            canvas_.style.background=`rgb(${u_palette.slice(0,3).map(v=>v*255)})`
+            if(features.ColorScheme == 4 || features.ColorScheme == 3) canvas_.style.background = '#333'
+    
+    
+            canvas_.width = size_
+            canvas_.height = size_
+            let tsTarget = 16
+    
+    
+            var regl = createREGL(gl)
+    
+            // console.log('regl.limits.maxViewportDims',regl.limits.maxViewportDims)
+            // console.log('regl.limits.maxRenderbufferSize',regl.limits.maxRenderbufferSize)
+    
+            const drawTriangle = regl({
+                frag: `precision mediump float;
+#define A 60
+#define B 3.1415
+#define C smoothstep
+#define D vec3
+#define E vec2
+float F(float G){return fract(54321.987*sin(987.12345*mod(G,12.34567)));}mat2 H(float I){return mat2(cos(I),-sin(I),sin(I),cos(I));}
+#define J 4e2
+#define K .001
+float L(float M){return sqrt(abs(M)*abs(M)+5e-5);}float N(float I,float O){return(I+O+L(I-O))*.5;}vec3 positions[A];vec3 sizes[A];vec2 roty[A];ivec3 colors[A];uniform D palette[20];uniform float aa;uniform float res;uniform vec4 vb;ivec3 P;float Q;float R=1e2;float S(D M,D T,float U){M.y-=clamp(M.y,-T.x,T.x);float V=length(M.xz)-T.z;V-=clamp(V,-T.y,T.y);float S=length(E(V,M.y))-U;return S;}int W;float X(vec3 M,float Y,float Z,float a){M.y-=clamp(M.y,K,Y);vec2 b=vec2(length(M.xz),M.y);b.x-=clamp(b.x,a,Z);return length(b)-K;}float c(D M){P=ivec3(0,0,-1);M.x=abs(M.x);float d=M.y+1.;for(int e=0;e<A;e++){W=0;if(e>=${blocks.length})break;D f=M;f-=positions[e];f.xz*=H(roty[e].x*B/2.);float U=.01;float g=.008;float h;D T=sizes[e]-2.*(U+g);h=length(f-clamp(f,-T/2.,T/2.))-U*1.4;if(roty[e].y==5.){float S=length(f.zy)-.5;float i=max(abs(f.z)-.5,abs(f.y+sizes[e].y/2.)-1.);float j=min(S,i);h=max(h,-j);}if(roty[e].y==6.){float k=X(f+vec3(0,1.6-U*2.,0),3.55,.15,0.);float l=X(f+vec3(0,2.-U*2.,0),.4-U*2.,.45,0.);h=min(k,l);}if(roty[e].y!=6.){D m=f;E n=sizes[e].xz;m.xz+=(n-1.)/2.;m.xz=m.xz-clamp(floor(m.xz+.5),E(0.),n-1.);m.y-=sizes[e].y/2.+.02;float o=X(m,.24,.28,mix(K,.18,${features.Studs}.));h=min(o,h);}if(f.z<.01&&(roty[e].y==3.||roty[e].y==4.)){h=N(h,dot(f,vec3(0,.78*(7.-2.*roty[e].y),-.624))-.39);}if(roty[e].y==7.){float p=X(f+vec3(0,.25-U*2.,0),.4-U*2.,.45,0.);h=p;if(p<K){W=1;}}if(h<d){d=h;P=colors[e];}if(d<K)break;}return d;}D q(D M){E r=E(.01,0.);return normalize(D(c(M+r.xyy)-c(M-r.xyy),c(M+r.yxy)-c(M-r.yxy),c(M+r.yyx)-c(M-r.yyx)));}void main(){${uniforms}D s=D(0);vec2 t,u=(gl_FragCoord.xy*2.-res)/res;for(float v=0.;v<8.;v++){if(v>=aa)break;Q=0.;highp float Z=0.,r=1e9,w,x;float y=floor(v/2.);float z=mod(v,2.);vec2 AA=vec2(z/2.,y/4.)-.5;if(mod(y,2.)==0.)AA.x+=.25;vec2 t=u;t+=AA*2./res;t=t*.5+.5;t*=vb.zw;t+=vb.xy;t=t*2.-1.;highp D M,AB=D(t*float(${viewBox.scale})+E(${viewBox.offset.x},${viewBox.offset.y}),-R),AC=D(0,0,.9+.1*F(length(t)));bool AD=false;for(float e=0.;e<J;e++){x=e;M=Z*AC+AB;M.z-=R;M.yz*=H(${u_camAngYZ});M.xz*=H(${u_camAngXZ});Z+=r=c(M);if(w<r&&r<.01){AD=true;break;}w=r;if(r<K||r>R*2.)break;}D AE;if(!AD){D AF,AG;for(int x=0;x<20;x++){if(P[0]==x)AF=palette[x];if(P[1]==x)AG=palette[x];}D AH=AF;if(P.z==1)if(sin(M.y*B*3.)>0.)AH=AG;if(P.z==2)if(sin((M.x+fract(positions[0].x-sizes[0].x/2.))*B*2.*1.5)>0.)AH=AG;if(${features.ColorScheme}==3)AH=sin((length(M)/max(float(${gs}),float(${features.Height}))*2.-D(0,.3,.6))*6.28)*.5+.5;if(W==1){AH=D(0);D AI=M+fract(${gs}./2.);AI=fract(AI)-.5;AH+=step(.3,length(AI.xz));AH+=step(-.1,-length(AI.xz+.1));}if(P.z==-1){AE=palette[0];if(length(AE)>.4){AE*=smoothstep(5.,0.,length(t+E(${features.BackgroundLight},-1)));}if(${features.ColorScheme}==3){AE=D(.2);}if(sin(length(pow(abs(t),E(${features.BackgroundType})))*32.)>0.)AE*=.95;}else{AE=D(1,0,1);AE=(min(1.5,14./x)*.2+.8)*(dot(q(M),normalize(D(0,1,1)))*.2+.8)*AH;AE+=pow(abs(dot(q(M),normalize(D(0.,3.,1.)))),40.);}}if(${features.ColorScheme}==4)AE=(D(7./x));s+=AE;}gl_FragColor=vec4(s/aa,1);}`,
+              
+                vert: `attribute vec2 position;void main(){gl_Position=vec4(position,0,1);}`,
+              
+                attributes: {
+                  position: [[-1, -1], [-1, 1], [1, -1], [-1, 1], [1, -1], [1, 1]]
+                },
+            
+                uniforms: {
+                    res: regl.prop('res'),
+                    palette: u_palette,
+                    aa: regl.prop('aa'),
+                    vb: regl.prop('vb'),
+                },
+                scissor: {
+                    enable: true,
+                    box: {
+                      x: regl.prop('x'),
+                      y: regl.prop('y'),
+                      width: regl.prop('ts_'),
+                      height: regl.prop('ts_')
+                    }
+                },
+                count: 6
+              })
+              let rows = (size_ / ts | 0) + 1
+              let tick = 0;
+    
+              function* spiral() {
+                let [x,y,d,m] = [0,0,1,1];
+                while (1) {
+                  while (2 * x * d < m) yield [x, y], x += d
+                  while (2 * y * d < m) yield [x, y], y += d
+                  d=-d,m++
+                }
+              }
+              let it = spiral()
+            t = +new Date()
+            let wCurr = 1
+            let aa = 8
+    
+            let steps = 1
+            ts=16
+            cols=(size_/ts/2|0)*2+3
+            let slowDevice = 0
+
+            let fr = regl.frame(function () {
+                for(let i=0;i++<steps;){
+                    let [x, y] = it.next().value;
+                    drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, ts_:ts, aa: aa, vb:[0,0,1,1]})
+                    tick++
+                }
+                console.log('new Date() - t',new Date() - t)
+                if(new Date() - t > 160) steps = max(1,steps-2)
+                if(new Date() - t < 40) steps += 2
+                if(steps==1)slowDevice++
+                else slowDevice = max(0,slowDevice--)
+                console.log('slowDevice',slowDevice)
+                if(slowDevice>8)aa=1
+                if(params_aa)aa = Number(params_aa)
+                t = +new Date()
+                // document.querySelector('div.debug').innerHTML = `
+                //     tick: ${tick}<br>
+                //     cols: ${cols}<br>
+                //     (cols+2)**2: ${cols**2}<br>
+                //     `
+                if(tick > cols**2) fr.cancel()
+            })
     

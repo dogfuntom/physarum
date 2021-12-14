@@ -1,4 +1,3 @@
-// try {
     /*begin features*/
     function calculateFeatures(tokenData) {
         /*end features*/ 
@@ -8,7 +7,7 @@
         //     tokenData.hash = window.location.hash.slice(1)
         // }
         // arr = arr.slice(0, 10)
-        tokenData.hash = `0x6e848975e7868e957ecf97e2c5bce193a3d8e412e1707ce0828d695b1aaf2759`
+        // tokenData.hash = `0x6e848975e7868e957ecf97e2c5bce193a3d8e412e1707ce0828d695b1aaf2759`
         console.log(tokenData.hash)
         // console.clear();
         let S, ss, R, t, RL, SH
@@ -630,7 +629,7 @@
             
                         // if(gl_z_roty[i].y == 0. || gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4. || gl_z_roty[i].y == 5. || gl_z_roty[i].y == 6.) {
                             V s = gl_z_sizes[i] - 2. * (cornerR + gap);
-                        block = length(pb - clamp(pb, -(s)/2., (s)/2.)) - cornerR * 1.4;
+                        block = length(pb - clamp(pb, -s/2., s/2.)) - cornerR * 1.4;
                         // }
                 
                         if(gl_z_roty[i].y == 5.) { // arc
@@ -646,16 +645,9 @@
                         if(gl_z_roty[i].y == 6.) { // pillar
                             // float cyl_ = length(pb.zx) - .15;
     
-                            float cyl_ = tube(pb+vec3(0,1.6-cornerR*2.,0),3.6-cornerR*2.,.15,0.);
-                            // float sph = cyl(
-                            //     pb + V(0, 0, 0) / 2., 
-                            //     V(.2, .25, .2), 
-                            //     0.);
-                            // s.x — height
-                            // s.y — thickness
-                            // s.x — radius
-                            float sph = tube(pb+vec3(0,2.-cornerR*2.,0),.4-cornerR*2.,.45,0.);
-                            block = min(cyl_, sph);
+                            float narrow = tube(pb+vec3(0,1.6-cornerR*2.,0),3.55,.15,0.);
+                            float base = tube(pb+vec3(0,2.-cornerR*2.,0),.4-cornerR*2.,.45,0.);
+                            block = min(narrow, base);
                         }
                 
     
@@ -885,9 +877,8 @@
             let aa = 8
     
             let steps = 1
-            tsTarget=16
-            cols = (size_/tsTarget/2|0)*2+3
-            ts=size_/cols | 0
+            ts=16
+            cols=(size_/ts/2|0)*2+3
             let slowDevice = 0
 
             let fr = regl.frame(function () {
@@ -896,9 +887,6 @@
                     drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, ts_:ts, aa: aa, vb:[0,0,1,1]})
                     tick++
                 }
-                //   if(!resFound) {tsTarget *= 1.05, it = spiral(), tick=0}
-    
-                // if(!resFound && (new Date() - t > 100 || tsTarget > size_) ) {resFound = true;/* if(tsTarget < 64) {aa=1, tsTarget*=2}*/}
                 console.log('new Date() - t',new Date() - t)
                 if(new Date() - t > 160) steps = max(1,steps-2)
                 if(new Date() - t < 40) steps += 2
@@ -906,88 +894,13 @@
                 else slowDevice = max(0,slowDevice--)
                 console.log('slowDevice',slowDevice)
                 if(slowDevice>8)aa=1
-                // if(params_aa)aa = min(Number(params_aa),8)
                 if(params_aa)aa = Number(params_aa)
-                // console.log(new Date() - t)
                 t = +new Date()
-                document.querySelector('div.debug').innerHTML = `
-                    tick: ${tick}<br>
-                    cols: ${cols}<br>
-                    (cols+2)**2: ${(cols+2)**2}<br>
-                    `
-                if(tick > (cols+2)**2) fr.cancel()
+                // document.querySelector('div.debug').innerHTML = `
+                //     tick: ${tick}<br>
+                //     cols: ${cols}<br>
+                //     (cols+2)**2: ${cols**2}<br>
+                //     `
+                if(tick > cols**2) fr.cancel()
             })
-    
-    
-    
-        //     let pass = 0
-        //     let sections = 128
-        //     let step = Math.floor(size_/sections)
-        //     let xCurr = -step
-        //     let slowDevice = 0
-    
-        //     let secondPhaseTimer
-            
-        //     let fr = regl.frame(function (context) {
-        //         // console.log(context)
-        //         drawTriangle({res: [xCurr+wCurr,size_], vb: [xCurr/size_,.0,(xCurr+wCurr)/size_,1], x: 0, y: 0, h: size_, w: wCurr, aa})
-        //         // if(pass==0){
-        //         //     contextBig.drawImage(offscreen, 0, 0, .01, size_, xCurr-step/2, 0, step, size_);
-        //         //     xCurr += step
-        //         //     if(xCurr > size_){
-        //         //         // fr.cancel()
-        //         //         xCurr = 0
-        //         //         pass = 1
-        //         //         // if(size < 1200 && new Date() - t < 2000)aa = 8
-        //         //         // На самом деле тут сложность рендера зависит только от высоты картинки. t = k * size_ * sections. Где k — время на рендер одного пикселя. На следующем этапе время будет зависеть T = k * size^2. То есть мы можем разрешить рендер с антиалиасингом, если финальное время не превышает 10 секунд. Например: T = k * size^2 = t/size_/sections * size^2 = t * size_ / sections =  < 10 
-        //         //         // Айбля. На самом деле первый проход в 8 раз быстрее прохода с аа. То есть надо ещё на 8 умножить.
-        //         //         // if((new Date() - t) * size_ / sections * 8 < 10000)
-        //         //         aa = 1
-        //         //         // if((new Date() - t) * size_ / sections * 8 / 146 * features.BlocksNumber / 29 < 4000)
-        //         //         aa = 8
-        //         //         console.log('(new Date() - t)', (new Date() - t))
-        //         //         console.log('(new Date() - t) * size_ / sections * 8 / 146', (new Date() - t) * size_ / sections * 8 / 146 * features.BlocksNumber / 29)
-        //         //         console.log(aa)
-    
-        //         //         secondPhaseTimer = +new Date()
-    
-        //         //         // size_ < 3200
-        //         //         // хочу, чтобы:
-        //         //         // - На медленных девайсах не висло, пусть и картинка отстойная.
-        //         //         // - если скорость хоть немного приемлимая, пускай рендерит нормально.
-        //         //         //   - Может надо какой-то коэффициент? Типа, если время рендера будет не слишком большим, то фиг с ним, рендерим 8 аа.
-        //         //         // - На больше размерах всегда картинка была с AA=1
-        //         //         // contextBig.globalAlpha = .5
-        //         //     }
-        //         // }
-        //         // else
-        //         {
-    
-        //             // TODO а вообще, надо уйти от дополнительного канваса
-    
-        //             window.document.title = (xCurr/size_).toFixed(3)
-        //             contextBig.drawImage(offscreen, xCurr, 0);
-        //             xCurr += wCurr
-        //             // if(new Date() - t > 160) {if(wCurr < 2 && context.tick > 40) aa=1; wCurr = Math.max(1,wCurr-4);}
-        //             if(new Date() - t > 160) wCurr = Math.max(1,wCurr-4)
-        //             if(new Date() - t < 80) wCurr= Math.min(w, wCurr+4)
-        //             if(wCurr==1)slowDevice++
-        //             else slowDevice = 0
-        //             // document.querySelector('.debug').innerHTML = slowDevice
-        //             if(slowDevice>8)aa=1
-        //             t = +new Date()
-        //             if(xCurr > size_){
-        //                 window.document.title = '👾'
-        //                 console.log('FINISHED in ', new Date() - secondPhaseTimer)
-        //                 fr.cancel()
-        //             }
-        //         }
-        //     })
-        // // }
-    
-        // /*end render*/
-    
-    // } catch (error) {
-    //     document.querySelector('.debug').innerHTML = error
-    // }
     
