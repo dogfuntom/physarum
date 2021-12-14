@@ -27,7 +27,6 @@
         const maxMaxTry = 30
         let u_camAngYZ = .95532, u_camAngXZ, numberOfBlockTypes
         // let gs, blocksNumber, fitnessFunctionNumber, maxTry, extra
-        let s, b, canvas
         let u_palette
         let gs, blocksNumber, fitnessFunctionNumber, maxTry, extra
         let features
@@ -78,48 +77,54 @@
             ]
         
             u_camAngXZ = ((features[0]) - .5) * M.PI / 2 - M.PI
-        
+
+            //0 gs: 8 + R() * 2 | 0,
+            //1 blocksNumber: 30,
+            //2 fitnessFunctionNumber: 5, // cage
+            //3 maxTry: 8,
+            //4 extra: 0,
+
             let presets = [
-                {
-                    gs: 8 + R() * 2 | 0,
-                    blocksNumber: 30,
-                    fitnessFunctionNumber: 5, // cage
-                    maxTry: 8,
-                    extra: 0,
-                },
-                {
-                    gs: 8 + R() * 2 | 0,
-                    blocksNumber: 30,
-                    fitnessFunctionNumber: 3, // shroom
-                    maxTry: 8,
-                    extra: R() ** 4 * 8,
-                },
-                { // cutie
-                    gs: 4,
-                    blocksNumber: 3 + R() * 4 | 0,
-                    fitnessFunctionNumber: 0,
-                    maxTry: 1,
-                    extra: 1,
-                },
-                {
-                    gs: 6 + R() * 4 | 0,
-                    blocksNumber: 10 + R() * 20 | 0,
-                    fitnessFunctionNumber: 2, // low
-                    maxTry: 6,
-                    extra: R() * 2,
-                },
-                {
-                    gs: 6 + (R() | 0),
-                    blocksNumber: 10 + R() * 10 | 0,
-                    fitnessFunctionNumber: 0, // random
-                    maxTry: 4,
-                    extra: R() ** 2 * 3,
-                },
+                [
+                    8 + R() * 2 | 0,
+                    30,
+                    5, // cage
+                    8,
+                    0,
+                ],
+                [
+                    8 + R() * 2 | 0,
+                    30,
+                    3, // shroom
+                    8,
+                    R() ** 4 * 8,
+                ],
+                [ // cutie
+                    4,
+                    3 + R() * 4 | 0,
+                    0,
+                    1,
+                    1,
+                ],
+                [
+                    6 + R() * 4 | 0,
+                    10 + R() * 20 | 0,
+                    2, // low
+                    6,
+                    R() * 2,
+                ],
+                [
+                    6 + (R() | 0),
+                    10 + R() * 10 | 0,
+                    0, // random
+                    4,
+                    R() ** 2 * 3,
+                ],
             ];
         
             features[4] = R() ** .3 * presets.length | 0;
         
-            ({ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra } = presets[features[4]])
+            ([ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra ] = presets[features[4]])
             numberOfBlockTypes = 2 + R() * 2 | 0
         
             blocks = [];
