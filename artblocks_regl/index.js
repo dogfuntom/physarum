@@ -877,7 +877,7 @@
             let aa = 8
     
             let steps = 1
-            ts=16
+            ts=32
             cols=(size_/ts/2|0)*2+3
             let slowDevice = 0
 
@@ -889,11 +889,11 @@
                 }
                 console.log('new Date() - t',new Date() - t)
                 if(new Date() - t > 160) steps = max(1,steps-2)
-                if(new Date() - t < 40) steps += 2
+                if(new Date() - t < 30) steps += 2
                 if(steps==1)slowDevice++
                 else slowDevice = max(0,slowDevice--)
                 console.log('slowDevice',slowDevice)
-                if(slowDevice>8)aa=1
+                if(slowDevice>4)aa=1
                 if(params_aa)aa = Number(params_aa)
                 t = +new Date()
                 // document.querySelector('div.debug').innerHTML = `
