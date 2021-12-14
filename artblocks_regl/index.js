@@ -1,6 +1,6 @@
     /*begin features*/
     function calculateFeatures(tokenData) {
-        /*end features*/ 
+    /*end features*/ 
         
     
         // if (window.location.hash) {
@@ -23,8 +23,7 @@
         let abs = M.abs
         let cos = M.cos
         let sin = M.sin
-        /*begin features*/
-        /*end features*/
+
     
         /*begin render*/
         let div = document.createElement('div')
@@ -459,15 +458,7 @@
         }
         /*end render*/
         
-        
-        /*begin render*/
-        // let size = [100, 100]
-    
-        let density
-        // let div // FIXME
-        // function setup() {
-            /*end render*/
-        
+
             init()
         
         
@@ -904,3 +895,4 @@
                 if(tick > cols**2) fr.cancel()
             })
     
+    /*end render*/
