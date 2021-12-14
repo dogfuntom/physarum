@@ -31,6 +31,7 @@
         let div = document.createElement('div')
         div.classList.add('debug'),div.style.width = '100%',div.style.height = '100px' // FIXME
         document.body.appendChild(div) //FIXME
+        let params_aa = location.href.split('#')[1];
         /*end render*/
     
         
@@ -58,8 +59,6 @@
         let adaptFrames = 10;
         let size, gSize, ts, cols;
         // let params_aa = new URLSearchParams(window.location.search).get("a");
-        let params_aa = window.location.href.split('#')[1];
-        console.log(window.location.href.split('#')[1])
             
         
         let init = () => {
@@ -491,6 +490,7 @@
             uniforms += blocks.map((b, i) =>
                 `roty[${i}]=vec2(${b.rot},${b.type});`).join('')
     
+            // console.log(uniforms)
             /*end render*/
         
         
@@ -574,29 +574,20 @@
                 float sabs(float p) {return sqrt(abs(p)*abs(p)+5e-5);}
                 float smax(float a, float b) {return (a+b+sabs(a-b))*.5;}
                 
-                // vec3 positions[BLOCKS_NUMBER_MAX];
-                vec3 gl_z_positions[BLOCKS_NUMBER_MAX];
-                // vec3 sizes[BLOCKS_NUMBER_MAX];
-                vec3 gl_z_sizes[BLOCKS_NUMBER_MAX];
-                // vec2 roty[BLOCKS_NUMBER_MAX];
-                vec2 gl_z_roty[BLOCKS_NUMBER_MAX];
-                // ivec3 gl_z_colors[BLOCKS_NUMBER_MAX];
-                ivec3 gl_z_colors[BLOCKS_NUMBER_MAX];
+                mediump vec3 gl_z_positions[BLOCKS_NUMBER_MAX];
+                mediump vec3 gl_z_sizes[BLOCKS_NUMBER_MAX];
+                mediump vec2 gl_z_roty[BLOCKS_NUMBER_MAX];
+                mediump ivec3 gl_z_colors[BLOCKS_NUMBER_MAX];
                 
-                uniform V gl_z_palette[20];
-                uniform float gl_z_aa;
-                uniform float gl_z_res;
-                uniform vec4 gl_z_vb;
+                uniform mediump V gl_z_palette[20];
+                uniform mediump float gl_z_aa;
+                uniform mediump float gl_z_res;
+                uniform mediump vec4 gl_z_vb;
         
                 ivec3 colIds;
                 float gl;
-                float camDist = 1e2;
+                mediump float camDist = 1e2;
                 
-    
-    
-    
-    
-    
                 float cyl(V p, V s, float cornerR) {
                     // s.x — height
                     // s.y — thickness
@@ -607,10 +598,6 @@
                     float cyl = length(v(len, p.y)) - cornerR;
                     return cyl;
                 }
-    
-    
-    
-    
                 
                 int eye;
     
@@ -618,7 +605,7 @@
                     // clamp height
                     p.y -= clamp(p.y, EPS, h);
                     // torus
-                    vec2 po = vec2(length(p.xz), p.y);
+                    mediump vec2 po = vec2(length(p.xz), p.y);
                     // hole clamping
                     po.x -= clamp(po.x, innerHole, d);
                     return length(po)-EPS;
@@ -627,29 +614,29 @@
                 float dist(V p) {
                     colIds = ivec3(0, 0, -1);
                     p.x = abs(p.x);
-                    float res = p.y + 1.; // floor plane
+                    mediump float res = p.y + 1.; // floor plane
                     for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
                         eye = 0;
                         if(i >= ${blocks.length})
                             break;
-                        V pb = p;
+                        mediump V pb = p;
                         pb -= gl_z_positions[i];
                         pb.xz *= rot(gl_z_roty[i].x * PI / 2.);
                 
                         // box
-                        float cornerR = .01;
-                        float gap = .008;
-                        float block;
+                        mediump float cornerR = .01;
+                        mediump float gap = .008;
+                        mediump float block;
             
                         // if(gl_z_roty[i].y == 0. || gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4. || gl_z_roty[i].y == 5. || gl_z_roty[i].y == 6.) {
-                        V s = gl_z_sizes[i] - 2. * (cornerR + gap);
+                            mediump V s = gl_z_sizes[i] - 2. * (cornerR + gap);
                         block = length(pb - clamp(pb, -(s)/2., (s)/2.)) - cornerR * 1.4;
                         // }
                 
                         if(gl_z_roty[i].y == 5.) { // arc
-                            float cyl = length(pb.zy) - .5;
-                            float box = max(abs(pb.z) - .5, abs(pb.y + gl_z_sizes[i].y / 2.) - 1.);
-                            float hole = min(cyl, box);
+                            mediump float cyl = length(pb.zy) - .5;
+                            mediump float box = max(abs(pb.z) - .5, abs(pb.y + gl_z_sizes[i].y / 2.) - 1.);
+                            mediump float hole = min(cyl, box);
                             block = max(block, -hole);
                         }
     
@@ -659,7 +646,7 @@
                         if(gl_z_roty[i].y == 6.) { // pillar
                             // float cyl_ = length(pb.zx) - .15;
     
-                            float cyl_ = tube(pb+vec3(0,1.6-cornerR*2.,0),3.6-cornerR*2.,.15,0.);
+                            mediump float cyl_ = tube(pb+vec3(0,1.6-cornerR*2.,0),3.6-cornerR*2.,.15,0.);
                             // float sph = cyl(
                             //     pb + V(0, 0, 0) / 2., 
                             //     V(.2, .25, .2), 
@@ -667,7 +654,7 @@
                             // s.x — height
                             // s.y — thickness
                             // s.x — radius
-                            float sph = tube(pb+vec3(0,2.-cornerR*2.,0),.4-cornerR*2.,.45,0.);
+                            mediump float sph = tube(pb+vec3(0,2.-cornerR*2.,0),.4-cornerR*2.,.45,0.);
                             block = min(cyl_, sph);
                         }
                 
@@ -677,33 +664,35 @@
     
                         // studs
                         if(gl_z_roty[i].y != 6.) { // not pillar
-                            V ps = pb;
+                            mediump V ps = pb;
                             // repetition
-                            v l = gl_z_sizes[i].xz;
+                            mediump v l = gl_z_sizes[i].xz;
                             ps.xz += (l - 1.) / 2.;
                             ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
                             
                             // position
                             ps.y -= gl_z_sizes[i].y / 2. + .02;
     
-                            float stud = tube(ps, .24, .28, mix(EPS,.18,${features.Studs}.));
+                            mediump float stud = tube(ps, .24, .28, mix(EPS,.18,${features.Studs}.));
                             block = min(stud, block);
                         }
                 
                         if(pb.z<0.15 && (gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4.)) { // beak
                             block = smax(block, (-pb.z*.8-(gl_z_roty[i].y == 3. ? -1. : 1.)*pb.y-.5)/1.4142);
+                            // FIXME ↑ use smax
                         }
                 
                 
                         if(gl_z_roty[i].y == 7.) { // eye
                             // float eye_ = cyl(pb, V(.2, .25, .2), cornerR);
-                            float eye_ = tube(pb+vec3(0,.25-cornerR*2.,0),.4-cornerR*2.,.45,0.);
+                            mediump float eye_ = tube(pb+vec3(0,.25-cornerR*2.,0),.4-cornerR*2.,.45,0.);
                             block = eye_;
                             if(eye_ < EPS) {
                                 eye = 1;
                             }
                         }
                 
+                        // block = length(pb)-2.;
                         if(block < res) {
                             res = block;
                             colIds = gl_z_colors[i];
@@ -715,18 +704,18 @@
                 }
                 
                 V norm(V p) {
-                    v e = v(.01, 0.);
+                    mediump v e = v(.01, 0.);
                     return normalize(V(dist(p + e.xyy) - dist(p - e.xyy), dist(p + e.yxy) - dist(p - e.yxy), dist(p + e.yyx) - dist(p - e.yyx)));
                 }
                 void main() {
-                    V o = V(0);
                     ${uniforms}
-                    vec2 uv, uvI = (gl_FragCoord.xy * 2. - gl_z_res)/gl_z_res;
+                    mediump V o = V(0);
+                    mediump vec2 uv, uvI = (gl_FragCoord.xy * 2. - gl_z_res)/gl_z_res;
         
-                    for(float A = 0.; A < 8.; A++){
+                    for(mediump float A = 0.; A < 8.; A++){
                         if(A >= gl_z_aa) break;
                         gl = 0.;
-                        float d = 0., e = 1e9, ep, j;
+                        mediump float d = 0., e = 1e9, ep, j; // here highp
         
                         float fl = floor(A/2.);
                         float fr = mod(A,2.);
@@ -759,7 +748,7 @@
                         uv += gl_z_vb.xy;
                         uv = uv * 2. - 1.;
         
-                        V p, ro = V(uv * float(${viewBox.scale}) + 
+                        V p, ro = V(uv * float(${viewBox.scale}) +  // here highp
                         v(${viewBox.offset.x},
                         ${viewBox.offset.y}), -camDist), 
                         rd = V(0, 0, .9 + .1 * rnd(length(uv)));
@@ -770,6 +759,7 @@
                             p.z -= camDist;
                             p.yz *= rot(${u_camAngYZ});
                             p.xz *= rot(${u_camAngXZ});
+                            // d += e = length(p)-10.;
                             d += e = dist(p);
                             if(ep < e && e < .01) {
                                 // gl_FragColor = vec4(0);
@@ -892,7 +882,7 @@
             let aa = 8
     
             let steps = 1
-            tsTarget=32
+            tsTarget=16
             cols = (size_/tsTarget/2|0)*2+3
             ts=size_/cols | 0
             let slowDevice = 0
@@ -902,7 +892,6 @@
                     let [x, y] = it.next().value;
                     drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, ts_:ts, aa: aa, vb:[0,0,1,1]})
                     // drawTriangle({res: size_, x: 0, y: 0, w: size_, h: size_, aa: aa, vb:[0,0,1,1]})
-
                     tick++
                 }
                 //   if(!resFound) {tsTarget *= 1.05, it = spiral(), tick=0}

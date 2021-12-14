@@ -54,8 +54,6 @@
         let adaptFrames = 10;
         let size, gSize, ts, cols;
         // let params_aa = new URLSearchParams(window.location.search).get("a");
-        let params_aa = window.location.href.split('#')[1];
-        console.log(window.location.href.split('#')[1])
             
         
         let init = () => {
