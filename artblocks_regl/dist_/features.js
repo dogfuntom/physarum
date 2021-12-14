@@ -44,22 +44,35 @@
             /// ↓↓↓↓↓ should be changed if hash changes
         
             u_tick = 1e-6 // so not to turn into int
-            features = {
-                Symmetry: R() ** 4. * 2 | 0,
-                Studs: R() ** 8 * 2 | 0,
-                Palette: 0,
-                // 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
-                ColorScheme: (1 - R() ** .3) * 5 | 0,
-                Layout: 0,
-                Height: 0,
-                Eyes: 0,
-                Aerials: 0,
-                BlocksNumber: 0,
-                BackgroundType: RL([2, 1], .5),
-                BackgroundLight: (R() * 3 | 0) - 1,
-            }
+            // features = {
+            //0     Symmetry: R() ** 4. * 2 | 0,
+            //1     Studs: R() ** 8 * 2 | 0,
+            //2     Palette: 0,
+            //     // 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
+            //3     ColorScheme: (1 - R() ** .3) * 5 | 0,
+            //4     Layout: 0,
+            //5     BackgroundType: RL([2, 1], .5),
+            //6     BackgroundLight: (R() * 3 | 0) - 1,
+            //7     BlocksNumber: 0,
+            //8     Height: 0,
+            //9    Eyes: 0,
+            //10    Aerials: 0,
+            // }
+            features = [
+                R() ** 4. * 2 | 0,
+                R() ** 8 * 2 | 0,
+                0,
+                (1 - R() ** .3) * 5 | 0,
+                0,
+                RL([2, 1], .5),
+                (R() * 3 | 0) - 1,
+                0,
+                0,
+                0,
+                0,
+            ]
         
-            u_camAngXZ = ((features.Symmetry) - .5) * 3.1415 / 2 - 3.1415
+            u_camAngXZ = ((features[0]) - .5) * M.PI / 2 - M.PI
         
             let presets = [
                 {
@@ -99,17 +112,17 @@
                 },
             ];
         
-            features.Layout = R() ** .3 * presets.length | 0;
+            features[4] = R() ** .3 * presets.length | 0;
         
-            ({ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra } = presets[features.Layout])
+            ({ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra } = presets[features[4]])
             numberOfBlockTypes = 2 + R() * 2 | 0
         
             blocks = [];
-            features.Palette = R() ** .5 * 8 | 0
+            features[2] = R() ** .5 * 8 | 0
             // palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
-                // .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features.Palette]
+                // .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features[2]]
             u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
-                .slice(30*features.Palette, 30*(features.Palette+1))
+                .slice(30*features[2], 30*(features[2]+1))
             console.log('u_palette', u_palette)
             let palette_bg = R()*3+1|0
             u_palette = u_palette.substring(6*palette_bg) + u_palette.substring(0, 6*palette_bg)
@@ -196,7 +209,7 @@
                 let bvt
                 let isExtra = 0
                 let bvtInitial = RL(blocksVariants)
-                if (n >= blocksNumber - extra && features.ColorScheme != 4)
+                if (n >= blocksNumber - extra && features[3] != 4)
                     bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6, maxTry = 6, isExtra = 1
                 // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
                 // тот, что лучше подходит под критерий.
@@ -210,9 +223,9 @@
                     bvt = JSON.parse(JSON.stringify(bvtInitial))
                     bvt.color = R() * 4 + 1 | 0
                     bvt.color2 = R() * 4 + 1 | 0
-                    if (features.ColorScheme == 2) bvt.color = bvt.color2 = 1
+                    if (features[3] == 2) bvt.color = bvt.color2 = 1
                     bvt.texture = R() * 4 | 0
-                    if (features.ColorScheme == 1) bvt.texture = 0
+                    if (features[3] == 1) bvt.texture = 0
                     // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
                     // надо или его копию делать, или ещё чего.
         
@@ -346,13 +359,13 @@
                         }
         
                         /*begin features*/
-                        features.BlocksNumber++
-                        if (bv.type == typeEye) features.Eyes++
-                        if (bv.type == typePillar) features.Aerials++
+                        features[7]++
+                        if (bv.type == typeEye) features[9]++
+                        if (bv.type == typePillar) features[10]++
                         if (bv.pos[0] > 0) {
-                            features.BlocksNumber++
-                            if (bv.type == typeEye) features.Eyes++
-                            if (bv.type == typePillar) features.Aerials++
+                            features[7]++
+                            if (bv.type == typeEye) features[9]++
+                            if (bv.type == typePillar) features[10]++
                         }
                         /*end features*/
         
@@ -362,7 +375,7 @@
             }
         
             /*begin features*/
-            features.Height = M.max(...disallowedHeightMap.flat())
+            features[8] = M.max(...disallowedHeightMap.flat())
             /*end features*/
         
         }
@@ -398,17 +411,17 @@
             // console.log(s)
             // console.log(features)
         
-            features.BackgroundLight = { '1': 'Left', '0': 'Center', '-1': 'Right' }[features.BackgroundLight]
-            if (features.ColorScheme == 4/*gaz*/ || features.ColorScheme == 3/*ranibow*/) features.BackgroundLight = 0
-            features.BackgroundType = { '1': 'Circle', '2': 'Squircle' }[features.BackgroundType]
-            features.Studs = { '0': 'Convex', '1': 'Concave' }[features.Studs]
-            if (features.ColorScheme == 4/*gaz*/) features.BackgroundType = 'Empty'
-            features.Palette = { '0': 'Black and white', '1': 'Summer', '2': 'Colorful', '3': 'Magenta blue', '4': 'Plastic', '5': 'Winter', '6': 'Spring', '7': 'Vivid', '8': 'Eighth' }[features.Palette]
-            if (features.ColorScheme == 4/*gaz*/) features.Palette = 'Gaz'
-            if (features.ColorScheme == 3/*rainbow*/) features.Palette = 'Rainbow'
-            features.Layout = { '0': 'Cage', '1': 'Mushroom', '2': 'Tiny', '3': 'Compact', '4': 'Random' }[features.Layout]
-            features.Symmetry = { '0': 'Z', '1': 'X' }[features.Symmetry]
-            features.ColorScheme = { '0': 'Textured', '1': 'Not textured', '2': 'Monochrome', '3': 'Rainbow', '4': 'Gaz' }[features.ColorScheme]
+            features[6] = { '1': 'Left', '0': 'Center', '-1': 'Right' }[features[6]]
+            if (features[3] == 4/*gaz*/ || features[3] == 3/*ranibow*/) features[6] = 0
+            features[5] = { '1': 'Circle', '2': 'Squircle' }[features[5]]
+            features[1] = { '0': 'Convex', '1': 'Concave' }[features[1]]
+            if (features[3] == 4/*gaz*/) features[5] = 'Empty'
+            features[2] = { '0': 'Black and white', '1': 'Summer', '2': 'Colorful', '3': 'Magenta blue', '4': 'Plastic', '5': 'Winter', '6': 'Spring', '7': 'Vivid', '8': 'Eighth' }[features[2]]
+            if (features[3] == 4/*gaz*/) features[2] = 'Gaz'
+            if (features[3] == 3/*rainbow*/) features[2] = 'Rainbow'
+            features[4] = { '0': 'Cage', '1': 'Mushroom', '2': 'Tiny', '3': 'Compact', '4': 'Random' }[features[4]]
+            features[0] = { '0': 'Z', '1': 'X' }[features[0]]
+            features[3] = { '0': 'Textured', '1': 'Not textured', '2': 'Monochrome', '3': 'Rainbow', '4': 'Gaz' }[features[3]]
         
             // console.log(features)
             return features

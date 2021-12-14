@@ -26,7 +26,7 @@ const minifyOptions = {
     //   // regex: /^(size|span)$/,
     // },
     keep_classnames: false,
-    keep_fnames: true,
+    keep_fnames: false,
     // keep_fnames: /^(setup|draw)$/,
     toplevel: true,
   },
@@ -45,7 +45,7 @@ try {
     dataGlsl = dataGlsl.slice(1, -1)
     dataGlsl = dataGlsl.replaceAll('${', '${gl_z_')
     new GlslMinify().execute(dataGlsl).then(result => {
-      // dataGlsl = result.sourceCode
+      dataGlsl = result.sourceCode // comment to avoid GLSL minification
       dataGlsl = dataGlsl.replaceAll('gl_z_', '')
       data = dataJs1 + '`' + dataGlsl + '`' + dataJs2
 
