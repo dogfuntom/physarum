@@ -557,7 +557,7 @@
                 #define S smoothstep
                 #define V vec3
                 #define v vec2
-                float rnd(float x) {return fract(54321.987 * sin(987.12345 * mod(x,12.34567)));}
+                // float rnd(float x) {return ;}
                 mat2 rot(float a) {return mat2(cos(a),-sin(a),sin(a),cos(a));}
                 #define STEPS 4e2
                 #define EPS .001
@@ -569,35 +569,19 @@
                 vec2 gl_z_roty[BLOCKS_NUMBER_MAX];
                 ivec3 gl_z_colors[BLOCKS_NUMBER_MAX];
                 
-                uniform V gl_z_palette[20];
+                uniform V gl_z_palette[5];
                 uniform float gl_z_aa;
                 uniform float gl_z_res;
-                uniform vec4 gl_z_vb;
         
                 ivec3 colIds;
                 float gl;
                 float camDist = 1e2;
                 
-                float cyl(V p, V s, float cornerR) {
-                    // s.x — height
-                    // s.y — thickness
-                    // s.x — radius
-                    p.y -= clamp(p.y, -s.x, s.x);
-                    float len = length(p.xz) - s.z;
-                    len -= clamp(len, -s.y, s.y);
-                    float cyl = length(v(len, p.y)) - cornerR;
-                    return cyl;
-                }
-                
                 int eye;
     
-                float tube(vec3 p, float h, float d, float innerHole){
-                    // clamp height
-                    p.y -= clamp(p.y, EPS, h);
-                    // torus
-                    vec2 po = vec2(length(p.xz), p.y);
-                    // hole clamping
-                    po.x -= clamp(po.x, innerHole, d);
+                float tube(vec3 p, V s){
+                    vec2 po = vec2(length(p.xz), p.y - clamp(p.y, EPS, s.x));
+                    po.x -= clamp(po.x, s.z, s.y);
                     return length(po)-EPS;
                 }
                 
@@ -614,14 +598,10 @@
                         pb.xz *= rot(gl_z_roty[i].x * PI / 2.);
                 
                         // box
-                        float cornerR = .01;
-                        float gap = .008;
-                        float block;
+                        float cornerR = .01, gap = .008, block;
             
-                        // if(gl_z_roty[i].y == 0. || gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4. || gl_z_roty[i].y == 5. || gl_z_roty[i].y == 6.) {
-                            V s = gl_z_sizes[i] - 2. * (cornerR + gap);
+                        V s = gl_z_sizes[i] - 2. * (cornerR + gap);
                         block = length(pb - clamp(pb, -s/2., s/2.)) - cornerR * 1.4;
-                        // }
                 
                         if(gl_z_roty[i].y == 5.) { // arc
                             float cyl = length(pb.zy) - .5;
@@ -630,21 +610,12 @@
                             block = max(block, -hole);
                         }
     
-    
-    
-                        // TODO reuse code for eye and the base of an
                         if(gl_z_roty[i].y == 6.) { // pillar
-                            // float cyl_ = length(pb.zx) - .15;
-    
-                            float narrow = tube(pb+vec3(0,1.6-cornerR*2.,0),3.55,.15,0.);
-                            float base = tube(pb+vec3(0,2.-cornerR*2.,0),.4-cornerR*2.,.45,0.);
+                            float narrow = tube(pb+vec3(0,1.6-cornerR*2.,0),V(3.55,.15,0));
+                            float base = tube(pb+vec3(0,2.-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
                             block = min(narrow, base);
                         }
-                
-    
-    
-    
-    
+
                         // studs
                         if(gl_z_roty[i].y != 6.) { // not pillar
                             V ps = pb;
@@ -656,22 +627,19 @@
                             // position
                             ps.y -= gl_z_sizes[i].y / 2. + .02;
     
-                            float stud = tube(ps, .24, .28, mix(EPS,.18,${features.Studs}.));
+                            float stud = tube(ps, V(.24, .28, mix(EPS,.18,${features.Studs}.)));
                             block = min(stud, block);
                         }
                 
                         if(pb.z<.01 && (gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4.)) { // beak
-                            // block = smax(block, (-pb.z*.8-(gl_z_roty[i].y == 3. ? -1. : 1.)*pb.y-.5)/1.4142);
-                            // block = smax(block,dot(pb,vec3(0,.78*(gl_z_roty[i].y==3.?1.:-1.),-.624))-.39);
                             block = smax(block,dot(pb,vec3(0,.78*(7.-2.*gl_z_roty[i].y),-.624))-.39);
-                            //   block = smax(block, (pb.z*.8-(7.-2.*gl_z_roty[i].y)*pb.y-.5)/1.4142);
                         }
                 
                 
                 
                         if(gl_z_roty[i].y == 7.) { // eye
                             // float eye_ = cyl(pb, V(.2, .25, .2), cornerR);
-                            float eye_ = tube(pb+vec3(0,.25-cornerR*2.,0),.4-cornerR*2.,.45,0.);
+                            float eye_ = tube(pb+vec3(0,.25-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
                             block = eye_;
                             if(eye_ < EPS) {
                                 eye = 1;
@@ -708,36 +676,14 @@
                         vec2 pos = vec2(fr/2.,fl/4.)-.5;
                         if(mod(fl, 2.)==0.) pos.x += .25; //https://bit.ly/30g2DXs
         
-                        // pos *= 0.;
-                
-                        // float tick = mod(f,8.);
-                        // float fl = floor(tick/2.);
-                        // float fr = mod(tick,2.);
-                        // vec2 pos = vec2(fr/2.,fract(fl/2.));
-                        // if(floor(fl/2.)==1.) pos += .25;
-                
-                        // float fl = floor(tick/4.);
-                        // float fr = mod(tick,4.);
-                        // vec2 pos = vec2(fr/4.,fl/8.);
-                        // if(mod(fl, 2.)==0.) pos.x += 1./8.; // https://bit.ly/3qFnhLs
-        
                         vec2 uv = uvI;
     
-                        // pos*=0.; // FIXME
-    
                         uv += pos * 2. / gl_z_res;
-                        // uv /= res/res_render;
-                        // uv -= 1.;
-                        // uv /= 2.;
-                        uv = uv * .5 + .5;
-                        uv *= gl_z_vb.zw;
-                        uv += gl_z_vb.xy;
-                        uv = uv * 2. - 1.;
         
                         highp V p, ro = V(uv * float(${viewBox.scale}) +
-                        v(${viewBox.offset.x},
-                        ${viewBox.offset.y}), -camDist), 
-                        rd = V(0, 0, .9 + .1 * rnd(length(uv)));
+                            v(${viewBox.offset.x},
+                            ${viewBox.offset.y}), -camDist), 
+                           rd = V(0, 0, .9 + .1 * fract(1e3 * sin(1e3 * fract(length(uv)))));
                         bool outline = false;
                         for(float i = 0.; i < STEPS; i++) {
                             j = i;
@@ -748,7 +694,6 @@
                             // d += e = length(p)-10.;
                             d += e = dist(p);
                             if(ep < e && e < .01) {
-                                // gl_FragColor = vec4(0);
                                 outline = true;
                                 break;
                             }
@@ -759,7 +704,7 @@
                         V c;
                         if(!outline) {
                             V col1, col2;
-                            for(int j = 0; j < 20; j++) {
+                            for(int j = 0; j < 5; j++) {
                                 if(colIds[0] == j)
                                     col1 = gl_z_palette[j];
                                 if(colIds[1] == j)
@@ -808,37 +753,26 @@
                                 
                                 // glare
                                 c += pow(abs(dot(norm(p), normalize(V(0., 3., 1.)))), 40.);
-                                // c.r = 1.;
                             }
+                            // gazya
+                            if(${features.ColorScheme} == 4)
+                                c = (V(7. / j));
                         }
-                        
-                        // gazya
-                        if(${features.ColorScheme} == 4)
-                            c = (V(7. / j));
-                    
-                        // gl_FragColor = vec4(o*rnd(${u_tick}), 1);
-                        // gl_FragColor=vec4(uv,0,1);
-                        // gl_FragColor = vec4(o, 1);
-                        // gl_FragColor = mix(texture2D(backbuffer, uv * v(1, -1) * .5 + .5), vec4(o, 1), 1. / (tick + 1.));
-                        // o += step(.5,fract(length(uv)*4.));
                         o += c;
                     }
                     gl_FragColor = vec4(o/gl_z_aa,1);
-                    // gl_FragColor = vec4(vec3(mod(gl_FragCoord.x/2.+gl_FragCoord.y/2.,2.)),1);
-                    // gl_FragColor = vec4(1,0,0,1);
                 }`/*glsl*/,
               
-                vert: `attribute vec2 position;void main(){gl_Position=vec4(position,0,1);}`,
+                vert: `attribute vec2 g;void main(){gl_Position=vec4(g,0,1);}`,
               
                 attributes: {
-                  position: [[-1, -1], [-1, 1], [1, -1], [-1, 1], [1, -1], [1, 1]]
+                  g: [[1, 1], [1, -4], [-4, 1]]
                 },
             
                 uniforms: {
                     res: regl.prop('res'),
                     palette: u_palette,
                     aa: regl.prop('aa'),
-                    vb: regl.prop('vb'),
                 },
                 scissor: {
                     enable: true,
@@ -849,7 +783,7 @@
                       height: regl.prop('ts_')
                     }
                 },
-                count: 6
+                count: 3
               })
               let rows = (size_ / ts | 0) + 1
               let tick = 0;
@@ -875,7 +809,7 @@
             let fr = regl.frame(function () {
                 for(let i=0;i++<steps;){
                     let [x, y] = it.next().value;
-                    drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, ts_:ts, aa: aa, vb:[0,0,1,1]})
+                    drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, ts_:ts, aa: aa})
                     tick++
                 }
                 console.log('new Date() - t',new Date() - t)
