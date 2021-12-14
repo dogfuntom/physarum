@@ -3,20 +3,9 @@
     /*end features*/ 
         
     
-        // if (window.location.hash) {
-        //     tokenData.hash = window.location.hash.slice(1)
-        // }
-        // arr = arr.slice(0, 10)
-        // tokenData.hash = `0x6e848975e7868e957ecf97e2c5bce193a3d8e412e1707ce0828d695b1aaf2759`
         console.log(tokenData.hash)
-        // console.clear();
         let S, ss, R, t, RL, SH
-        // if (window.location.hash) {
-        //     tokenData.hash = window.location.hash.slice(1)
-        // }
         let M = Math
-    
-    
         let min = M.min
         let max = M.max
         let floor = M.floor
@@ -26,10 +15,8 @@
 
     
         
-    
-        
+
         let rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
-        
         const typeBlock = 0, typeBeak2x2 = 3, typeBeak2x2Flipped = 4,
             typeArc = 5, typePillar = 6, typeEye = 7
         const maxMaxTry = 30
@@ -42,34 +29,16 @@
         let blocksHeightMap, disallowedHeightMap;
         let blocks
         let vertices
-        let u_tick
         let viewBox
         // new
-        let renderSize;
-        let pixDensInit
-        let splits;
-        let maxDelay = 40;
-        let adaptFrames = 10;
-        let size, gSize, ts, cols;
-        // let params_aa = new URLSearchParams(window.location.search).get("a");
+        let size, ts, cols;
             
-        
         let init = () => {
             // console.log(tokenData.hash)
             S = new Uint32Array([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
             RL = (ar, p) => ar[ar.length * R() ** (p || 1) | 0]
-            // SH = (a) => {
-            //     for (let i = a.length - 1; i > 0; i--) {
-            //       let j = Math.floor(R() * (i + 1));
-            //       [a[i], a[j]] = [a[j], a[i]];
-            //     }
-            //     return a
-            //   }
             SH = (ar) => ar.map(a=>[a,R()]).sort((a,b)=>a[1]-b[1]).map(a=>a[0])
-            // SH = (ar) => {let br=[.Array(ar.length)].map(x=>)}
-            // SH = (ar) => ar.reduce((sum,el,i,ar)=>{let r=Math.floor(R() * (i + 1));sum.push()})
-    
-        
+            
             vertices = []
         
             /// ↓↓↓↓↓ should be changed if hash changes
@@ -89,7 +58,6 @@
                 BackgroundType: RL([2, 1], .5),
                 BackgroundLight: (R() * 3 | 0) - 1,
             }
-            // console.log('BackgroundLight', features.BackgroundLight)
         
             u_camAngXZ = ((features.Symmetry) - .5) * 3.1415 / 2 - 3.1415
         
@@ -138,19 +106,6 @@
         
             blocks = [];
             features.Palette = R() ** .5 * 8 | 0
-            // palette = [
-            //     ["#dddddd", "#888888", "#555555", "#222222", "#aaaaaa"],
-            //     ["#f26b21", "#fbb040",, "#99ca3c", "#208b3a", "#fcec52"],
-            //     //["#f26b21", "#f78e31", "#fbb040", "#cbdb47", "#99ca3c", "#208b3a", "#fcec52"], // green orange
-            //     ["#9b5de5", "#f15bb5", "#00bbf9", "#00f5d4", "#fee440"], // colorful
-            //     ["#f1faee", "#a8dadc", "#457b9d", "#1d3557", "#e63946"], // magenta blue
-            //     ["#50514f", "#f25f5c", "#247ba0", "#70c1b3", "#ffe066"], // lego
-            //     ["#541388", "#d90368", "#f1e9da", "#2e294e", "#ffd400"],
-            //     ["#1f2041", "#4b3f72", "#119da4", "#19647e", "#ffc857"],
-            //     ["#540d6e", "#ee4266", "#f3fcf0", "#1f271b", "#ffd23f"],
-            //     ["#e4572e", "#29335c", "#a8c686", "#669bbc", "#f3a712"],
-            // ][features.Palette]
-        
             // palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
                 // .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features.Palette]
             u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
@@ -319,22 +274,6 @@
                         }
                     }
         
-                    // if (
-                    //     // блок про симметрию симметрии
-                    //     (
-                    //         (studL == 0) || // деталь не попала на ось симметрии
-                    //         (studR == studL && bvt.symX)
-                    //     )
-                    //     //  && // стоит ровно посередине, ось симметрии совпадает
-                    //     // bvt.span[0] <= gs &&
-                    //     // bvt.span[2] <= gs
-                    // ) { }
-                    // else {
-                    //     if(maxTry<maxMaxTry)maxTry++;
-                    //     continue
-                    // }
-        
-        
                     let maxHeightTry = 0;
                     let maxHeightTryLikeWithoutBottomHoles = 0;
                     let maxDisallowedHeightTry = 0;
@@ -351,10 +290,7 @@
                             }
                         }
                     }
-                    if (maxHeightTry < maxDisallowedHeightTry) {
-                        if (maxTry < maxMaxTry) maxTry++; continue;
-                    }
-                    if (maxHeightTry > maxHeightTryLikeWithoutBottomHoles) {
+                    if (maxHeightTry < maxDisallowedHeightTry || maxHeightTry > maxHeightTryLikeWithoutBottomHoles) {
                         if (maxTry < maxMaxTry) maxTry++; continue;
                     }
                     // TODO possible endless lop here!
@@ -424,15 +360,12 @@
                     }// else console.log('bv.pos.y is NaN')
                 }// else console.log('bv not defined')
             }
-            // console.log('N BLOCKS', blocks.length, '\n==============================')
-            // console.log(blocks)
         
             /*begin features*/
             features.Height = M.max(...disallowedHeightMap.flat())
             /*end features*/
         
         }
-        
         
         
 
