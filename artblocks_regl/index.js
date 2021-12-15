@@ -141,66 +141,89 @@
             // FIXME кодгольфнуть как-нибудь :-)
         }
         
-        
+        //0 size
+        //1 maskTop
+        //2 maskBottom
+        //3 type
+
         function placeBlocks() { // FIXME перейти к массивам
             let blocksVariants = SH([
-                { // beak
-                    size: [2, 1, 2],
-                    maskTop: [[0, 1], [0, 1]],
-                    type: typeBeak2x2,
-                },
-                { // beak flipped
-                    size: [2, 1, 2],
-                    maskBottom: [[0, 1], [0, 1]],
-                    type: typeBeak2x2Flipped,
-                },
-                { // 4x2
-                    size: [2, 1, 4],
-                    type: typeBlock,
-                },
-                { // 3x2
-                    size: [2, 1, 3],
-                    type: typeBlock,
-                },
-                { // 6x1
-                    size: [1, 1, 6],
-                    type: typeBlock,
-                },
-                { // arc
-                    size: [1, 2, 3],
-                    maskBottom: [[1, 0, 1]],
-                    type: typeArc,
-                },
-                { // line
-                    size: [1, 1, 3],
-                    type: typeBlock,
-                },
-                { // block
-                    size: [2, 1, 2],
-                    type: typeBlock,
-                },
-                { // 1x1
-                    size: [1, 1, 1],
-                    type: typeBlock,
-                },
-                { // 1x1 but high
-                    size: [1, 2, 1],
-                    type: typeBlock,
-                },
+                [ // beak
+                    [2, 1, 2],
+                    [[0, 1], [0, 1]],
+                    0,
+                    typeBeak2x2,
+                ],
+                [ // beak flipped
+                    [2, 1, 2],
+                    0,
+                    [[0, 1], [0, 1]],
+                    typeBeak2x2Flipped,
+                ],
+                [ // 4x2
+                    [2, 1, 4],
+                    0,
+                    0,
+                    typeBlock,
+                ],
+                [ // 3x2
+                    [2, 1, 3],
+                    0,
+                    0,
+                    typeBlock,
+                ],
+                [ // 6x1
+                    [1, 1, 6],
+                    0,
+                    0,
+                    typeBlock,
+                ],
+                [ // arc
+                    [1, 2, 3],
+                    0,
+                    [[1, 0, 1]],
+                    typeArc,
+                ],
+                [ // line
+                    [1, 1, 3],
+                    0,
+                    0,
+                    typeBlock,
+                ],
+                [ // block
+                    [2, 1, 2],
+                    0,
+                    0,
+                    typeBlock,
+                ],
+                [ // 1x1
+                    [1, 1, 1],
+                    0,
+                    0,
+                    typeBlock,
+                ],
+                [ // 1x1 but high
+                    [1, 2, 1],
+                    0,
+                    0,
+                    typeBlock,
+                ],
         
-            ].filter(d => d.size[2] < gs)).slice(0, numberOfBlockTypes)
+            ].filter(d => d[0][2] < gs)).slice(0, numberOfBlockTypes)
         
             let blocksVariantsExtra = SH([
-                { // Pillar
-                    size: [1, 4, 1],
-                    maskTop: [[0]],
-                    type: typePillar,
-                },
-                { // eye
-                    size: [1, .5, 1],
-                    maskTop: [[0]],
-                    type: typeEye,
-                },
+                [ // Pillar
+                    [1, 4, 1],
+                    [[0]],
+                    0,
+                    typePillar,
+                ],
+                [ // eye
+                    [1, .5, 1],
+                    [[0]],
+                    0,
+                    typeEye,
+                ],
             ])
         
             // карта высот. В тех местах, где заплетная клетка, уходит в минус бесконечность. Чтобы точно было меньше, чем в запретной карте высот
@@ -229,67 +252,76 @@
                 // - сперва кидать самые большие детали, чтобы не вышло, что я положил один штырь, и никто не может к нему прицепиться
                 // - засчитывать только те попытки, когда деталь не нарушает правил. Иначе упрёмся в безысходный максимум.
         
+                //4 color
+                //5 color2
+                //6 texture
+                //7 symX
+                //8 rot
+                //9 span
+                //10 pos
+
                 for (let try_ = 0; try_ < maxTry; try_++) {
                     bvt = JSON.parse(JSON.stringify(bvtInitial))
-                    bvt.color = R() * 4 + 1 | 0
-                    bvt.color2 = R() * 4 + 1 | 0
-                    if (features[3] == 2) bvt.color = bvt.color2 = 1
-                    bvt.texture = R() * 4 | 0
-                    if (features[3] == 1) bvt.texture = 0
+
+                    bvt[4] = R() * 4 + 1 | 0
+                    bvt[5] = R() * 4 + 1 | 0
+                    if (features[3] == 2) bvt[4] = bvt[5] = 1
+                    bvt[6] = R() * 4 | 0
+                    if (features[3] == 1) bvt[6] = 0
                     // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
                     // надо или его копию делать, или ещё чего.
         
                     // есть ли смысл тут сделать глубокую копию? Есть. И всё в ней хранить.
-                    bvt.symX = 1
-                    bvt.rot = R() * 4 | 0 // (blockSizeTry.x%2==0 && blockSizeTry.z%2==0)?floor(R(4)):floor(R(2))*2
-                    if (bvt.type == typeEye) bvt.rot = 0
+                    bvt[7] = 1
+                    bvt[8] = R() * 4 | 0 // (blockSizeTry.x%2==0 && blockSizeTry.z%2==0)?floor(R(4)):floor(R(2))*2
+                    if (bvt[3] == typeEye) bvt[8] = 0
                     let makeMask = () => Array(9).fill(Array(9).fill(1))
-                    bvt.maskBottom = bvt.maskBottom || makeMask()
-                    bvt.maskTop = bvt.maskTop || makeMask()
+                    bvt[2] = bvt[2] || makeMask()
+                    bvt[1] = bvt[1] || makeMask()
                     // Поворачиваем весь blockVariantTry на 90° несколько раз.
                     // Далее ротейт будет использоваться только для передачи в юниформ.
-                    bvt.span = [...bvt.size]
-                    for (let i = 0; i < bvt.rot; i++) {
+                    bvt[9] = [...bvt[0]]
+                    for (let i = 0; i < bvt[8]; i++) {
                         // flipping sizes
                         // тут косяк. До этого мы деталь не крутили, только размеры подгоняли.
                         // теперь надо крутить, но размеры оставлять тут правильными. А вот координаты углов можно 
                         // ставить с учётом повотора.
-                        bvt.span.reverse()
+                        bvt[9].reverse()
                         //rotating matrices
-                        bvt.maskBottom = rotArray(bvt.maskBottom)
-                        bvt.maskTop = rotArray(bvt.maskTop)
-                        bvt.symX = !bvt.symX
+                        bvt[2] = rotArray(bvt[2])
+                        bvt[1] = rotArray(bvt[1])
+                        bvt[7] = !bvt[7]
                     }
                     // интерраптинг, иф не влезло
-                    if (bvt.span[0] > gs / 2) {
-                        // console.log(bvt.span[0], 'is longer than ', gs)
+                    if (bvt[9][0] > gs / 2) {
+                        // console.log(bvt[9][0], 'is longer than ', gs)
                         if (maxTry < maxMaxTry) maxTry++; continue // можно макс макс трай убрать, если макс трай не очень мелкий
                     }
                     ///////////////////////////////////////////////////////////////////////////////////////////
                     ///////////////////////////////////////////////////////////////////////////////////////////
                     ///////////////////////////////////////////////////////////////////////////////////////////
                     if (gs % 2 == 0)
-                        bvt.pos = [
-                            bvt.span[0] / 2 + (R() * (gs / 2 + 1 - bvt.span[0]) | 0),
+                        bvt[10] = [
+                            bvt[9][0] / 2 + (R() * (gs / 2 + 1 - bvt[9][0]) | 0),
                             0,
-                            - gs / 2 + bvt.span[2] / 2 + (R() * (gs + 1 - bvt.span[2]) | 0),
+                            - gs / 2 + bvt[9][2] / 2 + (R() * (gs + 1 - bvt[9][2]) | 0),
                         ]
                     else {
-                        bvt.pos = [
-                            bvt.span[0] / 2 + (R() * ((gs - 1) / 2 + 1 - bvt.span[0]) | 0) + .5,
+                        bvt[10] = [
+                            bvt[9][0] / 2 + (R() * ((gs - 1) / 2 + 1 - bvt[9][0]) | 0) + .5,
                             0,
-                            // - (gs - 1) / 2 + bvt.span[2] / 2 + (R() * (gs - 1 + 1 + 1 - bvt.span[2]) | 0) + .5-1,
-                            - gs / 2 + bvt.span[2] / 2 + (R() * (gs + 1 - bvt.span[2]) | 0),
+                            // - (gs - 1) / 2 + bvt[9][2] / 2 + (R() * (gs - 1 + 1 + 1 - bvt[9][2]) | 0) + .5-1,
+                            - gs / 2 + bvt[9][2] / 2 + (R() * (gs + 1 - bvt[9][2]) | 0),
                         ]
                     }
-                    if (bvt.span[0] % 2 == gs % 2 && R() < 1 / (gs - bvt.span[0]))
-                        if (bvt.span[0] % 2 || bvt.symX) // если чётное число пупырок, надо чтобы ось симетрии совпадала
-                            bvt.pos[0] = 0
+                    if (bvt[9][0] % 2 == gs % 2 && R() < 1 / (gs - bvt[9][0]))
+                        if (bvt[9][0] % 2 || bvt[7]) // если чётное число пупырок, надо чтобы ось симетрии совпадала
+                            bvt[10][0] = 0
                     // тут можно циклы выкинуть
                     let studL = 0
                     let studR = 0
-                    let xx = [...Array(bvt.span[0])].map((d, i) => bvt.pos[0] + i - (bvt.span[0] - 1.) / 2)
-                    let zz = [...Array(bvt.span[2])].map((d, i) => bvt.pos[2] + i - (bvt.span[2] - 1.) / 2)
+                    let xx = [...Array(bvt[9][0])].map((d, i) => bvt[10][0] + i - (bvt[9][0] - 1.) / 2)
+                    let zz = [...Array(bvt[9][2])].map((d, i) => bvt[10][2] + i - (bvt[9][2] - 1.) / 2)
                     for (let x of xx) {
                         for (let z of zz) {
                             if (x >= 0) studR++;
@@ -303,12 +335,12 @@
                     let bi = 0
                     for (let z of zz) {
                         for (let x of xx) {
-                            let bx = bi % bvt.span[0]
-                            let bz = floor(bi / bvt.span[0])
+                            let bx = bi % bvt[9][0]
+                            let bz = floor(bi / bvt[9][0])
                             bi++
                             maxHeightTryLikeWithoutBottomHoles = max(maxHeightTryLikeWithoutBottomHoles, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
                             maxDisallowedHeightTry = max(maxDisallowedHeightTry, disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
-                            if (bvt.maskBottom[bx][bz] == 1) { // если посчитать только те, что с 1 внизу, высота не должна отличаться от той, что считается для всех клеток
+                            if (bvt[2][bx][bz] == 1) { // если посчитать только те, что с 1 внизу, высота не должна отличаться от той, что считается для всех клеток
                                 maxHeightTry = max(maxHeightTry, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
                             }
                         }
@@ -321,12 +353,12 @@
         
                     let fitnessFunctions = [
                         0, // any
-                        -M.hypot(bvt.pos[0], bvt.pos[2]), // high, bn 16 gs 10
+                        -M.hypot(bvt[10][0], bvt[10][2]), // high, bn 16 gs 10
                         -maxHeightTry, // low
-                        -M.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]), // mashroom
-                        -abs(M.hypot(bvt.pos[0], maxHeightTry - 10, bvt.pos[2]) - gs), // cage
-                        -abs(M.hypot(bvt.pos[0], maxHeightTry * 2, bvt.pos[2]) - gs), // cage: blocksNum = 90, gs = 16
-                        maxHeightTry * 2. + bvt.pos[2], // eyes
+                        -M.hypot(bvt[10][0], maxHeightTry - 10, bvt[10][2]), // mashroom
+                        -abs(M.hypot(bvt[10][0], maxHeightTry - 10, bvt[10][2]) - gs), // cage
+                        -abs(M.hypot(bvt[10][0], maxHeightTry * 2, bvt[10][2]) - gs), // cage: blocksNum = 90, gs = 16
+                        maxHeightTry * 2. + bvt[10][2], // eyes
                     ]
                     fitness = fitnessFunctions[fitnessFunctionNumber]
         
@@ -337,23 +369,23 @@
                     }
                 }
                 if (bv) {
-                    bv.pos[1] = maxHeight + bv.size[1] / 2;
-                    if (bv.pos[1]) {
-                        if (isExtra && bv.pos[1] - bv.span[1] / 2 == 0) {
+                    bv[10][1] = maxHeight + bv[0][1] / 2;
+                    if (bv[10][1]) {
+                        if (isExtra && bv[10][1] - bv[9][1] / 2 == 0) {
                             // console.log('extra on the floor!'); 
                             continue
                         } // eyes on the froor are prohibited
-                        let xx = Array(bv.span[0]).fill().map((d, i) => bv.pos[0] + i - (bv.span[0] - 1.) / 2)
-                        let zz = Array(bv.span[2]).fill().map((d, i) => bv.pos[2] + i - (bv.span[2] - 1.) / 2)
+                        let xx = Array(bv[9][0]).fill().map((d, i) => bv[10][0] + i - (bv[9][0] - 1.) / 2)
+                        let zz = Array(bv[9][2]).fill().map((d, i) => bv[10][2] + i - (bv[9][2] - 1.) / 2)
                         let bi = 0
                         for (let z of zz) {
                             for (let x of xx) {
-                                let bx = bi % bv.span[0]
-                                let bz = floor(bi / bv.span[0])
+                                let bx = bi % bv[9][0]
+                                let bz = floor(bi / bv[9][0])
                                 bi++
-                                blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv.size[1]
-                                if (bv.maskTop[bx][bz] == 0) blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = -99
-                                disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv.size[1]
+                                blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv[0][1]
+                                if (bv[1][bx][bz] == 0) blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = -99
+                                disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv[0][1]
                             }
                         }
                         blocks.push(bv)
@@ -362,25 +394,25 @@
                         for (let i = 0; i++ < 8;) {
                             let s = [0, 0, 0].map((_, j) => ((i >> j) & 1) - .5) // permutations, 3 items of {.5, -.5} set
                             vertices.push([
-                                s[0] * (bv.span[0] + 2 * bv.pos[0]), // pos shouldn't be divided by 2, compensating
-                                s[1] * bv.span[1] + bv.pos[1],
-                                s[2] * bv.span[2] + bv.pos[2]
+                                s[0] * (bv[9][0] + 2 * bv[10][0]), // pos shouldn't be divided by 2, compensating
+                                s[1] * bv[9][1] + bv[10][1],
+                                s[2] * bv[9][2] + bv[10][2]
                             ])
                         }
         
                         /*begin features*/
                         features[7]++
-                        if (bv.type == typeEye) features[9]++
-                        if (bv.type == typePillar) features[10]++
-                        if (bv.pos[0] > 0) {
+                        if (bv[3] == typeEye) features[9]++
+                        if (bv[3] == typePillar) features[10]++
+                        if (bv[10][0] > 0) {
                             features[7]++
-                            if (bv.type == typeEye) features[9]++
-                            if (bv.type == typePillar) features[10]++
+                            if (bv[3] == typeEye) features[9]++
+                            if (bv[3] == typePillar) features[10]++
                         }
                         /*end features*/
         
         
-                    }// else console.log('bv.pos.y is NaN')
+                    }// else console.log('bv[10].y is NaN')
                 }// else console.log('bv not defined')
             }
         
@@ -424,17 +456,17 @@
             findViewBox()
         
             console.log(u_palette)
-            u_colors = blocks.map(b => [b.color, b.color2, b.texture]).flat()
+            u_colors = blocks.map(b => [b[4], b[5], b[6]]).flat()
         
             let uniforms = ``
             uniforms += blocks.map((b, i) =>
-                `positions[${i}]=vec3(${b.pos[0]},${b.pos[1]},${b.pos[2]});`).join('')
+                `ps[${i}]=vec3(${b[10][0]},${b[10][1]},${b[10][2]});`).join('')
             uniforms += blocks.map((b, i) =>
-                `sizes[${i}]=vec3(${b.size[0]},${b.size[1]},${b.size[2]});`).join('')
+                `ss[${i}]=vec3(${b[0][0]},${b[0][1]},${b[0][2]});`).join('')
             uniforms += blocks.map((b, i) =>
-                `colors[${i}]=ivec3(${b.color},${b.color2},${b.texture});`).join('')
+                `cs[${i}]=ivec3(${b[4]},${b[5]},${b[6]});`).join('')
             uniforms += blocks.map((b, i) =>
-                `roty[${i}]=vec2(${b.rot},${b.type});`).join('')
+                `rt[${i}]=vec2(${b[8]},${b[3]});`).join('')
     
             // console.log(uniforms)
             /*end render*/
@@ -482,10 +514,10 @@
     
     
     
-            let size_ = Math.min(window.innerWidth, window.innerHeight)*window.devicePixelRatio
+            let size_ = M.min(innerWidth, innerHeight)*devicePixelRatio
             let canvas_ = document.createElement('canvas')
-            canvas_.style.width = size_/window.devicePixelRatio + 'px' // FIXME, а без этого совсем никак?
-            canvas_.style.height = size_/window.devicePixelRatio + 'px'
+            canvas_.style.width = size_/devicePixelRatio + 'px' // FIXME, а без этого совсем никак?
+            canvas_.style.height = size_/devicePixelRatio + 'px'
             size_ = min(size_, 2048)
             const gl = canvas_.getContext('webgl', {
                 preserveDrawingBuffer: true,
@@ -512,100 +544,102 @@
                 #define PI 3.1415
                 #define S smoothstep
                 #define V vec3
+                #define F float
+                #define L length
                 #define v vec2
-                // float rnd(float x) {return ;}
-                mat2 rot(float a) {return mat2(cos(a),-sin(a),sin(a),cos(a));}
+                // F rnd(F x) {return ;}
+                mat2 rot(F a) {return mat2(cos(a),-sin(a),sin(a),cos(a));}
                 #define STEPS 4e2
                 #define EPS .001
-                float sabs(float p) {return sqrt(abs(p)*abs(p)+5e-5);}
-                float smax(float a, float b) {return (a+b+sabs(a-b))*.5;}
+                F sabs(F p) {return sqrt(abs(p)*abs(p)+5e-5);}
+                F smax(F a, F b) {return (a+b+sabs(a-b))*.5;}
                 
-                vec3 gl_z_positions[BLOCKS_NUMBER_MAX];
-                vec3 gl_z_sizes[BLOCKS_NUMBER_MAX];
-                vec2 gl_z_roty[BLOCKS_NUMBER_MAX];
-                ivec3 gl_z_colors[BLOCKS_NUMBER_MAX];
+                V gl_z_ps[BLOCKS_NUMBER_MAX];
+                V gl_z_ss[BLOCKS_NUMBER_MAX];
+                v gl_z_rt[BLOCKS_NUMBER_MAX];
+                ivec3 gl_z_cs[BLOCKS_NUMBER_MAX];
                 
                 uniform V gl_z_palette[5];
-                uniform float gl_z_aa;
-                uniform float gl_z_res;
+                uniform F gl_z_aa;
+                uniform F gl_z_res;
         
                 ivec3 colIds;
-                float gl;
-                float camDist = 1e2;
+                F gl;
+                F camDist = 1e2;
                 
                 int eye;
     
-                float tube(vec3 p, V s){
-                    vec2 po = vec2(length(p.xz), p.y - clamp(p.y, EPS, s.x));
+                F tube(V p, V s){
+                    v po = v(L(p.xz), p.y - clamp(p.y, EPS, s.x));
                     po.x -= clamp(po.x, s.z, s.y);
-                    return length(po)-EPS;
+                    return L(po)-EPS;
                 }
                 
-                float dist(V p) {
+                F dist(V p) {
                     colIds = ivec3(0, 0, -1);
                     p.x = abs(p.x);
-                    float res = p.y + 1.; // floor plane
+                    F res = p.y + 1.; // floor plane
                     for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
                         eye = 0;
                         if(i >= ${blocks.length})
                             break;
                         V pb = p;
-                        pb -= gl_z_positions[i];
-                        pb.xz *= rot(gl_z_roty[i].x * PI / 2.);
+                        pb -= gl_z_ps[i];
+                        pb.xz *= rot(gl_z_rt[i].x * PI / 2.);
                 
                         // box
-                        float cornerR = .01, gap = .008, block;
+                        F cornerR = .01, gap = .008, block;
             
-                        V s = gl_z_sizes[i] - 2. * (cornerR + gap);
-                        block = length(pb - clamp(pb, -s/2., s/2.)) - cornerR * 1.4;
+                        V s = gl_z_ss[i] - 2. * (cornerR + gap);
+                        block = L(pb - clamp(pb, -s/2., s/2.)) - cornerR * 1.4;
                 
-                        if(gl_z_roty[i].y == 5.) { // arc
-                            float cyl = length(pb.zy) - .5;
-                            float box = max(abs(pb.z) - .5, abs(pb.y + gl_z_sizes[i].y / 2.) - 1.);
-                            float hole = min(cyl, box);
+                        if(gl_z_rt[i].y == 5.) { // arc
+                            F cyl = L(pb.zy) - .5;
+                            F box = max(abs(pb.z) - .5, abs(pb.y + gl_z_ss[i].y / 2.) - 1.);
+                            F hole = min(cyl, box);
                             block = max(block, -hole);
                         }
     
-                        if(gl_z_roty[i].y == 6.) { // pillar
-                            float narrow = tube(pb+vec3(0,1.6-cornerR*2.,0),V(3.55,.15,0));
-                            float base = tube(pb+vec3(0,2.-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
+                        if(gl_z_rt[i].y == 6.) { // pillar
+                            F narrow = tube(pb+V(0,1.6-cornerR*2.,0),V(3.55,.15,0));
+                            F base = tube(pb+V(0,2.-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
                             block = min(narrow, base);
                         }
 
                         // studs
-                        if(gl_z_roty[i].y != 6.) { // not pillar
+                        if(gl_z_rt[i].y != 6.) { // not pillar
                             V ps = pb;
                             // repetition
-                            v l = gl_z_sizes[i].xz;
+                            v l = gl_z_ss[i].xz;
                             ps.xz += (l - 1.) / 2.;
                             ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
                             
                             // position
-                            ps.y -= gl_z_sizes[i].y / 2. + .02;
+                            ps.y -= gl_z_ss[i].y / 2. + .02;
     
-                            float stud = tube(ps, V(.24, .28, mix(EPS,.18,${features[1]}.)));
+                            F stud = tube(ps, V(.24, .28, mix(EPS,.18,${features[1]}.)));
                             block = min(stud, block);
                         }
                 
-                        if(pb.z<.01 && (gl_z_roty[i].y == 3. || gl_z_roty[i].y == 4.)) { // beak
-                            block = smax(block,dot(pb,vec3(0,.78*(7.-2.*gl_z_roty[i].y),-.624))-.39);
+                        if(pb.z<.01 && (gl_z_rt[i].y == 3. || gl_z_rt[i].y == 4.)) { // beak
+                            block = smax(block,dot(pb,V(0,.78*(7.-2.*gl_z_rt[i].y),-.624))-.39);
                         }
                 
                 
                 
-                        if(gl_z_roty[i].y == 7.) { // eye
-                            // float eye_ = cyl(pb, V(.2, .25, .2), cornerR);
-                            float eye_ = tube(pb+vec3(0,.25-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
+                        if(gl_z_rt[i].y == 7.) { // eye
+                            // F eye_ = cyl(pb, V(.2, .25, .2), cornerR);
+                            F eye_ = tube(pb+V(0,.25-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
                             block = eye_;
                             if(eye_ < EPS) {
                                 eye = 1;
                             }
                         }
                 
-                        // block = length(pb)-2.;
+                        // block = L(pb)-2.;
                         if(block < res) {
                             res = block;
-                            colIds = gl_z_colors[i];
+                            colIds = gl_z_cs[i];
                         }
                         if(res < EPS)
                             break;
@@ -620,34 +654,34 @@
                 void main() {
                     ${uniforms}
                     V o = V(0);
-                    vec2 uv, uvI = (gl_FragCoord.xy * 2. - gl_z_res)/gl_z_res;
+                    v uv, uvI = (gl_FragCoord.xy * 2. - gl_z_res)/gl_z_res;
         
-                    for(float A = 0.; A < 8.; A++){
+                    for(F A = 0.; A < 8.; A++){
                         if(A >= gl_z_aa) break;
                         gl = 0.;
-                        float d = 0., e = 1e9, ep, j; // here highp
+                        F d = 0., e = 1e9, ep, j; // here highp
         
-                        float fl = floor(A/2.);
-                        float fr = mod(A,2.);
-                        vec2 pos = vec2(fr/2.,fl/4.)-.5;
+                        F fl = floor(A/2.);
+                        F fr = mod(A,2.);
+                        v pos = v(fr/2.,fl/4.)-.5;
                         if(mod(fl, 2.)==0.) pos.x += .25; //https://bit.ly/30g2DXs
         
-                        vec2 uv = uvI;
+                        v uv = uvI;
     
                         uv += pos * 2. / gl_z_res;
         
-                        V p, ro = V(uv * float(${viewBox[6]}) +
+                        V p, ro = V(uv * F(${viewBox[6]}) +
                             v(${viewBox[7]},
                             ${viewBox[8]}), -camDist), 
-                           rd = V(0, 0, .9 + .1 * fract(1e3 * sin(1e3 * fract(length(uv)))));
+                           rd = V(0, 0, .9 + .1 * fract(1e3 * sin(1e3 * fract(L(uv)))));
                         bool outline = false;
-                        for(float i = 0.; i < STEPS; i++) {
+                        for(F i = 0.; i < STEPS; i++) {
                             j = i;
                             p = d * rd + ro;
                             p.z -= camDist;
                             p.yz *= rot(${u_camAngYZ});
                             p.xz *= rot(${u_camAngXZ});
-                            // d += e = length(p)-10.;
+                            // d += e = L(p)-10.;
                             d += e = dist(p);
                             if(ep < e && e < .01) {
                                 outline = true;
@@ -676,31 +710,31 @@
                                 if(sin(p.y * PI * 3.) > 0.)
                                     col = col2;
                             if(colIds.z == 2)
-                                if(sin((p.x + fract(gl_z_positions[0].x - gl_z_sizes[0].x / 2.)) * PI * 2. * 1.5) > 0.)
+                                if(sin((p.x + fract(gl_z_ps[0].x - gl_z_ss[0].x / 2.)) * PI * 2. * 1.5) > 0.)
                                     col = col2;
                                     
                             // pride
                             if(${features[3]} == 3)
-                                col = sin((length(p) / max(float(${gs}), float(${features[8]})) * 2. - V(0, .3, .6)) * 6.28) * .5 + .5;
+                                col = sin((L(p) / max(F(${gs}), F(${features[8]})) * 2. - V(0, .3, .6)) * 6.28) * .5 + .5;
                             
                             if(eye == 1) {
                                 col = V(0);
                                 V pe = p + fract(${gs}. / 2.);
                                 pe = fract(pe) - .5;
-                                col += step(.3, length(pe.xz));
-                                col += step(-.1, -length(pe.xz + .1));
+                                col += step(.3, L(pe.xz));
+                                col += step(-.1, -L(pe.xz + .1));
                             }
                                     
                             if(colIds.z == -1) {
                                 c = gl_z_palette[0];
-                                if(length(c) > .4){
-                                    c *= smoothstep(5., 0., length(uv + v(${features[6]}, -1)));
+                                if(L(c) > .4){
+                                    c *= smoothstep(5., 0., L(uv + v(${features[6]}, -1)));
                                 }
                                 // c = V(1,0,1);
                                 if(${features[3]} == 3){
                                     c = V(.2);
                                 }
-                                if(sin(length(pow(abs(uv), v(${features[5]}))) * 32.) > 0.)
+                                if(sin(L(pow(abs(uv), v(${features[5]}))) * 32.) > 0.)
                                     c *= .95;
                             } else {
                                 c = V(1,0,1);
