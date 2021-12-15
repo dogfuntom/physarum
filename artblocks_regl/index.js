@@ -1,4 +1,4 @@
-    /*begin features*/
+/*begin features*/
     function calculateFeatures(tokenData) {
     /*end features*/ 
         
@@ -22,9 +22,9 @@
         /*end render*/
 
         let rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
-        const typeBlock = 0, typeBeak2x2 = 3, typeBeak2x2Flipped = 4,
+        let typeBlock = 0, typeBeak2x2 = 3, typeBeak2x2Flipped = 4,
             typeArc = 5, typePillar = 6, typeEye = 7
-        const maxMaxTry = 30
+        let maxMaxTry = 30
         let u_camAngYZ = .95532, u_camAngXZ, numberOfBlockTypes
         // let gs, blocksNumber, fitnessFunctionNumber, maxTry, extra
         let u_palette
@@ -519,7 +519,7 @@
             canvas_.style.width = size_/devicePixelRatio + 'px' // FIXME, а без этого совсем никак?
             canvas_.style.height = size_/devicePixelRatio + 'px'
             size_ = min(size_, 2048)
-            const gl = canvas_.getContext('webgl', {
+            let gl = canvas_.getContext('webgl', {
                 preserveDrawingBuffer: true,
                 // failIfMajorPerformanceCaveat: true,
               });
@@ -538,7 +538,7 @@
             // console.log('regl.limits.maxViewportDims',regl.limits.maxViewportDims)
             // console.log('regl.limits.maxRenderbufferSize',regl.limits.maxRenderbufferSize)
     
-            const drawTriangle = regl({
+            let drawTriangle = regl({
                 frag: /*glsl*/`precision highp float;
                 #define BLOCKS_NUMBER_MAX 60
                 #define PI 3.1415

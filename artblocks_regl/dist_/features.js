@@ -1,4 +1,4 @@
-    /*begin features*/
+/*begin features*/
     function calculateFeatures(tokenData) {
     /*end features*/ 
         
@@ -17,9 +17,9 @@
         
 
         let rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
-        const typeBlock = 0, typeBeak2x2 = 3, typeBeak2x2Flipped = 4,
+        let typeBlock = 0, typeBeak2x2 = 3, typeBeak2x2Flipped = 4,
             typeArc = 5, typePillar = 6, typeEye = 7
-        const maxMaxTry = 30
+        let maxMaxTry = 30
         let u_camAngYZ = .95532, u_camAngXZ, numberOfBlockTypes
         // let gs, blocksNumber, fitnessFunctionNumber, maxTry, extra
         let u_palette
