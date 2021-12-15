@@ -810,8 +810,8 @@
                 }
                 console.log('new Date() - t',new Date() - t)
                 t = +new Date()
-                if(tprev - t > 160) steps = max(1,steps-2)
-                if(tprev - t < 30) steps += 2
+                if(t - tprev > 160) steps = max(1,steps-2)
+                if(t - tprev < 30) steps += 2
                 if(steps==1)slowDevice++
                 else slowDevice = max(0,slowDevice--)
                 console.log('slowDevice',slowDevice)
