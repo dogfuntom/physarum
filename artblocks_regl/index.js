@@ -554,11 +554,11 @@
                 #define N normalize
                 #define L length
                 #define v vec2
-                mat2 rot(F a) {return mat2(cos(a),-sin(a),sin(a),cos(a));} // FIXME
+                mat2 rot(F a) {→mat2(cos(a),-sin(a),sin(a),cos(a));} // FIXME
                 // #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
                 #define EPS .001
-                F sabs(F p) {return sqrt(abs(p)*abs(p)+5e-5);}
-                F smax(F a, F b) {return (a+b+sabs(a-b))*.5;}
+                F sabs(F p) {→sqrt(abs(p)*abs(p)+5e-5);}
+                F smax(F a, F b) {→(a+b+sabs(a-b))*.5;}
                 
                 V gl_z_ps[BLOCKS_NUMBER_MAX];
                 V gl_z_ss[BLOCKS_NUMBER_MAX];
@@ -578,7 +578,7 @@
                 F tube(V p, V s){
                     v po = v(L(p.xz), p.y - clamp(p.y, EPS, s.x));
                     po.x -= clamp(po.x, s.z, s.y);
-                    return L(po)-EPS;
+                    →L(po)-EPS;
                 }
                 
                 F dist(V p) {
@@ -650,12 +650,12 @@
                         if(res < EPS)
                             break;
                     }
-                    return res;
+                    →res;
                 }
                 
                 V norm(V p) {
                     v e = v(.01, 0.);
-                    return N(V(dist(p + e.xyy) - dist(p - e.xyy), dist(p + e.yxy) - dist(p - e.yxy), dist(p + e.yyx) - dist(p - e.yyx)));
+                    →N(V(dist(p + e.xyy) - dist(p - e.xyy), dist(p + e.yxy) - dist(p - e.yxy), dist(p + e.yyx) - dist(p - e.yyx)));
                 }
                 void main() {
                     ${uniforms}
@@ -757,7 +757,7 @@
                         o += c;
                     }
                     gl_FragColor = vec4(o/gl_z_aa,1);
-                }`/*glsl*/.replaceAll('@','\n#define '),
+                }`/*glsl*/.replace(/@/g,'\n#define ').replace(/→/g,'return '),
               
                 vert: `attribute vec2 g;void main(){gl_Position=vec4(g,0,1);}`,
               
