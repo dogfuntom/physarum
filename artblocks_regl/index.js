@@ -38,6 +38,7 @@
         let blocks
         let vertices
         let viewBox
+        let palette_bg
 
         // new
         let size, ts, cols;
@@ -138,12 +139,12 @@
             // palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
                 // .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features[2]]
             u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
-                .substr(30*features[2], 30)
-            console.log('u_palette', u_palette)
-            let palette_bg = R()*3+1|0
-            u_palette = u_palette.substring(6*palette_bg) + u_palette.substring(0, 6*palette_bg)
-            console.log('u_palette', u_palette)
-            u_palette = u_palette.match(/(.{2})/g).map(v=>Number("0x"+v)/255)
+                .substr(30*features[2], 30).match(/(.{2})/g).map(v=>Number("0x"+v))
+                palette_bg = R()*4|0
+            // console.log('u_palette', u_palette)
+            // u_palette = u_palette.substring(6*palette_bg) + u_palette.substring(0, 6*palette_bg)
+            // console.log('u_palette', u_palette)
+            // u_palette = u_palette.match(/(.{2})/g).map(v=>Number("0x"+v)/255)
             // FIXME кодгольфнуть как-нибудь :-)
         }
         
@@ -530,10 +531,9 @@
                 // failIfMajorPerformanceCaveat: true,
               });
             document.body.appendChild(canvas_)
-            canvas_.style.background=`rgb(${u_palette.slice(0,3).map(v=>v*255)})`
-            if(features[3] == 4 || features[3] == 3) canvas_.style.background = '#333'
-    
-    
+            let bg = u_palette.slice(3*palette_bg,3+3*palette_bg)//.map(v=>v*255)
+            canvas_.style.background=(features[3] == 4 || features[3] == 3)? '#333':`rgb(${bg})`
+
             canvas_.width = size_
             canvas_.height = size_
             let tsTarget = 16
@@ -554,7 +554,8 @@
                 #define N normalize
                 #define L length
                 #define v vec2
-                mat2 rot(F a) {return mat2(cos(a),-sin(a),sin(a),cos(a));}
+                mat2 rot(F a) {return mat2(cos(a),-sin(a),sin(a),cos(a));} // FIXME
+                // #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
                 #define EPS .001
                 F sabs(F p) {return sqrt(abs(p)*abs(p)+5e-5);}
                 F smax(F a, F b) {return (a+b+sabs(a-b))*.5;}
@@ -731,7 +732,7 @@
                             }
                                     
                             if(colIds.z == -1) {
-                                c = gl_z_pt[0];
+                                c = V(${bg})/255.;
                                 if(L(c) > .4){
                                     c *= S(5., 0., L(uv + v(${features[6]}, -1)));
                                 }
@@ -766,7 +767,7 @@
             
                 uniforms: {
                     rs: regl.prop('r'),
-                    pt: u_palette,
+                    pt: u_palette.map(v=>v/255),
                     aa: regl.prop('a'),
                 },
                 scissor: {
