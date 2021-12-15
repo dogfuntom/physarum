@@ -1,3 +1,5 @@
+// tokenData.hash = '0x121a71bcc6d7a427dae796ae7c01e690501d5582a9da76a6df36a1632d66d701'
+
 /*begin features*/
     function calculateFeatures(tokenData) {
     /*end features*/ 
@@ -6,6 +8,8 @@
         console.log(tokenData.hash)
         let S, ss, R, t, RL, SH
         let M = Math
+        let A = Array
+        let D = devicePixelRatio
         let min = M.min
         let max = M.max
         let floor = M.floor
@@ -34,12 +38,14 @@
         let blocks
         let vertices
         let viewBox
+
         // new
         let size, ts, cols;
             
         let init = () => {
             // console.log(tokenData.hash)
-            S = new Uint32Array([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
+            S = new Uint32Array([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= t ^ t >>> 8 ^ ss >>> 19, S[0] / 2 ** 32); 'tx piter'
+            // FIXME S = new Uint32Array([4, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= t ^ t >>> 8 ^ ss >>> 19, S[0] / 2 ** 32); 'tx piter'
             RL = (ar, p) => ar[ar.length * R() ** (p || 1) | 0]
             SH = (ar) => ar.map(a=>[a,R()]).sort((a,b)=>a[1]-b[1]).map(a=>a[0])
             
@@ -132,7 +138,7 @@
             // palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
                 // .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features[2]]
             u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
-                .slice(30*features[2], 30*(features[2]+1))
+                .substr(30*features[2], 30)
             console.log('u_palette', u_palette)
             let palette_bg = R()*3+1|0
             u_palette = u_palette.substring(6*palette_bg) + u_palette.substring(0, 6*palette_bg)
@@ -146,7 +152,7 @@
         //2 maskBottom
         //3 type
 
-        function placeBlocks() { // FIXME перейти к массивам
+        let placeBlocks = () => { // FIXME перейти к массивам
             let blocksVariants = SH([
                 [ // beak
                     [2, 1, 2],
@@ -228,12 +234,12 @@
         
             // карта высот. В тех местах, где заплетная клетка, уходит в минус бесконечность. Чтобы точно было меньше, чем в запретной карте высот
             // обратим внимание, что икс снаружи, потом зет. Обычно наоборот, если что.
-            blocksHeightMap = [...Array(gs)]
-                .map(() => Array(gs).fill(0))
+            blocksHeightMap = [...A(gs)]
+                .map(() => A(gs).fill(0))
             // запретная карта высот. Ну, как запретная. Просто нельзя ставить деталь ножкой на
             // на клетку, если карта высот в этой клетке меньше карты запрета.
-            disallowedHeightMap = [...Array(gs)]
-                .map(() => Array(gs).fill(0))
+            disallowedHeightMap = [...A(gs)]
+                .map(() => A(gs).fill(0))
         
             for (let n = 0; n < blocksNumber; n++) {
                 let maxHeight = 0
@@ -275,7 +281,7 @@
                     bvt[7] = 1
                     bvt[8] = R() * 4 | 0 // (blockSizeTry.x%2==0 && blockSizeTry.z%2==0)?floor(R(4)):floor(R(2))*2
                     if (bvt[3] == typeEye) bvt[8] = 0
-                    let makeMask = () => Array(9).fill(Array(9).fill(1))
+                    let makeMask = () => A(9).fill(A(9).fill(1))
                     bvt[2] = bvt[2] || makeMask()
                     bvt[1] = bvt[1] || makeMask()
                     // Поворачиваем весь blockVariantTry на 90° несколько раз.
@@ -320,8 +326,8 @@
                     // тут можно циклы выкинуть
                     let studL = 0
                     let studR = 0
-                    let xx = [...Array(bvt[9][0])].map((d, i) => bvt[10][0] + i - (bvt[9][0] - 1.) / 2)
-                    let zz = [...Array(bvt[9][2])].map((d, i) => bvt[10][2] + i - (bvt[9][2] - 1.) / 2)
+                    let xx = [...A(bvt[9][0])].map((d, i) => bvt[10][0] + i - (bvt[9][0] - 1.) / 2)
+                    let zz = [...A(bvt[9][2])].map((d, i) => bvt[10][2] + i - (bvt[9][2] - 1.) / 2)
                     for (let x of xx) {
                         for (let z of zz) {
                             if (x >= 0) studR++;
@@ -375,8 +381,8 @@
                             // console.log('extra on the floor!'); 
                             continue
                         } // eyes on the froor are prohibited
-                        let xx = Array(bv[9][0]).fill().map((d, i) => bv[10][0] + i - (bv[9][0] - 1.) / 2)
-                        let zz = Array(bv[9][2]).fill().map((d, i) => bv[10][2] + i - (bv[9][2] - 1.) / 2)
+                        let xx = A(bv[9][0]).fill().map((d, i) => bv[10][0] + i - (bv[9][0] - 1.) / 2)
+                        let zz = A(bv[9][2]).fill().map((d, i) => bv[10][2] + i - (bv[9][2] - 1.) / 2)
                         let bi = 0
                         for (let z of zz) {
                             for (let x of xx) {
@@ -514,10 +520,10 @@
     
     
     
-            let size_ = M.min(innerWidth, innerHeight)*devicePixelRatio
+            let size_ = M.min(innerWidth, innerHeight)*D
             let canvas_ = document.createElement('canvas')
-            canvas_.style.width = size_/devicePixelRatio + 'px' // FIXME, а без этого совсем никак?
-            canvas_.style.height = size_/devicePixelRatio + 'px'
+            canvas_.style.width = size_/D + 'px' // FIXME, а без этого совсем никак?
+            canvas_.style.height = size_/D + 'px'
             size_ = min(size_, 2048)
             let gl = canvas_.getContext('webgl', {
                 preserveDrawingBuffer: true,
@@ -545,11 +551,10 @@
                 #define S smoothstep
                 #define V vec3
                 #define F float
+                #define N normalize
                 #define L length
                 #define v vec2
-                // F rnd(F x) {return ;}
                 mat2 rot(F a) {return mat2(cos(a),-sin(a),sin(a),cos(a));}
-                #define STEPS 4e2
                 #define EPS .001
                 F sabs(F p) {return sqrt(abs(p)*abs(p)+5e-5);}
                 F smax(F a, F b) {return (a+b+sabs(a-b))*.5;}
@@ -559,9 +564,9 @@
                 v gl_z_rt[BLOCKS_NUMBER_MAX];
                 ivec3 gl_z_cs[BLOCKS_NUMBER_MAX];
                 
-                uniform V gl_z_palette[5];
+                uniform V gl_z_pt[5];
                 uniform F gl_z_aa;
-                uniform F gl_z_res;
+                uniform F gl_z_rs;
         
                 ivec3 colIds;
                 F gl;
@@ -649,12 +654,12 @@
                 
                 V norm(V p) {
                     v e = v(.01, 0.);
-                    return normalize(V(dist(p + e.xyy) - dist(p - e.xyy), dist(p + e.yxy) - dist(p - e.yxy), dist(p + e.yyx) - dist(p - e.yyx)));
+                    return N(V(dist(p + e.xyy) - dist(p - e.xyy), dist(p + e.yxy) - dist(p - e.yxy), dist(p + e.yyx) - dist(p - e.yyx)));
                 }
                 void main() {
                     ${uniforms}
                     V o = V(0);
-                    v uv, uvI = (gl_FragCoord.xy * 2. - gl_z_res)/gl_z_res;
+                    v uv, uvI = (gl_FragCoord.xy * 2. - gl_z_rs)/gl_z_rs;
         
                     for(F A = 0.; A < 8.; A++){
                         if(A >= gl_z_aa) break;
@@ -668,14 +673,14 @@
         
                         v uv = uvI;
     
-                        uv += pos * 2. / gl_z_res;
+                        uv += pos * 2. / gl_z_rs;
         
                         V p, ro = V(uv * F(${viewBox[6]}) +
                             v(${viewBox[7]},
                             ${viewBox[8]}), -camDist), 
                            rd = V(0, 0, .9 + .1 * fract(1e3 * sin(1e3 * fract(L(uv)))));
                         bool outline = false;
-                        for(F i = 0.; i < STEPS; i++) {
+                        for(F i = 0.; i < 4e2; i++) {
                             j = i;
                             p = d * rd + ro;
                             p.z -= camDist;
@@ -696,9 +701,9 @@
                             V col1, col2;
                             for(int j = 0; j < 5; j++) {
                                 if(colIds[0] == j)
-                                    col1 = gl_z_palette[j];
+                                    col1 = gl_z_pt[j];
                                 if(colIds[1] == j)
-                                    col2 = gl_z_palette[j];
+                                    col2 = gl_z_pt[j];
                             }
                     
                             V col = col1;
@@ -726,9 +731,9 @@
                             }
                                     
                             if(colIds.z == -1) {
-                                c = gl_z_palette[0];
+                                c = gl_z_pt[0];
                                 if(L(c) > .4){
-                                    c *= smoothstep(5., 0., L(uv + v(${features[6]}, -1)));
+                                    c *= S(5., 0., L(uv + v(${features[6]}, -1)));
                                 }
                                 // c = V(1,0,1);
                                 if(${features[3]} == 3){
@@ -739,10 +744,10 @@
                             } else {
                                 c = V(1,0,1);
                                 // shading
-                                c = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), normalize(V(0, 1, 1))) * .2 + .8) * col;
+                                c = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), N(V(0, 1, 1))) * .2 + .8) * col;
                                 
                                 // glare
-                                c += pow(abs(dot(norm(p), normalize(V(0., 3., 1.)))), 40.);
+                                c += pow(abs(dot(norm(p), N(V(0., 3., 1.)))), 40.);
                             }
                             // gazya
                             if(${features[3]} == 4)
@@ -751,7 +756,7 @@
                         o += c;
                     }
                     gl_FragColor = vec4(o/gl_z_aa,1);
-                }`/*glsl*/,
+                }`/*glsl*/.replaceAll('@','\n#define '),
               
                 vert: `attribute vec2 g;void main(){gl_Position=vec4(g,0,1);}`,
               
@@ -760,17 +765,17 @@
                 },
             
                 uniforms: {
-                    res: regl.prop('res'),
-                    palette: u_palette,
-                    aa: regl.prop('aa'),
+                    rs: regl.prop('r'),
+                    pt: u_palette,
+                    aa: regl.prop('a'),
                 },
                 scissor: {
                     enable: true,
                     box: {
                       x: regl.prop('x'),
                       y: regl.prop('y'),
-                      width: regl.prop('ts_'),
-                      height: regl.prop('ts_')
+                      width: regl.prop('t'),
+                      height: regl.prop('t')
                     }
                 },
                 count: 3
@@ -787,7 +792,7 @@
                 }
               }
               let it = spiral()
-            t = +new Date()
+            let tprev = new Date()/2
             let wCurr = 1
             let aa = 8
     
@@ -796,21 +801,22 @@
             cols=(size_/ts/2|0)*2+3
             let slowDevice = 0
 
-            let fr = regl.frame(function () {
+            let fr = regl.frame(() => {
                 for(let i=0;i++<steps;){
                     let [x, y] = it.next().value;
-                    drawTriangle({res: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, ts_:ts, aa: aa})
+                    drawTriangle({r: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, t:ts, a: aa})
                     tick++
                 }
                 console.log('new Date() - t',new Date() - t)
-                if(new Date() - t > 160) steps = max(1,steps-2)
-                if(new Date() - t < 30) steps += 2
+                t = +new Date()
+                if(tprev - t > 160) steps = max(1,steps-2)
+                if(tprev - t < 30) steps += 2
                 if(steps==1)slowDevice++
                 else slowDevice = max(0,slowDevice--)
                 console.log('slowDevice',slowDevice)
                 if(slowDevice>4)aa=1
                 if(params_aa)aa = Number(params_aa)
-                t = +new Date()
+                tprev = t
                 // document.querySelector('div.debug').innerHTML = `
                 //     tick: ${tick}<br>
                 //     cols: ${cols}<br>

@@ -1,3 +1,5 @@
+// tokenData.hash = '0x121a71bcc6d7a427dae796ae7c01e690501d5582a9da76a6df36a1632d66d701'
+
 /*begin features*/
     function calculateFeatures(tokenData) {
     /*end features*/ 
@@ -6,6 +8,8 @@
         console.log(tokenData.hash)
         let S, ss, R, t, RL, SH
         let M = Math
+        let A = Array
+        let D = devicePixelRatio
         let min = M.min
         let max = M.max
         let floor = M.floor
@@ -29,12 +33,14 @@
         let blocks
         let vertices
         let viewBox
+
         // new
         let size, ts, cols;
             
         let init = () => {
             // console.log(tokenData.hash)
-            S = new Uint32Array([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= (t ^ t >>> 8) ^ (ss >>> 19), S[0] / 2 ** 32); 'tx piter'
+            S = new Uint32Array([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= t ^ t >>> 8 ^ ss >>> 19, S[0] / 2 ** 32); 'tx piter'
+            // FIXME S = new Uint32Array([4, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= t ^ t >>> 8 ^ ss >>> 19, S[0] / 2 ** 32); 'tx piter'
             RL = (ar, p) => ar[ar.length * R() ** (p || 1) | 0]
             SH = (ar) => ar.map(a=>[a,R()]).sort((a,b)=>a[1]-b[1]).map(a=>a[0])
             
@@ -127,7 +133,7 @@
             // palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
                 // .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features[2]]
             u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
-                .slice(30*features[2], 30*(features[2]+1))
+                .substr(30*features[2], 30)
             console.log('u_palette', u_palette)
             let palette_bg = R()*3+1|0
             u_palette = u_palette.substring(6*palette_bg) + u_palette.substring(0, 6*palette_bg)
@@ -141,7 +147,7 @@
         //2 maskBottom
         //3 type
 
-        function placeBlocks() { // FIXME перейти к массивам
+        let placeBlocks = () => { // FIXME перейти к массивам
             let blocksVariants = SH([
                 [ // beak
                     [2, 1, 2],
@@ -223,12 +229,12 @@
         
             // карта высот. В тех местах, где заплетная клетка, уходит в минус бесконечность. Чтобы точно было меньше, чем в запретной карте высот
             // обратим внимание, что икс снаружи, потом зет. Обычно наоборот, если что.
-            blocksHeightMap = [...Array(gs)]
-                .map(() => Array(gs).fill(0))
+            blocksHeightMap = [...A(gs)]
+                .map(() => A(gs).fill(0))
             // запретная карта высот. Ну, как запретная. Просто нельзя ставить деталь ножкой на
             // на клетку, если карта высот в этой клетке меньше карты запрета.
-            disallowedHeightMap = [...Array(gs)]
-                .map(() => Array(gs).fill(0))
+            disallowedHeightMap = [...A(gs)]
+                .map(() => A(gs).fill(0))
         
             for (let n = 0; n < blocksNumber; n++) {
                 let maxHeight = 0
@@ -270,7 +276,7 @@
                     bvt[7] = 1
                     bvt[8] = R() * 4 | 0 // (blockSizeTry.x%2==0 && blockSizeTry.z%2==0)?floor(R(4)):floor(R(2))*2
                     if (bvt[3] == typeEye) bvt[8] = 0
-                    let makeMask = () => Array(9).fill(Array(9).fill(1))
+                    let makeMask = () => A(9).fill(A(9).fill(1))
                     bvt[2] = bvt[2] || makeMask()
                     bvt[1] = bvt[1] || makeMask()
                     // Поворачиваем весь blockVariantTry на 90° несколько раз.
@@ -315,8 +321,8 @@
                     // тут можно циклы выкинуть
                     let studL = 0
                     let studR = 0
-                    let xx = [...Array(bvt[9][0])].map((d, i) => bvt[10][0] + i - (bvt[9][0] - 1.) / 2)
-                    let zz = [...Array(bvt[9][2])].map((d, i) => bvt[10][2] + i - (bvt[9][2] - 1.) / 2)
+                    let xx = [...A(bvt[9][0])].map((d, i) => bvt[10][0] + i - (bvt[9][0] - 1.) / 2)
+                    let zz = [...A(bvt[9][2])].map((d, i) => bvt[10][2] + i - (bvt[9][2] - 1.) / 2)
                     for (let x of xx) {
                         for (let z of zz) {
                             if (x >= 0) studR++;
@@ -370,8 +376,8 @@
                             // console.log('extra on the floor!'); 
                             continue
                         } // eyes on the froor are prohibited
-                        let xx = Array(bv[9][0]).fill().map((d, i) => bv[10][0] + i - (bv[9][0] - 1.) / 2)
-                        let zz = Array(bv[9][2]).fill().map((d, i) => bv[10][2] + i - (bv[9][2] - 1.) / 2)
+                        let xx = A(bv[9][0]).fill().map((d, i) => bv[10][0] + i - (bv[9][0] - 1.) / 2)
+                        let zz = A(bv[9][2]).fill().map((d, i) => bv[10][2] + i - (bv[9][2] - 1.) / 2)
                         let bi = 0
                         for (let z of zz) {
                             for (let x of xx) {
