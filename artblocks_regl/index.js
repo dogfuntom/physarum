@@ -544,7 +544,7 @@
             // console.log('regl.limits.maxViewportDims',regl.limits.maxViewportDims)
             // console.log('regl.limits.maxRenderbufferSize',regl.limits.maxRenderbufferSize)
     
-            let drawTriangle = regl({
+            let program = regl({
                 frag: /*glsl*/`precision highp float;
                 #define BLOCKS_NUMBER_MAX 60
                 #define PI 3.1415
@@ -784,8 +784,24 @@
               let rows = (size_ / ts | 0) + 1
               let tick = 0;
     
-              function* spiral() {
+            let tprev = new Date()
+            let wCurr = 1
+            let aa = 1
+    
+            let steps = 1
+            ts=32
+            cols=(size_/ts/2|0)*2+3
+            let slowDevice = 0
+
+            function* spiral() {
                 let [x,y,d,m] = [0,0,1,1];
+                // let [x,y,d,m] = [0,0,1,99];
+                // while (--m>1) program({r: size_, x: size_/2-32|0, y: size_/2-32|0, t:64, a: 1})
+                // t = +new Date()
+                // if(t - tprev > 50) aa = 1
+                // document.querySelector('div.debug').innerHTML = `
+                //     t - tprev: ${t - tprev}<br>
+                //     `
                 while (1) {
                   while (2 * x * d < m) yield [x, y], x += d
                   while (2 * y * d < m) yield [x, y], y += d
@@ -793,36 +809,76 @@
                 }
               }
               let it = spiral()
-            let tprev = new Date()/2
-            let wCurr = 1
-            let aa = 8
-    
-            let steps = 1
-            ts=32
-            cols=(size_/ts/2|0)*2+3
-            let slowDevice = 0
+            
+
 
             let fr = regl.frame(() => {
                 for(let i=0;i++<steps;){
                     let [x, y] = it.next().value;
-                    drawTriangle({r: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, t:ts, a: aa})
+                    program({r: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, t:ts, a: aa})
                     tick++
                 }
                 console.log('new Date() - t',new Date() - t)
                 t = +new Date()
-                if(t - tprev > 160) steps = max(1,steps-2)
-                if(t - tprev < 30) steps += 2
-                if(steps==1)slowDevice++
-                else slowDevice = max(0,slowDevice--)
-                console.log('slowDevice',slowDevice)
-                if(slowDevice>4)aa=1
+                // if(steps==1)slowDevice++
+                // else slowDevice = max(0,slowDevice--)
+                // console.log('slowDevice',slowDevice)
+                // if(slowDevice>4)aa=1
+
+                
+                
+                // 1 и 3 легко отличить от 2 и 4 по тику
+                // 2 и 4 легко отличить по aa
+                // 1 и 2 легко отличить по aa
+                
+                
+                
+                
+                if(tick<9) { 
+                    // три режима. В одном он пробует рендерить по одной картинке aa=1 и считает время, сколько ушло на 10
+                    if(aa==1) {
+                        steps=1
+                        if(tick==8)tokenData.hash = t-tprev
+                        if(tick==8 && t - tprev < 200){
+                            tick = 0
+                            it = spiral()
+                            aa=8
+                        }
+                    }
+                    // в третьем повторяет рендеры первых кадров с aa=8
+                    else{
+                        if(t - tprev > 160) steps = max(1,steps-8)
+                        if(t - tprev < 30) steps += 2   
+                        tprev = t
+                    }
+                }
+                else {
+                    // во втором режиме — продолжает рендерить аа=1 с нарастающей скоростью
+                    if(aa==1) { 
+                        if(t - tprev > 160) steps = max(1,steps-8)
+                        if(t - tprev < 30) steps += 2    
+                        tprev = t
+                    }
+                    // в четвёртом — продолжает рендерить aa=8 с нарастающей скоростью
+                    else{
+                        if(t - tprev > 160) steps = max(1,steps-8)
+                        if(t - tprev < 30) steps += 2    
+                        tprev = t
+                    }
+                }
+
+                // if(!params_aa && aa==1 && tick>9 && t - tprev > 99) { 
+                //     tick = 0
+                //     it = spiral()
+                //     aa=8
+                // }
+                // else {
+                //     if(t - tprev > 160) steps = max(1,steps-8)
+                //     if(t - tprev < 30) steps += 2    
+                //     tprev = t
+                // }
                 if(params_aa)aa = Number(params_aa)
-                tprev = t
-                // document.querySelector('div.debug').innerHTML = `
-                //     tick: ${tick}<br>
-                //     cols: ${cols}<br>
-                //     (cols+2)**2: ${cols**2}<br>
-                //     `
+
                 if(tick > cols**2) fr.cancel()
             })
     
