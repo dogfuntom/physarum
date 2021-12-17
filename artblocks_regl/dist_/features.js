@@ -1,7 +1,7 @@
 // tokenData.hash = '0x121a71bcc6d7a427dae796ae7c01e690501d5582a9da76a6df36a1632d66d701'
 
 /*begin features*/
-    function calculateFeatures(tokenData) {
+function calculateFeatures(tokenData) {
     /*end features*/ 
         
     

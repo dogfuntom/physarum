@@ -1,7 +1,7 @@
 // tokenData.hash = '0x121a71bcc6d7a427dae796ae7c01e690501d5582a9da76a6df36a1632d66d701'
 
 /*begin features*/
-    function calculateFeatures(tokenData) {
+function calculateFeatures(tokenData) {
     /*end features*/ 
         
     
@@ -19,9 +19,9 @@
 
     
         /*begin render*/
-        // let div = document.createElement('div') // FIXME
-        // div.classList.add('debug'),div.style.width = '100%',div.style.height = '100px' // FIXME
-        // document.body.appendChild(div) //FIXME
+        let div = document.createElement('div') // FIXME
+        div.classList.add('debug'),div.style.width = '100%',div.style.height = '100px' // FIXME
+        document.body.appendChild(div) //FIXME
         let params_aa = location.href.split('#')[1];
         /*end render*/
 
@@ -544,7 +544,7 @@
             // console.log('regl.limits.maxViewportDims',regl.limits.maxViewportDims)
             // console.log('regl.limits.maxRenderbufferSize',regl.limits.maxRenderbufferSize)
     
-            let program = regl({
+            let commandOptions = {
                 frag: /*glsl*/`precision highp float;
                 #define BLOCKS_NUMBER_MAX 60
                 #define PI 3.1415
@@ -757,6 +757,7 @@
                         o += c;
                     }
                     gl_FragColor = vec4(o/gl_z_aa,1);
+                    // gl_FragColor = vec4(1,0,0,1);
                 }`/*glsl*/.replace(/@/g,'\n#define ').replace(/→/g,'return '),
               
                 vert: `attribute vec2 g;void main(){gl_Position=vec4(g,0,1);}`,
@@ -780,10 +781,22 @@
                     }
                 },
                 count: 3
-              })
+              }
+
+              
+              
+              //   regl.renderbuffer(99*ts, ts)
+              let fbo = regl.framebuffer({
+                  width: 1584, // FIXME
+                  height: 1584,
+                })
+                
+                let command = regl(commandOptions)
+                commandOptions.framebuffer = fbo
+                let commandOptionsFBO = regl(commandOptions)
+
               let rows = (size_ / ts | 0) + 1
               let tick = 0;
-    
             let tprev = new Date()
             let wCurr = 1
             let aa = 1
@@ -803,8 +816,8 @@
                 //     t - tprev: ${t - tprev}<br>
                 //     `
                 while (1) {
-                  while (2 * x * d < m) yield [x, y], x += d
-                  while (2 * y * d < m) yield [x, y], y += d
+                  while (2 * x * d < m) yield [x,y], x += d, console.log(x)
+                  while (2 * y * d < m) yield [x,y], y += d, console.log(x)
                   d=-d,m++
                 }
               }
@@ -812,35 +825,42 @@
             
 
 
+              t = +new Date()
+              for(let i = 0; i<99*99; i++){
+                  let x = (i % 99) * ts
+                  let y = floor(i/99) * ts
+                commandOptionsFBO({r: size_, x, y, t:ts, a: 1})
+              }
+              console.log('👾 time is', new Date() - t)
+                document.querySelector('div.debug').innerHTML = `
+                    new Date() - t: ${new Date() - t}<br>
+                    `
+
             let fr = regl.frame(() => {
                 for(let i=0;i++<steps;){
-                    let [x, y] = it.next().value;
-                    program({r: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, t:ts, a: aa})
+                    if(tick>99){
+                        let [x, y] = it.next().value
+                        command({r: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, t:ts, a: aa})
+                    }
+                    else {
+                        commandOptionsFBO({r: size_, x: 0, y:tick*ts, t:ts, a: 1})
+                    }
+                    console.log('tick', tick)
+                    // console.log('x, y', x, y)
+                    // program({r: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, t:ts, a: aa})
                     tick++
                 }
-                console.log('new Date() - t',new Date() - t)
+                console.log('new Date() - t', new Date() - t)
                 t = +new Date()
-                // if(steps==1)slowDevice++
-                // else slowDevice = max(0,slowDevice--)
-                // console.log('slowDevice',slowDevice)
-                // if(slowDevice>4)aa=1
-
                 
-                
-                // 1 и 3 легко отличить от 2 и 4 по тику
-                // 2 и 4 легко отличить по aa
-                // 1 и 2 легко отличить по aa
-                
-                
-                
-                
-                if(tick<9) { 
+                if(tick<=99) { 
                     // три режима. В одном он пробует рендерить по одной картинке aa=1 и считает время, сколько ушло на 10
                     if(aa==1) {
                         steps=1
-                        if(tick==8)tokenData.hash = t-tprev
-                        if(tick==8 && t - tprev < 200){
+                        if(tick==99)tokenData.hash = t-tprev // FIXME
+                        if(tick==99 && t - tprev < 20000){
                             tick = 0
+                            console.log('⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️ reset')
                             it = spiral()
                             aa=8
                         }
