@@ -19,9 +19,9 @@ function calculateFeatures(tokenData) {
         
         /*begin render*/
         let D = devicePixelRatio
-        let div = document.createElement('div') // FIXME
-        div.classList.add('debug'),div.style.width = '100%',div.style.height = '100px' // FIXME
-        document.body.appendChild(div) //FIXME
+        // let div = document.createElement('div') // FIXME
+        // div.classList.add('debug'),div.style.width = '100%',div.style.height = '100px' // FIXME
+        // document.body.appendChild(div) //FIXME
         let params_aa = location.href.split('#')[1];
         /*end render*/
 
@@ -99,20 +99,20 @@ function calculateFeatures(tokenData) {
                     8,
                     0,
                 ],
-                [ // cutie
-                    4,
-                    3 + R() * 4 | 0,
-                    0,
-                    1,
-                    1,
-                ],
-                [
+                RL([[
                     8 + R() * 2 | 0,
                     30,
                     3, // shroom
                     8,
                     R() ** 4 * 8,
                 ],
+                [ // cutie
+                    4,
+                    3 + R() * 4 | 0,
+                    0,
+                    1,
+                    1,
+                ]]),
                 [
                     6 + R() * 4 | 0,
                     10 + R() * 20 | 0,
@@ -813,10 +813,10 @@ function calculateFeatures(tokenData) {
                     it = spiral()
                     aa = min(8, 16 / 2 ** M.floor(dt/500))
                     regl.clear({color:[0,0,0,0]})
-                    document.querySelector('div.debug').innerHTML = `
-                    dt: ${dt}<br>
-                    aa: ${aa}<br>
-                    `
+                    // document.querySelector('div.debug').innerHTML = `
+                    // dt: ${dt}<br>
+                    // aa: ${aa}<br>
+                    // `
                     }
                 else if(tick>49 || aa > 1){
                     if(t - tprev > 160) steps = max(1,steps-8)
