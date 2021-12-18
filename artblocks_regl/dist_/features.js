@@ -36,7 +36,7 @@ function calculateFeatures(tokenData) {
         let palette_bg
 
         // new
-        let size, ts, cols;
+        let size, ts;
             
         let init = () => {
             // console.log(tokenData.hash)
@@ -87,19 +87,19 @@ function calculateFeatures(tokenData) {
             //4 extra: 0,
 
             let presets = [
-                [ // cutie
-                    4,
-                    3 + R() * 4 | 0,
-                    0,
-                    1,
-                    1,
-                ],
                 [
                     8 + R() * 2 | 0,
                     30,
                     5, // cage
                     8,
                     0,
+                ],
+                [ // cutie
+                    4,
+                    3 + R() * 4 | 0,
+                    0,
+                    1,
+                    1,
                 ],
                 [
                     8 + R() * 2 | 0,
