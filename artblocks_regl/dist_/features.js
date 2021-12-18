@@ -87,6 +87,13 @@ function calculateFeatures(tokenData) {
             //4 extra: 0,
 
             let presets = [
+                [ // cutie
+                    4,
+                    3 + R() * 4 | 0,
+                    0,
+                    1,
+                    1,
+                ],
                 [
                     8 + R() * 2 | 0,
                     30,
@@ -100,13 +107,6 @@ function calculateFeatures(tokenData) {
                     3, // shroom
                     8,
                     R() ** 4 * 8,
-                ],
-                [ // cutie
-                    4,
-                    3 + R() * 4 | 0,
-                    0,
-                    1,
-                    1,
                 ],
                 [
                     6 + R() * 4 | 0,
@@ -124,7 +124,7 @@ function calculateFeatures(tokenData) {
                 ],
             ];
         
-            features[4] = R() ** .3 * presets.length | 0;
+            features[4] = R() ** .4 * presets.length | 0;
         
             ([ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra ] = presets[features[4]])
             numberOfBlockTypes = 2 + R() * 2 | 0

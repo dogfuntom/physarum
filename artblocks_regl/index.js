@@ -92,6 +92,13 @@ function calculateFeatures(tokenData) {
             //4 extra: 0,
 
             let presets = [
+                [ // cutie
+                    4,
+                    3 + R() * 4 | 0,
+                    0,
+                    1,
+                    1,
+                ],
                 [
                     8 + R() * 2 | 0,
                     30,
@@ -105,13 +112,6 @@ function calculateFeatures(tokenData) {
                     3, // shroom
                     8,
                     R() ** 4 * 8,
-                ],
-                [ // cutie
-                    4,
-                    3 + R() * 4 | 0,
-                    0,
-                    1,
-                    1,
                 ],
                 [
                     6 + R() * 4 | 0,
@@ -129,7 +129,7 @@ function calculateFeatures(tokenData) {
                 ],
             ];
         
-            features[4] = R() ** .3 * presets.length | 0;
+            features[4] = R() ** .4 * presets.length | 0;
         
             ([ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra ] = presets[features[4]])
             numberOfBlockTypes = 2 + R() * 2 | 0
@@ -784,25 +784,25 @@ function calculateFeatures(tokenData) {
               }
 
               
+            ts=32
               
               //   regl.renderbuffer(99*ts, ts)
               let fbo = regl.framebuffer({
-                  width: 1584, // FIXME
-                  height: 1584,
+                  width: ts*40, // FIXME
+                  height: ts*3,
                 })
                 
-                let command = regl(commandOptions)
-                commandOptions.framebuffer = fbo
-                let commandOptionsFBO = regl(commandOptions)
+            let command = regl(commandOptions)
+            // commandOptions.framebuffer = fbo
+            let commandFBO = regl(commandOptions)
 
-              let rows = (size_ / ts | 0) + 1
-              let tick = 0;
+            let rows = (size_ / ts | 0) + 1
+            let tick = 0;
+
             let tprev = new Date()
-            let wCurr = 1
             let aa = 1
     
             let steps = 1
-            ts=32
             cols=(size_/ts/2|0)*2+3
             let slowDevice = 0
 
@@ -824,82 +824,41 @@ function calculateFeatures(tokenData) {
               let it = spiral()
             
 
-
-              t = +new Date()
-              for(let i = 0; i<99*99; i++){
-                  let x = (i % 99) * ts
-                  let y = floor(i/99) * ts
-                commandOptionsFBO({r: size_, x, y, t:ts, a: 1})
-              }
-              console.log('👾 time is', new Date() - t)
-                document.querySelector('div.debug').innerHTML = `
-                    new Date() - t: ${new Date() - t}<br>
-                    `
-
-            let fr = regl.frame(() => {
-                for(let i=0;i++<steps;){
-                    if(tick>99){
-                        let [x, y] = it.next().value
-                        command({r: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, t:ts, a: aa})
-                    }
-                    else {
-                        commandOptionsFBO({r: size_, x: 0, y:tick*ts, t:ts, a: 1})
-                    }
-                    console.log('tick', tick)
-                    // console.log('x, y', x, y)
-                    // program({r: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, t:ts, a: aa})
-                    tick++
-                }
-                console.log('new Date() - t', new Date() - t)
+            for(let j=0; j<45; j++,aa=min(aa*2, 8)){
                 t = +new Date()
-                
-                if(tick<=99) { 
-                    // три режима. В одном он пробует рендерить по одной картинке aa=1 и считает время, сколько ушло на 10
-                    if(aa==1) {
-                        steps=1
-                        if(tick==99)tokenData.hash = t-tprev // FIXME
-                        if(tick==99 && t - tprev < 20000){
-                            tick = 0
-                            console.log('⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️⬜️ reset')
-                            it = spiral()
-                            aa=8
-                        }
-                    }
-                    // в третьем повторяет рендеры первых кадров с aa=8
-                    else{
-                        if(t - tprev > 160) steps = max(1,steps-8)
-                        if(t - tprev < 30) steps += 2   
-                        tprev = t
-                    }
+                for(let i = 0; i<45; i++){
+                    // let x = 0//(i % 9) * ts
+                    // let y = 0//floor(i/9) * ts
+                    // commandFBO({r: size_, x:ts*i, y:ts*j, t:ts, a: aa})
+                    command({r: size_, x:ts*i, y:ts*j, t:ts, a: aa})
                 }
-                else {
-                    // во втором режиме — продолжает рендерить аа=1 с нарастающей скоростью
-                    if(aa==1) { 
-                        if(t - tprev > 160) steps = max(1,steps-8)
-                        if(t - tprev < 30) steps += 2    
-                        tprev = t
-                    }
-                    // в четвёртом — продолжает рендерить aa=8 с нарастающей скоростью
-                    else{
-                        if(t - tprev > 160) steps = max(1,steps-8)
-                        if(t - tprev < 30) steps += 2    
-                        tprev = t
-                    }
+                if(new Date() - t > 200) {
+                    break;
                 }
+            }
+            document.querySelector('div.debug').innerHTML = `
+                new Date() - t: ${new Date() - t}<br>
+                aa: ${aa}<br>
+                `
+            if(params_aa)aa = Number(params_aa)
 
-                // if(!params_aa && aa==1 && tick>9 && t - tprev > 99) { 
-                //     tick = 0
-                //     it = spiral()
-                //     aa=8
-                // }
-                // else {
-                //     if(t - tprev > 160) steps = max(1,steps-8)
-                //     if(t - tprev < 30) steps += 2    
-                //     tprev = t
-                // }
-                if(params_aa)aa = Number(params_aa)
-
-                if(tick > cols**2) fr.cancel()
-            })
+            // let fr = regl.frame(() => {
+            //     for(let i=0;i++<steps;){
+            //         if(tick>99){
+            //             let [x, y] = it.next().value
+            //             command({r: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, t:ts, a: aa})
+            //         }
+            //         else {
+            //             commandOptionsFBO({r: size_, x: 0, y:tick*ts, t:ts, a: 1})
+            //         }
+            //         console.log('tick', tick)
+            //         tick++
+            //     }
+            //     t = +new Date()
+            //     if(t - tprev > 160) steps = max(1,steps-8)
+            //     if(t - tprev < 30) steps += 2
+            //     tprev = t
+            //     if(tick > cols**2) fr.cancel()
+            // })
     
     /*end render*/
