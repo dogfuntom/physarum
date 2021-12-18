@@ -40,8 +40,8 @@ function calculateFeatures(tokenData) {
             
         let init = () => {
             // console.log(tokenData.hash)
-            S = new Uint32Array([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= t ^ t >>> 8 ^ ss >>> 19, S[0] / 2 ** 32); 'tx piter'
-            // FIXME S = new Uint32Array([4, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= t ^ t >>> 8 ^ ss >>> 19, S[0] / 2 ** 32); 'tx piter'
+            // S = new Uint32Array([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= t ^ t >>> 8 ^ ss >>> 19, S[0] / 2 ** 32); 'tx piter'
+            S = new Uint32Array([4, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= t ^ t >>> 8 ^ ss >>> 19, S[0] / 2 ** 32); 'tx piter'
             RL = (ar, p) => ar[ar.length * R() ** (p || 1) | 0]
             SH = (ar) => ar.map(a=>[a,R()]).sort((a,b)=>a[1]-b[1]).map(a=>a[0])
             
@@ -136,11 +136,6 @@ function calculateFeatures(tokenData) {
             u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
                 .substr(30*features[2], 30).match(/(.{2})/g).map(v=>Number("0x"+v))
                 palette_bg = R()*4|0
-            // console.log('u_palette', u_palette)
-            // u_palette = u_palette.substring(6*palette_bg) + u_palette.substring(0, 6*palette_bg)
-            // console.log('u_palette', u_palette)
-            // u_palette = u_palette.match(/(.{2})/g).map(v=>Number("0x"+v)/255)
-            // FIXME кодгольфнуть как-нибудь :-)
         }
         
         //0 size
@@ -148,7 +143,7 @@ function calculateFeatures(tokenData) {
         //2 maskBottom
         //3 type
 
-        let placeBlocks = () => { // FIXME перейти к массивам
+        let placeBlocks = () => {
             let blocksVariants = SH([
                 [ // beak
                     [2, 1, 2],
