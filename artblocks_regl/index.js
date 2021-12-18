@@ -518,6 +518,7 @@ function calculateFeatures(tokenData) {
     
             let size_ = M.min(innerWidth, innerHeight)*D
             let canvas = document.createElement('canvas')
+            canvas.style.imageRendering="pixelated"
             canvas.style.width = size_/D + 'px' // FIXME, а без этого совсем никак?
             canvas.style.height = size_/D + 'px'
             size_ = min(size_, 2048)
@@ -528,8 +529,8 @@ function calculateFeatures(tokenData) {
             let bg = u_palette.slice(3*palette_bg,3+3*palette_bg)//.map(v=>v*255)
             canvas.style.background=(features[3] == 4 || features[3] == 3)? '#333':`rgb(${bg})`
 
-            canvas.width = size_
-            canvas.height = size_
+            canvas.width = 16//size_
+            canvas.height = 16//size_
             let tsTarget = 16
     
     
@@ -580,9 +581,9 @@ function calculateFeatures(tokenData) {
                     p.x = abs(p.x);
                     F res = p.y + 1.; // floor plane
                     for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
-                        eye = 0;
                         if(i >= ${blocks.length})
                             break;
+                        eye = 0;
                         V pb = p;
                         pb -= gl_z_ps[i];
                         pb.xz *= rot(gl_z_rt[i].x * PI / 2.);
@@ -798,32 +799,202 @@ function calculateFeatures(tokenData) {
                 }
               }
               let it = spiral()
-            
+              
+              let sz = 8
 
-            let fr = regl.frame(() => {
-                for(let i=0;i++<steps;){
-                    let [x, y] = it.next().value;
-                    program({r: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, t:ts, a: aa})
-                    tick++
-                }
+              t = new Date();
+              tprev = t
+              for(;t-tprev<1000;){
+                // for(;t-tprev==0;){
+                  console.log('yo')
+                  canvas.width = sz
+                  canvas.height = sz
+                  regl.poll()
+                  program({r: sz, x: 0, y: 0, t:sz, a: 8})
+                  sz++
                 t = +new Date()
-                let dt = t - tprev
-                if(tick==49 && aa==1 && dt < 2000){
-                    tick = 0
-                    it = spiral()
-                    aa = min(8, 16 / 2 ** M.floor(dt/500))
-                    regl.clear({color:[0,0,0,0]})
-                    // document.querySelector('div.debug').innerHTML = `
-                    // dt: ${dt}<br>
-                    // aa: ${aa}<br>
-                    // `
-                    }
-                else if(tick>49 || aa > 1){
-                    if(t - tprev > 160) steps = max(1,steps-8)
-                    if(t - tprev < 30) steps += 2    
-                    tprev = t
-                }
-                if(tick > ((size_/ts/2|0)*2+3)**2) fr.cancel()
-            })
-    
+              }
+
+
+            //   let fr = regl.frame(() => {
+            //     program({r: sz, x: 0, y: 0, t:sz, a: 8})
+            //     // canvas.width = sz
+            //     // canvas.height = sz
+            //     // sz *= 2
+            //     canvas.width = sz
+            //     canvas.height = sz
+            //     regl.poll()
+            //     program({r: sz, x: 0, y: 0, t:sz, a: 8})
+                
+            //     if(sz > 512)
+            //         fr.cancel()
+            //   }
+
+
+
+
+
+
+            //     for(let i=0;i++<steps;){
+            //         let [x, y] = it.next().value;
+            //         program({r: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, t:ts, a: aa})
+            //         tick++
+            //     }
+            //     t = +new Date()
+            //     let dt = t - tprev
+            //     if(tick==49 && aa==1 && dt < 2000){
+            //         tick = 0
+            //         it = spiral()
+            //         aa = min(8, 16 / 2 ** M.floor(dt/500))
+            //         regl.clear({color:[0,0,0,0]})
+            //         // document.querySelector('div.debug').innerHTML = `
+            //         // dt: ${dt}<br>
+            //         // aa: ${aa}<br>
+            //         // `
+            //         }
+            //     else if(tick>49 || aa > 1){
+            //         if(t - tprev > 160) steps = max(1,steps-8)
+            //         if(t - tprev < 30) steps += 2    
+            //         tprev = t
+            //     }
+            //     if(tick > ((size_/ts/2|0)*2+3)**2) fr.cancel()
+            // })
+
+
+            // console.log('NOLOOPED')
+            // size — width and height of canvas
+            // renderSize — running window
+            // gSize — size of a texture
+            // tileSize — unit of viewport 0…1
+
+            // let state = "adapt"
+
+            //   if (state == "adapt") {
+            //     // adapt
+            //     let t = +new Date();
+            //     let delayPrev = delay;
+            //     delay = t - tPrev;
+            //     tPrev = t;
+            
+            //     // adapt
+            //     console.log('u_tick',u_tick)
+            //     console.log(b.pixelDensity())
+            
+            //     // adapt
+            //     if (b.width*b.pixelDensity() > gSize || u_tick > adaptFrames&& (delay + delayPrev)/2 > maxDelay ) {
+            //         document.querySelector('div.debug').innerHTML += b.width*b.pixelDensity()
+                    
+            //         state = "render";
+            //         u_tick = 0;
+            //         pixelDensity(pixDensInit)
+            //         if((delay + delayPrev)/2 > maxDelay * 2)
+            //             s.setUniform("aa", 4);
+            //         if((delay + delayPrev)/2 > maxDelay * 4)
+            //             s.setUniform("aa", 1);
+            //         document.querySelector('div.debug').innerHTML += `
+            //         (delay + delayPrev)/2: ${(delay + delayPrev)/2}<br>
+            //         `
+            //         return;
+            //     }
+        
+            //     // adapt
+            //     s.setUniform("vb", [0, 0, 1, 1]);
+            //     s.setUniform("res", b.width*b.pixelDensity());
+            //     let qs = 1
+            //     b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
+            
+            //     // pixelDensity(b.pixelDensity())
+            //     // let qs = 1;
+            //     // texture(b)
+            //     // textureMode(NORMAL);
+            //     // b.setInterpolation(NEAREST, NEAREST);
+            //     // quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
+            //     // image(b,0,0,width,height);
+        
+            //     // if(floor(u_tick)==0){
+            //         let cnv = document.querySelectorAll('canvas')
+            //         let dataURI = cnv[1].toDataURL()
+            //         // console.log(dataURI);
+            //         cnv[0].style.background = `url(${dataURI})`;
+            //         cnv[0].style.backgroundSize = `cover`;
+            
+            //     //     scale(width*pixelDensity()/64)
+            //     //     // console.log('ПОЕХАЛИ',u_tick,64)
+            //     //     for(let i = 0; i<(64)**2; i++){
+            //     //         let [x, y] = [i%(64), floor(i/64)]
+            //     //         // console.log('x, y', x, y, b.get(x,y))
+            //     //         fill(...b.get(x*64,(64*pixelDensity()-1-y)*64))
+            //     //         rect(x-.1, y-.1, 1.2, 1.2)
+            //     //     }
+            //     // }
+        
+            //     if (floor(u_tick) % adaptFrames == 0) {
+            //         b.pixelDensity(b.pixelDensity()*2)
+            //         pixelDensity(b.pixelDensity())
+            //     }        
+            //     // noLoop()
+            //   } else {
+            //     // frameRate(1)
+            //     let renderSize = b.width*b.pixelDensity()
+            //     splits = size * pixelDensity() / renderSize;
+            //     // splits = ceil(size / renderSize);
+            //     let i = (u_tick % ceil(splits)) / splits;
+            //     let j = floor(u_tick / ceil(splits)) / splits;
+            //     if (j >= 1) {
+            //       noLoop();
+            //       return;
+            //     }
+            //     let tileSize = 1 / splits;
+            //     console.log('')
+            //     console.log('tileSize', tileSize, 'splits', splits, 'renderSize', renderSize)
+            //     console.log('b.width', b.width)
+            //     let viewbox = [i, j, tileSize, tileSize];
+            //     // div.html('viewbox: ' + viewbox);
+            //     // document.querySelector('div.debug').innerHTML = Object.keys(s).filter(d=>d=='_renderer').map(key=>JSON.stringify(Object.keys(s[key])));//.filter(d=>d=='vb').map(key2=>JSON.stringify(s[key][key2])))
+            //     // document.querySelector('div.debug').innerHTML = Object.keys(s).map(k=>k+': '+s[k]+'<br><br>')
+            //     // document.querySelector('div.debug').innerHTML = Object.keys(s[Object.keys(s).filter(d=>d=='attributes')]).map(k=>k+': '+s[k]).join('<br>')
+            //     // document.querySelector('div.debug').innerHTML = Object.keys(s)
+            //     // document.querySelector('div.debug').innerHTML += '<br><br>'
+            //     // document.querySelector('div.debug').innerHTML += s['uniforms']
+            //     // document.querySelector('div.debug').innerHTML = Object.keys(b).map(k=>k+': '+b[k]+'<br><br>')
+            //     // document.querySelectorAll('canvas')[0].style.position='static'
+            //     // document.querySelectorAll('canvas')[1].style.position='static'
+            //     // document.querySelectorAll('canvas')[1].style.display='block'
+            //     // document.querySelectorAll('canvas')[1].style.width='100%'
+            //     // document.querySelectorAll('canvas')[1].style.height='100%'
+            //     console.log('viewbox', viewbox)
+            //     s.setUniform("vb", viewbox);
+            //     // s.setUniform("shade", shade);
+            //     // s.setUniform("k", tileSize * density);
+            //     s.setUniform('res', renderSize)
+            //     let qs = 1;
+            //     b.background('yellow') // FIXME
+            //     b.quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
+            //     // let qs = 1;
+            //     // textureMode(NORMAL);
+            //     // texture(b)
+            //     // quad(-qs, -qs, qs, -qs, qs, qs, -qs, qs);
+        
+            //     image( 
+            //       b,
+            //       size * i,
+            //       size * (1 - j - tileSize),
+            //       size * tileSize,
+            //       size * tileSize,
+            //     //   gSize / 2 - (gSize * tileSize * density) / 2,
+            //     //   gSize / 2 - (gSize * tileSize * density) / 2,
+            //     //   gSize * tileSize * density,
+            //     //   gSize * tileSize * density
+            //     );
+            //     console.log(          
+            //         'target region',
+            //         size * i,
+            //         size * (1 - j - tileSize),
+            //         size * tileSize,
+            //         size * tileSize
+            //     )
+            //   }
+            //   u_tick++;
+            //   if(u_tick > 13)noLoop()
+            
     /*end render*/
