@@ -9,16 +9,16 @@ function calculateFeatures(tokenData) {
         let S, ss, R, t, RL, SH
         let M = Math
         let A = Array
-        let D = devicePixelRatio
         let min = M.min
         let max = M.max
         let floor = M.floor
         let abs = M.abs
         let cos = M.cos
         let sin = M.sin
-
-    
+        
+        
         /*begin render*/
+        let D = devicePixelRatio
         // let div = document.createElement('div') // FIXME
         // div.classList.add('debug'),div.style.width = '100%',div.style.height = '100px' // FIXME
         // document.body.appendChild(div) //FIXME
@@ -812,12 +812,13 @@ function calculateFeatures(tokenData) {
                     tick = 0
                     it = spiral()
                     aa = min(8, 16 / 2 ** M.floor(dt/500))
+                    regl.clear({color:[0,0,0,0]})
                     // document.querySelector('div.debug').innerHTML = `
                     // dt: ${dt}<br>
                     // aa: ${aa}<br>
                     // `
                     }
-                else if(tick>49){
+                else if(tick>49 || aa > 1){
                     if(t - tprev > 160) steps = max(1,steps-8)
                     if(t - tprev < 30) steps += 2    
                     tprev = t

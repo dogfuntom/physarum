@@ -9,15 +9,14 @@ function calculateFeatures(tokenData) {
         let S, ss, R, t, RL, SH
         let M = Math
         let A = Array
-        let D = devicePixelRatio
         let min = M.min
         let max = M.max
         let floor = M.floor
         let abs = M.abs
         let cos = M.cos
         let sin = M.sin
-
-    
+        
+        
         
 
         let rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
