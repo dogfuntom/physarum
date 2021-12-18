@@ -125,7 +125,7 @@ function calculateFeatures(tokenData) {
             ];
         
             features[4] = R() ** .4 * presets.length | 0;
-        
+          
             ([ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra ] = presets[features[4]])
             numberOfBlockTypes = 2 + R() * 2 | 0
         

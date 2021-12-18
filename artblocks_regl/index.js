@@ -19,9 +19,9 @@ function calculateFeatures(tokenData) {
 
     
         /*begin render*/
-        let div = document.createElement('div') // FIXME
-        div.classList.add('debug'),div.style.width = '100%',div.style.height = '100px' // FIXME
-        document.body.appendChild(div) //FIXME
+        // let div = document.createElement('div') // FIXME
+        // div.classList.add('debug'),div.style.width = '100%',div.style.height = '100px' // FIXME
+        // document.body.appendChild(div) //FIXME
         let params_aa = location.href.split('#')[1];
         /*end render*/
 
@@ -130,7 +130,7 @@ function calculateFeatures(tokenData) {
             ];
         
             features[4] = R() ** .4 * presets.length | 0;
-        
+          
             ([ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra ] = presets[features[4]])
             numberOfBlockTypes = 2 + R() * 2 | 0
         
@@ -544,7 +544,7 @@ function calculateFeatures(tokenData) {
             // console.log('regl.limits.maxViewportDims',regl.limits.maxViewportDims)
             // console.log('regl.limits.maxRenderbufferSize',regl.limits.maxRenderbufferSize)
     
-            let commandOptions = {
+            let program = regl({
                 frag: /*glsl*/`precision highp float;
                 #define BLOCKS_NUMBER_MAX 60
                 #define PI 3.1415
@@ -757,7 +757,6 @@ function calculateFeatures(tokenData) {
                         o += c;
                     }
                     gl_FragColor = vec4(o/gl_z_aa,1);
-                    // gl_FragColor = vec4(1,0,0,1);
                 }`/*glsl*/.replace(/@/g,'\n#define ').replace(/→/g,'return '),
               
                 vert: `attribute vec2 g;void main(){gl_Position=vec4(g,0,1);}`,
@@ -780,29 +779,20 @@ function calculateFeatures(tokenData) {
                       height: regl.prop('t')
                     }
                 },
+                depth: {
+                    enable: false
+                  },
                 count: 3
-              }
-
-              
-            ts=32
-              
-              //   regl.renderbuffer(99*ts, ts)
-              let fbo = regl.framebuffer({
-                  width: ts*40, // FIXME
-                  height: ts*3,
-                })
-                
-            let command = regl(commandOptions)
-            // commandOptions.framebuffer = fbo
-            let commandFBO = regl(commandOptions)
-
-            let rows = (size_ / ts | 0) + 1
-            let tick = 0;
-
+              })
+              let rows = (size_ / ts | 0) + 1
+              let tick = 0;
+    
             let tprev = new Date()
+            let wCurr = 1
             let aa = 1
     
             let steps = 1
+            ts=32
             cols=(size_/ts/2|0)*2+3
             let slowDevice = 0
 
@@ -816,49 +806,88 @@ function calculateFeatures(tokenData) {
                 //     t - tprev: ${t - tprev}<br>
                 //     `
                 while (1) {
-                  while (2 * x * d < m) yield [x,y], x += d, console.log(x)
-                  while (2 * y * d < m) yield [x,y], y += d, console.log(x)
+                  while (2 * x * d < m) yield [x, y], x += d
+                  while (2 * y * d < m) yield [x, y], y += d
                   d=-d,m++
                 }
               }
               let it = spiral()
             
 
-            for(let j=0; j<45; j++,aa=min(aa*2, 8)){
-                t = +new Date()
-                for(let i = 0; i<45; i++){
-                    // let x = 0//(i % 9) * ts
-                    // let y = 0//floor(i/9) * ts
-                    // commandFBO({r: size_, x:ts*i, y:ts*j, t:ts, a: aa})
-                    command({r: size_, x:ts*i, y:ts*j, t:ts, a: aa})
-                }
-                if(new Date() - t > 200) {
-                    break;
-                }
-            }
-            document.querySelector('div.debug').innerHTML = `
-                new Date() - t: ${new Date() - t}<br>
-                aa: ${aa}<br>
-                `
-            if(params_aa)aa = Number(params_aa)
+            //   program({r: size_, x: 0, y: 0, t:size_*2/3, a: 1})
+            //   regl.clear({
+            //     color: [0, 0, 0, 1]
+            //   })
+            //   program({r: size_, x: size_/3, y: size_/3, t:size_*2/3, a: 1})
 
-            // let fr = regl.frame(() => {
-            //     for(let i=0;i++<steps;){
-            //         if(tick>99){
-            //             let [x, y] = it.next().value
-            //             command({r: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, t:ts, a: aa})
-            //         }
-            //         else {
-            //             commandOptionsFBO({r: size_, x: 0, y:tick*ts, t:ts, a: 1})
-            //         }
-            //         console.log('tick', tick)
-            //         tick++
-            //     }
-            //     t = +new Date()
-            //     if(t - tprev > 160) steps = max(1,steps-8)
-            //     if(t - tprev < 30) steps += 2
-            //     tprev = t
-            //     if(tick > cols**2) fr.cancel()
-            // })
+            let fr = regl.frame(() => {
+                for(let i=0;i++<steps;){
+                    let [x, y] = it.next().value;
+                    program({r: size_, x: size_/2 - ts/2 + ts * x | 0, y: size_/2 - ts/2 - ts * y | 0, t:ts, a: aa})
+                    tick++
+                }
+                console.log('new Date() - t',new Date() - t)
+                t = +new Date()
+                // if(steps==1)slowDevice++
+                // else slowDevice = max(0,slowDevice--)
+                // console.log('slowDevice',slowDevice)
+                // if(slowDevice>4)aa=1
+
+                
+                
+                // 1 и 3 легко отличить от 2 и 4 по тику
+                // 2 и 4 легко отличить по aa
+                // 1 и 2 легко отличить по aa
+                
+                
+                
+                
+                if(tick<9) { 
+                    // три режима. В одном он пробует рендерить по одной картинке aa=1 и считает время, сколько ушло на 10
+                    if(aa==1) {
+                        steps=1
+                        if(tick==8)tokenData.hash = t-tprev
+                        if(tick==8 && t - tprev < 200){
+                            tick = 0
+                            it = spiral()
+                            aa=8
+                        }
+                    }
+                    // в третьем повторяет рендеры первых кадров с aa=8
+                    else{
+                        if(t - tprev > 160) steps = max(1,steps-8)
+                        if(t - tprev < 30) steps += 2   
+                        tprev = t
+                    }
+                }
+                else {
+                    // во втором режиме — продолжает рендерить аа=1 с нарастающей скоростью
+                    if(aa==1) { 
+                        if(t - tprev > 160) steps = max(1,steps-8)
+                        if(t - tprev < 30) steps += 2    
+                        tprev = t
+                    }
+                    // в четвёртом — продолжает рендерить aa=8 с нарастающей скоростью
+                    else{
+                        if(t - tprev > 160) steps = max(1,steps-8)
+                        if(t - tprev < 30) steps += 2    
+                        tprev = t
+                    }
+                }
+
+                // if(!params_aa && aa==1 && tick>9 && t - tprev > 99) { 
+                //     tick = 0
+                //     it = spiral()
+                //     aa=8
+                // }
+                // else {
+                //     if(t - tprev > 160) steps = max(1,steps-8)
+                //     if(t - tprev < 30) steps += 2    
+                //     tprev = t
+                // }
+                if(params_aa)aa = Number(params_aa)
+
+                if(tick > cols**2) fr.cancel()
+            })
     
     /*end render*/
