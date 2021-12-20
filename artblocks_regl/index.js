@@ -1,4 +1,4 @@
-// tokenData.hash = '0x121a71bcc6d7a427dae796ae7c01e690501d5582a9da76a6df36a1632d66d701'
+// tokenData.hash = '0x343c93c4b2eaa14b2a21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
 
 /*begin features*/
 function calculateFeatures(tokenData) {
@@ -140,7 +140,8 @@ function calculateFeatures(tokenData) {
                 // .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features[2]]
             u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
                 .substr(30*features[2], 30).match(/(.{2})/g).map(v=>Number("0x"+v))
-                palette_bg = R()*4|0
+            palette_bg = R()*4|0
+            // console.log('features[2]',features[2])
         }
         
         //0 size
@@ -537,6 +538,7 @@ function calculateFeatures(tokenData) {
     
             // console.log('regl.limits.maxViewportDims',regl.limits.maxViewportDims)
             // console.log('regl.limits.maxRenderbufferSize',regl.limits.maxRenderbufferSize)
+            // console.log('u_palette.map(v=>v/255)',u_palette.map(v=>v/255))
     
             let program = regl({
                 frag: /*glsl*/`precision highp float;
@@ -675,7 +677,7 @@ function calculateFeatures(tokenData) {
                             ${viewBox[8]}), -camDist), 
                            rd = V(0, 0, .9 + .1 * fract(1e3 * sin(1e3 * fract(L(uv)))));
                         bool outline = false;
-                        for(F i = 0.; i < 4e2; i++) {
+                        for(F i = 0.; i < 1e2; i++) {
                             j = i;
                             p = d * rd + ro;
                             p.z -= camDist;
@@ -789,6 +791,12 @@ function calculateFeatures(tokenData) {
             let steps = 1
             ts=32
 
+            // program({r: size_, x: 0, y: 0, t:size_/2, a: 1})
+            // program({r: size_, x: size_/2, y: 0, t:size_/2, a: 1})
+            // program({r: size_, x: 0, y: size_/2, t:size_/2, a: 1})
+            // program({r: size_, x: size_/2, y: size_/2, t:size_/2, a: 1})
+
+
             function* spiral() {
                 let [x,y,d,m] = [0,0,1,1];
                 while (1) {
@@ -823,6 +831,7 @@ function calculateFeatures(tokenData) {
                     if(t - tprev < 30) steps += 2    
                     tprev = t
                 }
+                console.log(tick)
                 if(tick > ((size_/ts/2|0)*2+3)**2) fr.cancel()
             })
     
