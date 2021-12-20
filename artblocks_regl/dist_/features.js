@@ -461,10 +461,17 @@ function calculateFeatures(tokenData) {
             features[4] = { '0': 'Cage', '1': 'Mushroom', '2': 'Tiny', '3': 'Compact', '4': 'Random' }[features[4]]
             features[0] = { '0': 'Z', '1': 'X' }[features[0]]
             features[3] = { '0': 'Textured', '1': 'Not textured', '2': 'Monochrome', '3': 'Rainbow', '4': 'Gaz' }[features[3]]
-        
-            // console.log(features)
-            return features
+
+            let names = ['Symmetry','Studs','Palette','Color scheme','Layout','Background type','Background light','Blocks number','Height','Eyes','Aerials',]
+
+            let f = {}
+            for(let i=0; i<names.length; i++){
+                f[names[i]] = features[i]
             }
-            /*end features*/
+        
+            console.log(f)
+            return f
+        }
+        /*end features*/
     
             
