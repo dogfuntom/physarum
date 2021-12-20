@@ -99,20 +99,21 @@ function calculateFeatures(tokenData) {
                     8,
                     0,
                 ],
-                RL([[
-                    8 + R() * 2 | 0,
-                    30,
-                    3, // shroom
-                    8,
-                    R() ** 4 * 8,
-                ],
+                // RL([
                 [ // cutie
                     4,
                     3 + R() * 4 | 0,
                     0,
                     1,
                     1,
-                ]]),
+                ],
+                [
+                    8 + R() * 2 | 0,
+                    30,
+                    3, // shroom
+                    8,
+                    R() ** 4 * 8,
+                ],
                 [
                     6 + R() * 4 | 0,
                     10 + R() * 20 | 0,
@@ -129,7 +130,8 @@ function calculateFeatures(tokenData) {
                 ],
             ];
         
-            features[4] = R() ** .4 * presets.length | 0;
+            // features[4] = R() ** .4 * presets.length | 0;
+            features[4] = M.sqrt(1-(R()-1)**2) * presets.length | 0;
           
             ([ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra ] = presets[features[4]])
             numberOfBlockTypes = 2 + R() * 2 | 0
@@ -491,11 +493,10 @@ function calculateFeatures(tokenData) {
         
         
         
+            
             /*begin features*/
-        
-            // console.log(s)
-            // console.log(features)
-        
+            console.log(features)
+                
             features[6] = { '1': 'Left', '0': 'Center', '-1': 'Right' }[features[6]]
             if (features[3] == 4/*gaz*/ || features[3] == 3/*ranibow*/) features[6] = 0
             features[5] = { '1': 'Circle', '2': 'Squircle' }[features[5]]
@@ -504,18 +505,16 @@ function calculateFeatures(tokenData) {
             features[2] = { '0': 'Black and white', '1': 'Summer', '2': 'Colorful', '3': 'Magenta blue', '4': 'Plastic', '5': 'Winter', '6': 'Spring', '7': 'Vivid', '8': 'Eighth' }[features[2]]
             if (features[3] == 4/*gaz*/) features[2] = 'Gaz'
             if (features[3] == 3/*rainbow*/) features[2] = 'Rainbow'
-            features[4] = { '0': 'Cage', '1': 'Mushroom', '2': 'Tiny', '3': 'Compact', '4': 'Random' }[features[4]]
+            features[4] = { '0': 'Cage', '1': 'Tiny', '2': 'Mushroom', '3': 'Compact', '4': 'Random' }[features[4]]
             features[0] = { '0': 'Z', '1': 'X' }[features[0]]
             features[3] = { '0': 'Textured', '1': 'Not textured', '2': 'Monochrome', '3': 'Rainbow', '4': 'Gaz' }[features[3]]
-
             let names = ['Symmetry','Studs','Palette','Color scheme','Layout','Background type','Background light','Blocks number','Height','Eyes','Aerials',]
-
             let f = {}
             for(let i=0; i<names.length; i++){
                 f[names[i]] = features[i]
+                console.log(names[i], features[i])
             }
-        
-            console.log(f)
+
             return f
         }
         /*end features*/
@@ -840,7 +839,8 @@ function calculateFeatures(tokenData) {
                     tprev = t
                 }
                 console.log(tick)
-                if(tick > ((size_/ts/2|0)*2+3)**2) fr.cancel()
+                if(tick > ((size_/ts/2|0)*2+3)**2) {fr.cancel()
+                }
             })
     
     /*end render*/
