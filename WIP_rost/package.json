@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "p5": "^1.4.0"
+  },
+  "devDependencies": {
+    "parcel": "^2.0.0-beta.2",
+    "parcel-bundler": "^1.12.5"
+  },
+  "scripts": {
+    "start": "parcel serve ./index.html",
+    "build": "rm -rf ./dist && parcel build --no-content-hash --no-source-maps --public-url ./ ./index.html",
+    "copy": "rm -rf node_modules; cp -R ./ "
+  }
+}
