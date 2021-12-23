@@ -112,14 +112,14 @@ void main() {
     // normal
     // n=norm(p);
     // 
-    // rd=reflect(rd,n);
         if(tex > 0.) {
             // l = .0001;
             l = 1.;
             col += 10.;
             break;
         } else {
-            rd = -n;
+            rd=reflect(rd,n);
+            // rd = -n;
             rd.x += (rnd(length(uv) + u_frame + .0) * 2. - 1.) * .3;
             rd.y += (rnd(length(uv) + u_frame + .1) * 2. - 1.) * .3;
             rd.z += (rnd(length(uv) + u_frame + .2) * 2. - 1.) * .3;
