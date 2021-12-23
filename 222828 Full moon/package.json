@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "parcel serve ./index.html",
-    "build": "rm -rf ./dist && parcel build --no-content-hash --no-source-maps --public-url ./ ./index.html"
+    "build": "rm -rf ./dist && parcel build --no-content-hash --no-source-maps --public-url ./ ./index.html",
+    "copy": "rm -rf node_modules; cp -R ./ "
   }
 }
