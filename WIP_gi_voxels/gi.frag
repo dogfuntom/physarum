@@ -2,7 +2,7 @@
 precision highp float;
 uniform vec2 u_resolution;
 uniform vec2 mouse;
-uniform float time;
+uniform float u_time;
 uniform float u_frame;
 uniform sampler2D backbuffer;
 #define rnd(x) fract(54321.987 * sin(987.12345 * x + .1))
@@ -42,7 +42,9 @@ float dist(vec3 p) {
     float plane = length(p - vec3(0, 0, 100)) - 100.;
     res = min(plane, ball);
 
-    float light = length(p - vec3(0, 0, -40)) - 1.;
+    vec3 lightPos = vec3(8, -8, -20);
+    // lightPos.xy *= rot(u_time/10.);
+    float light = length(p - lightPos) - 1.;
     if(light < res) {
         tex = 1.;
         res = light;
@@ -64,7 +66,7 @@ void main() {
     float i, d, e, s, l;
 
     vec2 uv = (gl_FragCoord.xy - u_resolution * .5) / u_resolution.y;
-    vec3 rd = (vec3(0, 0, 1)), ro = vec3(uv * 40. * rot(-3.1415 / 4.), -20), p, pf;
+    vec3 rd = (vec3(0, 0, 1)), ro = vec3(uv * 40. * rot(-3.1415 / 4.), -23), p, pf;
     mat3 rt = rotate3D(-atan(1. / sqrt(2.)), vec3(-1, 1, 0));
     rd *= rt;
     ro *= rt;
@@ -73,7 +75,7 @@ void main() {
 
   // vec2 uv = (gl_FragCoord.xy-u_resolution*.5)/u_resolution.y;
     vec3 n;
-    for(; s++ < 5.;) {
+    for(; s++ < 4.;) {
         d = 0.;
         for(i = 0.; i++ < 100.;) {
             p = ro + rd * d;
@@ -112,15 +114,15 @@ void main() {
     // 
     // rd=reflect(rd,n);
         if(tex > 0.) {
-            // l = .001;
+            // l = .0001;
             l = 1.;
             col += 10.;
             break;
         } else {
             rd = -n;
-            rd.x += (rnd(length(uv) + u_frame + .0) * 2. - 1.) * .2;
-            rd.y += (rnd(length(uv) + u_frame + .1) * 2. - 1.) * .2;
-            rd.z += (rnd(length(uv) + u_frame + .2) * 2. - 1.) * .2;
+            rd.x += (rnd(length(uv) + u_frame + .0) * 2. - 1.) * .3;
+            rd.y += (rnd(length(uv) + u_frame + .1) * 2. - 1.) * .3;
+            rd.z += (rnd(length(uv) + u_frame + .2) * 2. - 1.) * .3;
       // rd += (rnd(length(uv)+u_frame+vec3(0,1,2))*.5+.5) * .4;
             rd = normalize(rd);
             ro = p - n * .01;
@@ -128,14 +130,14 @@ void main() {
         }
     }
     
-    o+=mix(texture(backbuffer,gl_FragCoord.xy/u_resolution),vec4(l/(s-1.)),1./(u_frame+1.));
+    o+=mix(texture(backbuffer,gl_FragCoord.xy/u_resolution),vec4(l/(s-1.)),1./(u_frame+4.));
     // o.rgb += smoothstep(20.,0.,d)*fract(p);
 
     // for testing the texture bit size
     // o += texture(backbuffer,gl_FragCoord.xy/u_resolution) + l / (s - 1.);
 
-    // o.rgb = col/(s-1.);//*.5+.5;
+    // o.rgb = col/(s) / 2.;//*.5+.5;
 
 
-    // o.r = sin(gl_FragCoord.x*.1);
+  // o = vec4(1,0,0,1);
 }
