@@ -11,8 +11,13 @@ uniform sampler2D backbuffer;
 
 out vec4 o;
 
+#define color(c) (c-cos((c + off) * 2. * 3.1415) * mul + add)
+vec3 off = vec3(.0, .7, .55);
+vec3 mul = vec3(.5, .5, .5);
+vec3 add = vec3(.5, .5, .5);
+
 float tex;
-vec3 col;
+vec3 col = vec3(1);
 
 mat3 rotate3D(float angle, vec3 axis) {
     vec3 a = normalize(axis);
@@ -23,10 +28,8 @@ mat3 rotate3D(float angle, vec3 axis) {
 }
 
 float dist(vec3 p) {
-  // p = floor(p)+.5;
-  // p.xy *= rot(time);
-    tex = 0.;
-    // col = vec3(0);
+    // tex = 0.;
+    p=floor(p)+.5;
     vec3 pI = p;
   // p.z += 3.;
   // p.xy = abs(p.xy);
@@ -41,8 +44,17 @@ float dist(vec3 p) {
     // p.y += 2.;
     // p.xz = mod(p.xz, 10.)-5.;
     p.xz = abs(p.xz);
-    if(p.x>p.z) p.xz=p.zx;
-    res = min(res, abs(length(p)-3.) - rnd(dot(p, vec3(2,3,u_params[0]))));
+    if(p.x<p.z) p.xz=p.zx;
+    float thing = abs(length(p)-2.) - rnd(dot(p, vec3(2,3,u_params[0]))) - u_params[2]*.2 - abs(dot(sin(p/u_params[4]-u_params[3] * 99.),cos(p.zxy/u_params[4]-u_params[4] * 99.)));
+    // res = min(res, thing);
+    if(thing < res && p.y > -2.){
+      if(thing < 0.) {
+        vec3 c = color(rnd(dot(p, vec3(2,3,u_params[1]))));
+        // c.g = min(c.g, min(c.r, c.g));
+        col *= c;
+      }
+      res = thing;
+    }
 
     // res = min(res, length(p)-3.);
 
@@ -86,21 +98,17 @@ float dist(vec3 p) {
     // // return 0.;
     // }
 
-    p = pI;
-    p = abs(p);
-    float sky = 30.-p.y;
-    if(sky < .0) {
-        tex = 1.;
-        res = sky;
-        // directional light
-        // if(dot(normalize(pI),vec3(0,1,0)) > .85)
-          col = vec3(10);
-    }
-
-
+    // p = pI;
+    // p = abs(p);
+    // float sky = 30.-p.y;
+    // if(sky < .0) {
+    //     tex = 1.;
+    //     res = sky;
+    //     // directional light
+    //     // if(dot(normalize(pI),vec3(0,1,0)) > .85)
+    //       col = vec3(10);
+    // }
     return res;
-  // float res = abs(length(p)-3.)+3.*rnd(length(p*vec3(.1,1,10))+.1);
-  // return res;
 }
 
 vec3 norm(vec3 p) {
@@ -112,12 +120,12 @@ vec3 norm(vec3 p) {
 void main() {
     float i, d, e, s, l;
 
-    vec2 uv = (gl_FragCoord.xy - u_resolution * .5) / u_resolution.y;
+    vec2 uv = (gl_FragCoord.xy - u_resolution * .5) / u_resolution.y + .001;
     vec3 rd = (vec3(0, 0, 1)), ro, p, pf;
-    ro.xy = uv * 16.;// * rot(.26); // PI/12, 
+    ro.xy = uv * 12.;// * rot(.26); // PI/12, 
     ro.z = -10.;
     // vec3 rd = (vec3(uv, 1)), ro, p, pf;
-    // ro = vec3(0,0,-10);
+    // ro = vec3(0,0,-20);
     rd.yz *= rot(atan(1./sqrt(2.)));
     ro.yz *= rot(atan(1./sqrt(2.)));
     rd.xz *= rot(3.1415/4.);
@@ -173,11 +181,11 @@ void main() {
     // normal
     // n=norm(p);
     // 
-        if(tex > 0.) {
+        if(p.y > 10.) {
             // l = .0001;
             // l = 1.;
             // col += 10.;
-            // break;
+            break;
         } else {
             rd=reflect(rd,n);
             // rd = -n;
@@ -190,10 +198,15 @@ void main() {
       // col += n*.5+.5;
         }
     }
+    if(p.y > 10.) {}
+    else {
+      col *= 0.;
+    }
     
     // o+=mix(texture(backbuffer,gl_FragCoord.xy/u_resolution),p.xyzz/length(p)*.5+.5,1./(u_frame+4.));
     // o.rgb += smoothstep(20.,0.,d)*fract(p);
-    o+=mix(texture(backbuffer,gl_FragCoord.xy/u_resolution),vec4(col.rgbb/(s-1.)),1./(u_frame+10.));
+    // o+=mix(texture(backbuffer,gl_FragCoord.xy/u_resolution),vec4(col.rgbb/(s-1.)),1./(u_frame+10.));
+    o+=mix(texture(backbuffer,gl_FragCoord.xy/u_resolution),col.rgbb,1./(u_frame+10.));
 
     // for testing the texture bit size
     // o += texture(backbuffer,gl_FragCoord.xy/u_resolution) + l / (s - 1.);
