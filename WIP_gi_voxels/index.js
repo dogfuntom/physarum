@@ -49,6 +49,7 @@ function Pass({ frag, size = 8, texture }) {
     
     this.texture = texture
     console.log('texture', texture)
+
     
     this.draw = ({ uniforms, target }) => {
       // target: self, screen, self+screen
@@ -108,7 +109,8 @@ function Pass({ frag, size = 8, texture }) {
           frag: require('./draw.frag'),
         }),
       }
-      
+
+      let params = [...Array(10)].map(()=>Math.random())
       
       function draw(time) {
 
@@ -122,6 +124,7 @@ function Pass({ frag, size = 8, texture }) {
             u_frame: tick,
             tex: passes.gi.b,
             u_time: time,
+            u_params: params,
           },
           target: 'self',
         })

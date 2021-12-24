@@ -4,6 +4,7 @@ uniform vec2 u_resolution;
 uniform vec2 mouse;
 uniform float u_time;
 uniform float u_frame;
+uniform float u_params[10];
 uniform sampler2D backbuffer;
 #define rnd(x) fract(54321.987 * sin(987.12345 * x + .1))
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
@@ -22,6 +23,7 @@ mat3 rotate3D(float angle, vec3 axis) {
 }
 
 float dist(vec3 p) {
+  // p = floor(p)+.5;
   // p.xy *= rot(time);
     tex = 0.;
     // col = vec3(0);
@@ -30,29 +32,37 @@ float dist(vec3 p) {
   // p.xy = abs(p.xy);
   // if(p.x>p.y) p.xy=p.yx;
 
-    float res = 999.;
+    float res = p.y+2.;
     // p.xz = mod(p.xz + 5., 10.) - 5.;
     // float ball = length(p) - 3.;
     // res = min(res, ball);
     p = pI;
 
+    // p.y += 2.;
+    // p.xz = mod(p.xz, 10.)-5.;
+    p.xz = abs(p.xz);
+    if(p.x>p.z) p.xz=p.zx;
+    res = min(res, abs(length(p)-3.) - rnd(dot(p, vec3(2,3,u_params[0]))));
 
-    ivec3 pi = ivec3(p-.5);
-    float bitWise = 999.;
-    // if((pi.x ^ pi.z) % (3-pi.y)==0 && pi.y <= 8) bitWise = -.1;
-    if((pi.x ^ pi.z ^ pi.y) % 9 == 0 && pi.y <= 8) bitWise = -.1;
-    // else bitWise = 999.;
-    // res = min(res, bitWise);
+    // res = min(res, length(p)-3.);
 
-    if(bitWise < res){
-      res = bitWise;
-      if(rnd(length(floor(p+100.)+.5)) < .01){
-        col = vec3(100);
-        return p.x;
-      }
-    }
-    p = pI;
+    // p = pI;
+    // ivec3 pi = ivec3(p-.5);
+    // float bitWise = 999.;
+    // // if((pi.x ^ pi.z) % (3-pi.y)==0 && pi.y <= 8) bitWise = -.1;
+    // if((pi.x ^ pi.z ^ pi.y) % 9 == 0 && pi.y <= 8) bitWise = -.1;
+    // // else bitWise = 999.;
+    // // res = min(res, bitWise);
 
+    // if(bitWise < res){
+    //   res = bitWise;
+    //   if(rnd(length(floor(p+100.)+.5)) < .01){
+    //     col = vec3(100);
+    //     return p.x;
+    //   }
+    // }
+
+    // p = pI;
     // float plane = length(p + vec3(0, 0, 100)) - 100.;
     // res = min(plane, ball);
 
@@ -76,16 +86,16 @@ float dist(vec3 p) {
     // // return 0.;
     // }
 
-    // p = pI;
-    // p = abs(p);
-    // float sky = 30.-(min(p.y,min(p.x,p.z)));
-    // if(sky < .0) {
-    //     tex = 1.;
-    //     res = sky;
-    //     // directional light
-    //     // if(dot(normalize(pI),vec3(0,1,0)) > .85)
-    //       col = vec3(10);
-    // }
+    p = pI;
+    p = abs(p);
+    float sky = 30.-p.y;
+    if(sky < .0) {
+        tex = 1.;
+        res = sky;
+        // directional light
+        // if(dot(normalize(pI),vec3(0,1,0)) > .85)
+          col = vec3(10);
+    }
 
 
     return res;
@@ -103,10 +113,11 @@ void main() {
     float i, d, e, s, l;
 
     vec2 uv = (gl_FragCoord.xy - u_resolution * .5) / u_resolution.y;
-    // vec3 rd = (vec3(0, 0, 1)), ro, p, pf;
-    // ro.xy = uv * 8.;// * rot(.26); // PI/12, 
-    vec3 rd = (vec3(uv, 1)), ro, p, pf;
-    ro = vec3(0,0,-10);
+    vec3 rd = (vec3(0, 0, 1)), ro, p, pf;
+    ro.xy = uv * 16.;// * rot(.26); // PI/12, 
+    ro.z = -10.;
+    // vec3 rd = (vec3(uv, 1)), ro, p, pf;
+    // ro = vec3(0,0,-10);
     rd.yz *= rot(atan(1./sqrt(2.)));
     ro.yz *= rot(atan(1./sqrt(2.)));
     rd.xz *= rot(3.1415/4.);
@@ -117,9 +128,9 @@ void main() {
 
   // vec2 uv = (gl_FragCoord.xy-u_resolution*.5)/u_resolution.y;
     vec3 n;
-    for(; s++ < 6.;) {
+    for(; s++ < 4.;) {
         d = 0.;
-        for(i = 0.; i++ < 100.;) {
+        for(i = 0.; i++ < 50.;) {
             p = ro + rd * d;
             pf = p;
             pf = floor(pf) + .5;
@@ -170,9 +181,9 @@ void main() {
         } else {
             rd=reflect(rd,n);
             // rd = -n;
-            rd.x += (rnd(length(uv) + u_frame + .0) * 2. - 1.) * .5;
-            rd.y += (rnd(length(uv) + u_frame + .1) * 2. - 1.) * .5;
-            rd.z += (rnd(length(uv) + u_frame + .2) * 2. - 1.) * .5;
+            rd.x += (rnd(length(uv) + u_frame + .0) * 2. - 1.) * .9;
+            rd.y += (rnd(length(uv) + u_frame + .1) * 2. - 1.) * .9;
+            rd.z += (rnd(length(uv) + u_frame + .2) * 2. - 1.) * .9;
       // rd += (rnd(length(uv)+u_frame+vec3(0,1,2))*.5+.5) * .4;
             rd = normalize(rd);
             ro = p - n * .01;
@@ -182,7 +193,7 @@ void main() {
     
     // o+=mix(texture(backbuffer,gl_FragCoord.xy/u_resolution),p.xyzz/length(p)*.5+.5,1./(u_frame+4.));
     // o.rgb += smoothstep(20.,0.,d)*fract(p);
-    o+=mix(texture(backbuffer,gl_FragCoord.xy/u_resolution),vec4(col.rgbb/(s-1.)),1./(u_frame+1.));
+    o+=mix(texture(backbuffer,gl_FragCoord.xy/u_resolution),vec4(col.rgbb/(s-1.)),1./(u_frame+10.));
 
     // for testing the texture bit size
     // o += texture(backbuffer,gl_FragCoord.xy/u_resolution) + l / (s - 1.);
