@@ -29,20 +29,24 @@ float dist(vec3 p) {
   // p.xy = abs(p.xy);
   // if(p.x>p.y) p.xy=p.yx;
 
-    float res;
-    p.xy = mod(p.xy + 5., 10.) - 5.;
-    p.z += 4.;
-    p.x = abs(p.x);
-  // p.x -= 2.5;
-    float ball = length(p) - 3.;
-    res = ball;
+    float res = 999.;
+    // p.xz = mod(p.xz + 5., 10.) - 5.;
+    // float ball = length(p) - 3.;
+    // res = min(res, ball);
     p = pI;
-  // p.z-=3.;
-  // float plane = -p.z-0.;
-    float plane = length(p - vec3(0, 0, 100)) - 100.;
-    res = min(plane, ball);
 
-    vec3 lightPos = vec3(8, -8, -20);
+
+    ivec3 pi = ivec3(p-.5);
+    float bitWise = 999.;
+    if((pi.x ^ pi.z) % (3-pi.y)==0 && pi.y <= 8) bitWise = -999.;
+    // else bitWise = 999.;
+    res = min(res, bitWise);
+    p = pI;
+
+    // float plane = length(p + vec3(0, 0, 100)) - 100.;
+    // res = min(plane, ball);
+
+    vec3 lightPos = vec3(0, 20, 0);
     // lightPos.xy *= rot(u_time/10.);
     float light = length(p - lightPos) - 1.;
     if(light < res) {
@@ -66,18 +70,22 @@ void main() {
     float i, d, e, s, l;
 
     vec2 uv = (gl_FragCoord.xy - u_resolution * .5) / u_resolution.y;
-    vec3 rd = (vec3(0, 0, 1)), ro = vec3(uv * 40. * rot(-3.1415 / 4.), -23), p, pf;
-    mat3 rt = rotate3D(-atan(1. / sqrt(2.)), vec3(-1, 1, 0));
-    rd *= rt;
-    ro *= rt;
+    vec3 rd = (vec3(0, 0, 1)), ro, p, pf;
+    // mat3 rt = rotate3D(3.1415 / 2. - atan(1. / sqrt(2.)), vec3(-1, 1, 0));
+    ro.xy = uv * 8.;// * rot(.26); // PI/12, 
+    ro.z = -35.;
+    rd.yz *= rot(atan(1./sqrt(2.)));
+    ro.yz *= rot(atan(1./sqrt(2.)));
+    rd.xz *= rot(3.1415/4.);
+    ro.xz *= rot(3.1415/4.);
   // rd.xy*=rot(time);
   // ro.xy*=rot(time);
 
   // vec2 uv = (gl_FragCoord.xy-u_resolution*.5)/u_resolution.y;
     vec3 n;
-    for(; s++ < 4.;) {
+    for(; s++ < 6.;) {
         d = 0.;
-        for(i = 0.; i++ < 100.;) {
+        for(i = 0.; i++ < 120.;) {
             p = ro + rd * d;
             pf = p;
             pf = floor(pf) + .5;
@@ -120,9 +128,9 @@ void main() {
         } else {
             rd=reflect(rd,n);
             // rd = -n;
-            rd.x += (rnd(length(uv) + u_frame + .0) * 2. - 1.) * .3;
-            rd.y += (rnd(length(uv) + u_frame + .1) * 2. - 1.) * .3;
-            rd.z += (rnd(length(uv) + u_frame + .2) * 2. - 1.) * .3;
+            rd.x += (rnd(length(uv) + u_frame + .0) * 2. - 1.) * .9;
+            rd.y += (rnd(length(uv) + u_frame + .1) * 2. - 1.) * .9;
+            rd.z += (rnd(length(uv) + u_frame + .2) * 2. - 1.) * .9;
       // rd += (rnd(length(uv)+u_frame+vec3(0,1,2))*.5+.5) * .4;
             rd = normalize(rd);
             ro = p - n * .01;
