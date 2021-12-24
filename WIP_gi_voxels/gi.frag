@@ -48,32 +48,33 @@ float dist(vec3 p) {
     // float plane = length(p + vec3(0, 0, 100)) - 100.;
     // res = min(plane, ball);
 
-    vec3 lightPos = vec3(8, 8, -8);
-    p.xz -= lightPos.xz;
-    float lightId = p.x;
-    // lightPos.xy *= rot(u_time/10.);
-    // float lightId = sign(p.x);
-    p.y -= 7.;
-    p.x = abs(p.x);
-    if(p.x<p.y)p.xy=p.yx;
-    p.x -= 3.;
-    float light = length(p.xz-.5) - 1.+.5;
-    if(light < 0.) {
-        tex = 1.;
-        // res = light;
-        // if(lightId>0.) col.r=1.;
-        // else col.b=1.;
-        // col = mix(vec3(1,0,0),vec3(0,0,1),lightId+.5) * 10.;
-        col = (col + mix(vec3(1,0,0),vec3(0,0,1),lightId+.5) * 10.);
-    // return 0.;
-    }
+    // vec3 lightPos = vec3(8, 8, -8);
+    // p.xz -= lightPos.xz;
+    // float lightId = p.x;
+    // // lightPos.xy *= rot(u_time/10.);
+    // // float lightId = sign(p.x);
+    // p.y -= 7.;
+    // p.x = abs(p.x);
+    // if(p.x<p.y)p.xy=p.yx;
+    // p.x -= 3.;
+    // float light = length(p.xz-.5) - 1.+.5;
+    // if(light < 0.) {
+    //     tex = 1.;
+    //     // res = light;
+    //     // if(lightId>0.) col.r=1.;
+    //     // else col.b=1.;
+    //     // col = mix(vec3(1,0,0),vec3(0,0,1),lightId+.5) * 10.;
+    //     col = (col + mix(vec3(1,0,0),vec3(0,0,1),lightId+.5) * 10.);
+    // // return 0.;
+    // }
 
     p = pI;
     float sky = 60.-p.y;
     if(sky < .0) {
         tex = 1.;
         res = sky;
-        col = vec3(10);
+        if(dot(normalize(pI),vec3(0,1,0)) > .85)
+          col = vec3(20);
     // return 0.;
     }
 
@@ -171,7 +172,7 @@ void main() {
     
     // o+=mix(texture(backbuffer,gl_FragCoord.xy/u_resolution),p.xyzz/length(p)*.5+.5,1./(u_frame+4.));
     // o.rgb += smoothstep(20.,0.,d)*fract(p);
-    o+=mix(texture(backbuffer,gl_FragCoord.xy/u_resolution),vec4(col.rgbb/(s-1.)),1./(u_frame+100.));
+    o+=mix(texture(backbuffer,gl_FragCoord.xy/u_resolution),vec4(col.rgbb/(s-1.)),1./(u_frame+1.));
 
     // for testing the texture bit size
     // o += texture(backbuffer,gl_FragCoord.xy/u_resolution) + l / (s - 1.);
