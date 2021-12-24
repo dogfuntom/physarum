@@ -11,7 +11,7 @@ uniform sampler2D backbuffer;
 out vec4 o;
 
 float tex;
-vec3 col = vec3(0);
+vec3 col;
 
 mat3 rotate3D(float angle, vec3 axis) {
     vec3 a = normalize(axis);
@@ -24,6 +24,7 @@ mat3 rotate3D(float angle, vec3 axis) {
 float dist(vec3 p) {
   // p.xy *= rot(time);
     tex = 0.;
+    // col = vec3(0);
     vec3 pI = p;
   // p.z += 3.;
   // p.xy = abs(p.xy);
@@ -38,7 +39,8 @@ float dist(vec3 p) {
 
     ivec3 pi = ivec3(p-.5);
     float bitWise = 999.;
-    if((pi.x ^ pi.z) % (3-pi.y)==0 && pi.y <= 8) bitWise = -999.;
+    // if((pi.x ^ pi.z) % (3-pi.y)==0 && pi.y <= 8) bitWise = -.1;
+    if((pi.x ^ pi.z ^ pi.y) % 9 == 0 && pi.y <= 8) bitWise = -.1;
     // else bitWise = 999.;
     res = min(res, bitWise);
     p = pI;
@@ -46,14 +48,35 @@ float dist(vec3 p) {
     // float plane = length(p + vec3(0, 0, 100)) - 100.;
     // res = min(plane, ball);
 
-    vec3 lightPos = vec3(0, 20, 0);
+    vec3 lightPos = vec3(8, 8, -8);
+    p.xz -= lightPos.xz;
+    float lightId = p.x;
     // lightPos.xy *= rot(u_time/10.);
-    float light = length(p - lightPos) - 1.;
-    if(light < res) {
+    // float lightId = sign(p.x);
+    p.y -= 7.;
+    p.x = abs(p.x);
+    if(p.x<p.y)p.xy=p.yx;
+    p.x -= 3.;
+    float light = length(p.xz-.5) - 1.+.5;
+    if(light < 0.) {
         tex = 1.;
-        res = light;
+        // res = light;
+        // if(lightId>0.) col.r=1.;
+        // else col.b=1.;
+        // col = mix(vec3(1,0,0),vec3(0,0,1),lightId+.5) * 10.;
+        col = (col + mix(vec3(1,0,0),vec3(0,0,1),lightId+.5) * 10.);
     // return 0.;
     }
+
+    p = pI;
+    float sky = 60.-p.y;
+    if(sky < .0) {
+        tex = 1.;
+        res = sky;
+        col = vec3(10);
+    // return 0.;
+    }
+
 
     return res;
   // float res = abs(length(p)-3.)+3.*rnd(length(p*vec3(.1,1,10))+.1);
@@ -85,7 +108,7 @@ void main() {
     vec3 n;
     for(; s++ < 6.;) {
         d = 0.;
-        for(i = 0.; i++ < 120.;) {
+        for(i = 0.; i++ < 100.;) {
             p = ro + rd * d;
             pf = p;
             pf = floor(pf) + .5;
@@ -114,7 +137,15 @@ void main() {
                 }
             }
             d += 1e-4;
-      // d+=min(min(dp.x,dp.y),dp.z)+1e-4;
+            // if(rnd(length(p)+length(uv)+u_time) < .000000001) {
+            //   ro=p;
+            //   d=0.;
+            // rd.x = (rnd(length(uv) + length(uv) + u_time + .1) * 2. - 1.);
+            // rd.y = (rnd(length(uv) + length(uv) + u_time + .2) * 2. - 1.);
+            // rd.z = (rnd(length(uv) + length(uv) + u_time + .3) * 2. - 1.);
+            // rd = normalize(rd);
+
+            // }
         }
     // light
     // normal
@@ -122,15 +153,15 @@ void main() {
     // 
         if(tex > 0.) {
             // l = .0001;
-            l = 1.;
-            col += 10.;
-            break;
+            // l = 1.;
+            // col += 10.;
+            // break;
         } else {
             rd=reflect(rd,n);
             // rd = -n;
-            rd.x += (rnd(length(uv) + u_frame + .0) * 2. - 1.) * .9;
-            rd.y += (rnd(length(uv) + u_frame + .1) * 2. - 1.) * .9;
-            rd.z += (rnd(length(uv) + u_frame + .2) * 2. - 1.) * .9;
+            rd.x += (rnd(length(uv) + u_frame + .0) * 2. - 1.) * .2;
+            rd.y += (rnd(length(uv) + u_frame + .1) * 2. - 1.) * .2;
+            rd.z += (rnd(length(uv) + u_frame + .2) * 2. - 1.) * .2;
       // rd += (rnd(length(uv)+u_frame+vec3(0,1,2))*.5+.5) * .4;
             rd = normalize(rd);
             ro = p - n * .01;
@@ -138,8 +169,9 @@ void main() {
         }
     }
     
-    o+=mix(texture(backbuffer,gl_FragCoord.xy/u_resolution),vec4(l/(s-1.)),1./(u_frame+4.));
+    // o+=mix(texture(backbuffer,gl_FragCoord.xy/u_resolution),p.xyzz/length(p)*.5+.5,1./(u_frame+4.));
     // o.rgb += smoothstep(20.,0.,d)*fract(p);
+    o+=mix(texture(backbuffer,gl_FragCoord.xy/u_resolution),vec4(col.rgbb/(s-1.)),1./(u_frame+100.));
 
     // for testing the texture bit size
     // o += texture(backbuffer,gl_FragCoord.xy/u_resolution) + l / (s - 1.);
