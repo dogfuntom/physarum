@@ -29,8 +29,13 @@ mat3 rotate3D(float angle, vec3 axis) {
 
 float dist(vec3 p) {
     // tex = 0.;
-    p=floor(p)+.5;
+    // p=floor(p)+.5;
+    // float texture = floor(sin(p.z * 2. * 3.1415)) + floor(sin(p.x * 2. * 3.1415)) * .1 + floor(sin(p.y * 2. * 3.1415)) * .01;
+    // float texture = step(.65,length(fract(p)-.5));
+    float texture = step(.5,fract(p.y*8.)-.25);
+    p = floor(p) + .5;
     vec3 pI = p;
+
   // p.z += 3.;
   // p.xy = abs(p.xy);
   // if(p.x>p.y) p.xy=p.yx;
@@ -49,7 +54,8 @@ float dist(vec3 p) {
     // res = min(res, thing);
     if(thing < res && p.y > -2.){
       if(thing < 0.) {
-        vec3 c = color(rnd(dot(p, vec3(2,3,u_params[1]))));
+        if(rnd(length(p))>.1)texture *= 0.;
+        vec3 c = color(rnd(dot(p, vec3(2,texture+3.,u_params[1]))));
         // c.g = min(c.g, min(c.r, c.g));
         col *= c;
       }
@@ -140,10 +146,8 @@ void main() {
         d = 0.;
         for(i = 0.; i++ < 50.;) {
             p = ro + rd * d;
-            pf = p;
-            pf = floor(pf) + .5;
 
-            if(dist(pf) < 0.) {
+            if(dist(p) < 0.) {
                 break;
             }
 
@@ -189,9 +193,9 @@ void main() {
         } else {
             rd=reflect(rd,n);
             // rd = -n;
-            rd.x += (rnd(length(uv) + u_frame + .0) * 2. - 1.) * .9;
-            rd.y += (rnd(length(uv) + u_frame + .1) * 2. - 1.) * .9;
-            rd.z += (rnd(length(uv) + u_frame + .2) * 2. - 1.) * .9;
+            rd.x += (rnd(length(uv) + u_frame + .0) * 2. - 1.) * .3;
+            rd.y += (rnd(length(uv) + u_frame + .1) * 2. - 1.) * .3;
+            rd.z += (rnd(length(uv) + u_frame + .2) * 2. - 1.) * .3;
       // rd += (rnd(length(uv)+u_frame+vec3(0,1,2))*.5+.5) * .4;
             rd = normalize(rd);
             ro = p - n * .01;
