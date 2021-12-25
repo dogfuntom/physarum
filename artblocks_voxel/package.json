@@ -1,0 +1,25 @@
+{
+  "name": "artblocks_global_illumination",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "node build.js",
+    "watch": "npx chokidar \"./index.js\" -c \"npm run build\"",
+    "start": "npx concurrently --kill-others \"npm run watch\" \"npx reload --browser --dir ./dist_\""
+  },
+  "optimizers": {
+    "*.js": [
+      "@parcel/optimizer-terser"
+    ]
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chokidar-cli": "^3.0.0",
+    "parcel": "*",
+    "reload": "^3.2.0",
+    "serve": "^12.0.1",
+    "terser": "^5.9.0",
+    "webpack-glsl-minify": "^1.4.2"
+  }
+}

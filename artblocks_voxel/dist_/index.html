@@ -1,0 +1,45 @@
+<html>
+
+<head>
+  <script src="https://npmcdn.com/regl/dist/regl.js"></script>
+</head>
+
+<body>
+  <script>
+    function random_hash() {
+      let x = "0123456789abcdef", hash = '0x'
+      for (let i = 64; i > 0; --i) {
+        hash += x[Math.floor(Math.random() * x.length)]
+      }
+      return hash
+    }
+
+    tokenData = {
+      "hash": random_hash(),
+      "tokenId": "123000456"
+    }
+
+  </script>
+  <script src="art.js"></script>
+  <style type="text/css">
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    canvas {
+      padding: 0;
+      margin: auto;
+      display: block;
+      position: absolute;
+      /* z-index: -1; */
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+  </style>
+  <!-- <a href="https://generator.artblocks.io/0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270/173000775">hello :-D</a> -->
+</body>
+
+</html>
