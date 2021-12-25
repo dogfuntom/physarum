@@ -34,7 +34,7 @@ function Pass({ frag, size = 8, texture }) {
   }`
   this.frag = frag
   this.program = twgl.createProgramInfo(gl, [this.vert, this.frag])
-  this.attachments = [{internalFormat: gl.RGBA32F}]
+  this.attachments = [{ internalFormat: gl.RGBA32F }]
 
   this.buffer = twgl.createFramebufferInfo(gl, this.attachments, ...this.resolution)
   this.backbuffer = twgl.createFramebufferInfo(gl, this.attachments, ...this.resolution)
@@ -43,101 +43,101 @@ function Pass({ frag, size = 8, texture }) {
   // while(gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE){
   //   console.log(gl.checkFramebufferStatus(gl.FRAMEBUFFER), gl.FRAMEBUFFER_COMPLETE, gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT)
   // }
-    
-    this.positionObject = { position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComponents: 2 } }
-    this.positionBuffer = twgl.createBufferInfoFromArrays(gl, this.positionObject)
-    
-    this.texture = texture
-    console.log('texture', texture)
 
-    
-    this.draw = ({ uniforms, target }) => {
-      // target: self, screen, self+screen
-      gl.useProgram(this.program.program)
-      twgl.setBuffersAndAttributes(gl, this.program, this.positionBuffer)
-      
-      if (!uniforms.u_resolution) uniforms.u_resolution = this.resolution
-      if (target != 'screen') // self or both
+  this.positionObject = { position: { data: [1, 1, 1, -1, -1, -1, -1, 1], numComponents: 2 } }
+  this.positionBuffer = twgl.createBufferInfoFromArrays(gl, this.positionObject)
+
+  this.texture = texture
+  console.log('texture', texture)
+
+
+  this.draw = ({ uniforms, target }) => {
+    // target: self, screen, self+screen
+    gl.useProgram(this.program.program)
+    twgl.setBuffersAndAttributes(gl, this.program, this.positionBuffer)
+
+    if (!uniforms.u_resolution) uniforms.u_resolution = this.resolution
+    if (target != 'screen') // self or both
       uniforms.backbuffer = this.backbuffer.attachments[0]
-      if (this.texture)
+    if (this.texture)
       uniforms.texture = this.texture
-      twgl.setUniforms(this.program, uniforms)
-      
-      if (target != 'self') { // screen or both
-        twgl.bindFramebufferInfo(gl, null)
-        twgl.drawBufferInfo(gl, this.positionBuffer, gl.TRIANGLE_FAN)
-      }
-      if (target != 'screen') { // self or both
-        twgl.bindFramebufferInfo(gl, this.buffer)
-        let tmp = this.buffer
-        this.buffer = this.backbuffer
-        this.backbuffer = tmp
-        this.b = this.backbuffer.attachments[0]
-        twgl.drawBufferInfo(gl, this.positionBuffer, gl.TRIANGLE_FAN)
-      }
+    twgl.setUniforms(this.program, uniforms)
+
+    if (target != 'self') { // screen or both
+      twgl.bindFramebufferInfo(gl, null)
+      twgl.drawBufferInfo(gl, this.positionBuffer, gl.TRIANGLE_FAN)
+    }
+    if (target != 'screen') { // self or both
+      twgl.bindFramebufferInfo(gl, this.buffer)
+      let tmp = this.buffer
+      this.buffer = this.backbuffer
+      this.backbuffer = tmp
+      this.b = this.backbuffer.attachments[0]
+      twgl.drawBufferInfo(gl, this.positionBuffer, gl.TRIANGLE_FAN)
     }
   }
-  
-  
-  
-  let tick = 0
-  const canvas = document.getElementById('canvasgl')
-  // const gl = (canvas, { antialias: false, depth: false })
-  const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true })
-  gl.getExtension('EXT_color_buffer_float');
-  gl.getExtension('OES_texture_float_linear');
-  
-  let dt;
-  let prevTime;
-  
-  // let conwayInitTexture = twgl.createTexture(gl, {
-    //   // src: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARAQMAAAABo9W5AAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAZQTFRFAAAA////pdmf3QAAABVJREFUeJxjYMAD+CwYGLg0IDQeAAAZpgC/nhpjBAAAAABJRU5ErkJggg==',
-    //   src: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARAQMAAAABo9W5AAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAZQTFRFAAAA////pdmf3QAAADBJREFUeJxjYIACHgkGBjYDBgbVIAYG6zwGBtEQBgY+C4gciAbxQeIgeZA6kHooAACUUgRTZfOwlgAAAABJRU5ErkJggg==',
-    //   crossOrigin: '', // not needed if image on same origin
-    // }, function (err, tex, img) {
-      //   // wait for the image to load because we need to know it's size
-      //   // start();
-      // });
-      
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-        passes = {
-        gi: new Pass({
-          frag: require('./gi.frag'),
-          size: [canvas.width, canvas.height],
-        }),
-        draw: new Pass({
-          frag: require('./draw.frag'),
-        }),
-      }
+}
 
-      let params = [...Array(10)].map(()=>Math.random())
-      
-      function draw(time) {
 
-        twgl.resizeCanvasToDisplaySize(gl.canvas);
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        dt = (prevTime) ? time - prevTime : 0;
-        prevTime = time;
-        
-        passes.gi.draw({
-          uniforms: {
-            u_frame: tick,
-            tex: passes.gi.b,
-            u_time: time,
-            u_params: params,
-          },
-          target: 'self',
-        })
-        passes.draw.draw({
-          uniforms: {
-            tex: passes.gi.b,
-            u_resolution: [canvas.width, canvas.height],
-          },
-          target: 'screen',
-        })
-        
-        tick++
-      }
+
+let tick = 0
+const canvas = document.getElementById('canvasgl')
+// const gl = (canvas, { antialias: false, depth: false })
+const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true })
+gl.getExtension('EXT_color_buffer_float');
+gl.getExtension('OES_texture_float_linear');
+
+let dt;
+let prevTime;
+
+// let conwayInitTexture = twgl.createTexture(gl, {
+//   // src: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARAQMAAAABo9W5AAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAZQTFRFAAAA////pdmf3QAAABVJREFUeJxjYMAD+CwYGLg0IDQeAAAZpgC/nhpjBAAAAABJRU5ErkJggg==',
+//   src: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARAQMAAAABo9W5AAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAZQTFRFAAAA////pdmf3QAAADBJREFUeJxjYIACHgkGBjYDBgbVIAYG6zwGBtEQBgY+C4gciAbxQeIgeZA6kHooAACUUgRTZfOwlgAAAABJRU5ErkJggg==',
+//   crossOrigin: '', // not needed if image on same origin
+// }, function (err, tex, img) {
+//   // wait for the image to load because we need to know it's size
+//   // start();
+// });
+
+twgl.resizeCanvasToDisplaySize(gl.canvas);
+passes = {
+  gi: new Pass({
+    frag: require('./gi.frag'),
+    size: [canvas.width, canvas.height],
+  }),
+  draw: new Pass({
+    frag: require('./draw.frag'),
+  }),
+}
+
+let params = [...Array(10)].map(() => Math.random())
+
+function draw(time) {
+
+  twgl.resizeCanvasToDisplaySize(gl.canvas);
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+  dt = (prevTime) ? time - prevTime : 0;
+  prevTime = time;
+
+  passes.gi.draw({
+    uniforms: {
+      u_frame: tick,
+      tex: passes.gi.b,
+      u_time: time,
+      u_params: params,
+    },
+    target: 'self',
+  })
+  passes.draw.draw({
+    uniforms: {
+      tex: passes.gi.b,
+      u_resolution: [canvas.width, canvas.height],
+    },
+    target: 'screen',
+  })
+
+  tick++
+}
 
 // if (isRendering) setInterval(animate, 200)
 // else 
@@ -149,6 +149,7 @@ function animate(now) {
   draw(now / 1000);
   // setTimeout(requestAnimationFrame, 50, animate);
   // if (isRendering == false)
+  // if (tick < 4) 
   requestAnimationFrame(animate);
 }
 
