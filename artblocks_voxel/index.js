@@ -521,8 +521,7 @@ function calculateFeatures(tokenData) {
     
             /*begin render*/
     
-    
-    
+            
             let size_ = M.min(innerWidth, innerHeight)*D
             let canvas = document.createElement('canvas')
             canvas.style.width = size_/D + 'px' // FIXME, а без этого совсем никак?
@@ -530,18 +529,21 @@ function calculateFeatures(tokenData) {
             size_ = min(size_, 2048)
             let gl = canvas.getContext('webgl', {
                 preserveDrawingBuffer: true,
-              });
+            });
             document.body.appendChild(canvas)
             let bg = u_palette.slice(3*palette_bg,3+3*palette_bg)//.map(v=>v*255)
             canvas.style.background=(features[3] == 4 || features[3] == 3)? '#333':`rgb(${bg})`
-
+            
             canvas.width = size_
             canvas.height = size_
             let tsTarget = 16
-    
-    
+            
+            
             var regl = createREGL(gl)
-    
+            let tex3dArray = [...Array(300)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
+            console.log(tex3dArray)
+            let tex3d = regl.texture(tex3dArray)
+            
             // console.log('regl.limits.maxViewportDims',regl.limits.maxViewportDims)
             // console.log('regl.limits.maxRenderbufferSize',regl.limits.maxRenderbufferSize)
             // console.log('u_palette.map(v=>v/255)',u_palette.map(v=>v/255))
@@ -570,10 +572,12 @@ function calculateFeatures(tokenData) {
                 uniform V gl_z_pt[5];
                 uniform F gl_z_aa;
                 uniform F gl_z_rs;
+
+                uniform sampler2D gl_z_tex3d;
         
                 ivec3 colIds;
                 F gl;
-                F camDist = 1e2;
+                F camDist = 2e1;
                 
                 int eye;
     
@@ -584,82 +588,90 @@ function calculateFeatures(tokenData) {
                 }
                 
                 F dist(V p) {
-                    colIds = ivec3(0, 0, -1);
-                    p.x = abs(p.x);
-                    // F res = 1e5;
-                    F res = p.y + 1.; // floor plane
-                    for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
-                        if(i >= ${blocks.length})
-                            break;
-                        eye = 0;
-                        V pb = p;
-                        pb -= gl_z_ps[i];
-                        pb.xz *= rot(gl_z_rt[i].x * PI / 2.);
+                    →length(p)-.5;
+                    // colIds = ivec3(0, 0, -1);
+                    // p.x = abs(p.x);
+                    // // F res = 1e5;
+                    // F res = p.y + 1.; // floor plane
+                    // for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
+                    //     if(i >= ${blocks.length})
+                    //         break;
+                    //     eye = 0;
+                    //     V pb = p;
+                    //     pb -= gl_z_ps[i];
+                    //     pb.xz *= rot(gl_z_rt[i].x * PI / 2.);
                 
-                        // box
-                        F cornerR = .01, gap = .008, block;
+                    //     // box
+                    //     F cornerR = .01, gap = .008, block;
             
-                        V s = gl_z_ss[i] - 2. * (cornerR + gap);
-                        block = L(pb - clamp(pb, -s/2., s/2.)) - cornerR * 1.4;
+                    //     V s = gl_z_ss[i] - 2. * (cornerR + gap);
+                    //     block = L(pb - clamp(pb, -s/2., s/2.)) - cornerR * 1.4;
                 
-                        if(gl_z_rt[i].y == 5.) { // arc
-                            F cyl = L(pb.zy) - .5;
-                            F box = max(abs(pb.z) - .5, abs(pb.y + gl_z_ss[i].y / 2.) - 1.);
-                            F hole = min(cyl, box);
-                            block = max(block, -hole);
-                        }
+                    //     if(gl_z_rt[i].y == 5.) { // arc
+                    //         F cyl = L(pb.zy) - .5;
+                    //         F box = max(abs(pb.z) - .5, abs(pb.y + gl_z_ss[i].y / 2.) - 1.);
+                    //         F hole = min(cyl, box);
+                    //         block = max(block, -hole);
+                    //     }
     
-                        if(gl_z_rt[i].y == 6.) { // pillar
-                            F narrow = tube(pb+V(0,1.6-cornerR*2.,0),V(3.55,.15,0));
-                            F base = tube(pb+V(0,2.-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
-                            block = min(narrow, base);
-                        }
+                    //     if(gl_z_rt[i].y == 6.) { // pillar
+                    //         F narrow = tube(pb+V(0,1.6-cornerR*2.,0),V(3.55,.15,0));
+                    //         F base = tube(pb+V(0,2.-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
+                    //         block = min(narrow, base);
+                    //     }
 
-                        // studs
-                        if(gl_z_rt[i].y != 6.) { // not pillar
-                            V ps = pb;
-                            // repetition
-                            v l = gl_z_ss[i].xz;
-                            ps.xz += (l - 1.) / 2.;
-                            ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
+                    //     // studs
+                    //     if(gl_z_rt[i].y != 6.) { // not pillar
+                    //         V ps = pb;
+                    //         // repetition
+                    //         v l = gl_z_ss[i].xz;
+                    //         ps.xz += (l - 1.) / 2.;
+                    //         ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
                             
-                            // position
-                            ps.y -= gl_z_ss[i].y / 2. + .02;
+                    //         // position
+                    //         ps.y -= gl_z_ss[i].y / 2. + .02;
     
-                            F stud = tube(ps, V(.24, .28, mix(EPS,.18,${features[1]}.)));
-                            block = min(stud, block);
-                        }
+                    //         F stud = tube(ps, V(.24, .28, mix(EPS,.18,${features[1]}.)));
+                    //         block = min(stud, block);
+                    //     }
                 
-                        if(pb.z<.01 && (gl_z_rt[i].y == 3. || gl_z_rt[i].y == 4.)) { // beak
-                            block = smax(block,dot(pb,V(0,.78*(7.-2.*gl_z_rt[i].y),-.624))-.39);
-                        }
+                    //     if(pb.z<.01 && (gl_z_rt[i].y == 3. || gl_z_rt[i].y == 4.)) { // beak
+                    //         block = smax(block,dot(pb,V(0,.78*(7.-2.*gl_z_rt[i].y),-.624))-.39);
+                    //     }
                 
                 
                 
-                        if(gl_z_rt[i].y == 7.) { // eye
-                            // F eye_ = cyl(pb, V(.2, .25, .2), cornerR);
-                            F eye_ = tube(pb+V(0,.25-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
-                            block = eye_;
-                            if(eye_ < EPS) {
-                                eye = 1;
-                            }
-                        }
+                    //     if(gl_z_rt[i].y == 7.) { // eye
+                    //         // F eye_ = cyl(pb, V(.2, .25, .2), cornerR);
+                    //         F eye_ = tube(pb+V(0,.25-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
+                    //         block = eye_;
+                    //         if(eye_ < EPS) {
+                    //             eye = 1;
+                    //         }
+                    //     }
                 
-                        // block = L(pb)-2.;
-                        if(block < res) {
-                            res = block;
-                            colIds = gl_z_cs[i];
-                        }
-                        if(res < EPS)
-                            break;
-                    }
-                    →res;
+                    //     // block = L(pb)-2.;
+                    //     if(block < res) {
+                    //         res = block;
+                    //         colIds = gl_z_cs[i];
+                    //     }
+                    //     if(res < EPS)
+                    //         break;
+                    // }
+                    // →res;
                 }
                 
                 V norm(V p) {
                     v e = v(.01, 0.);
                     →N(V(dist(p + e.xyy) - dist(p - e.xyy), dist(p + e.yxy) - dist(p - e.yxy), dist(p + e.yyx) - dist(p - e.yyx)));
                 }
+
+                float sdfVoxel(vec3 p){
+                    p = floor(p) + .5;
+                    // return fract(9e5*sin(9e5*dot(p,vec3(7,2,3))))-.5;
+                    return length(p) - 2.;
+                }
+
                 void main() {
                     ${uniforms}
                     V o = V(0);
@@ -679,84 +691,141 @@ function calculateFeatures(tokenData) {
     
                         uv += pos * 2. / gl_z_rs;
         
-                        V p, ro = V(uv * F(${viewBox[6]}) +
+                        V n, p, ro = V(uv * F(${viewBox[6]}) +
                             v(${viewBox[7]},
                             ${viewBox[8]}), -camDist), 
                            rd = V(0, 0, .9 + .1 * fract(1e3 * sin(1e3 * fract(L(uv)))));
                         bool outline = false;
-                        for(F i = 0.; i < 1e2; i++) {
-                            j = i;
-                            p = d * rd + ro;
-                            p.z -= camDist;
-                            p.yz *= rot(${u_camAngYZ});
-                            p.xz *= rot(${u_camAngXZ});
-                            // d += e = L(p)-10.;
-                            d += e = dist(p);
-                            if(ep < e && e < .01) {
-                                outline = true;
-                                break;
+
+                        // RAYMARCH
+
+
+                        // TODO ro, rd
+
+                        // MY LEGO VERSION
+                        // for(F i = 0.; i < 1e2; i++) {
+                        //     j = i;
+                        //     p = d * rd + ro;
+                        //     p.z -= camDist;
+                        //     p.yz *= rot(${u_camAngYZ});
+                        //     p.xz *= rot(${u_camAngXZ}); // FIXME не каждый шаг реймарша вычислять этот угол, предварительно RD повернуть и всё
+
+                        //     d += e = dist(p);
+                        //     if(ep < e && e < .01) {
+                        //         outline = true;
+                        //         break;
+                        //     }
+                        //     ep = e;
+                        //     if(e < EPS || e > camDist*2.)
+                        //         break;
+                        // }
+
+                        // vec3 ro = vec3(0,0,-10);
+                        // vec3 rd = vec3(0,0,-10);
+                        ro.yz *= rot(${u_camAngYZ});
+                        rd.yz *= rot(${u_camAngYZ});
+                        ro.xz *= rot(${u_camAngXZ});
+                        rd.xz *= rot(${u_camAngXZ});
+                        float ii = 0.;
+                        for(float i = 0.; i < 200.; i++) {
+                            ii++;
+                            p = ro + rd * d;
+                            vec3 dp = (step(0., rd) - fract(p)) / rd;
+                            float dpmin;
+                
+                            dpmin = min(min(dp.x,dp.y),dp.z) + 1e-4;
+                
+                            bool breaker = false;
+                            if(sdfVoxel(p) < 0.) {
+                                float ddd = 0.;
+                                for(float backupI = 0.; backupI < 200.;backupI++) {
+                                    ii++;
+                                    p = ro + rd * (d + ddd);
+                                    ddd += e = dist(fract(p) - .5);
+                                    // if(e < .001 || ++i > 200.) { // FIXME restore this i++ condition
+                                    if(e < .001 || ii > 100.) { // налетели на сферу
+                                        n = norm(fract(p) - .5);
+                                        // if(id > 0.)
+                                        //     col *= color(id);
+                                            // col *= n+.5;
+                                        // if(s > 1.)
+                                            // col *= .6;
+                                        breaker = true;
+                                        break;
+                                    }
+                                    if(ddd > dpmin) { // улетели в соседнюю клетку
+                                        break;
+                                    }
+                                }
                             }
-                            ep = e;
-                            if(e < EPS || e > camDist*2.)
+                            if(breaker == true || ii > 100.)
                                 break;
+                
+                            d += dpmin;
                         }
+                
+
                         V c;
-                        if(!outline) {
-                            V col1, col2;
-                            for(int j = 0; j < 5; j++) {
-                                if(colIds[0] == j)
-                                    col1 = gl_z_pt[j];
-                                if(colIds[1] == j)
-                                    col2 = gl_z_pt[j];
-                            }
+                        // if(!outline) {
+                        //     V col1, col2;
+                        //     for(int j = 0; j < 5; j++) {
+                        //         if(colIds[0] == j)
+                        //             col1 = gl_z_pt[j];
+                        //         if(colIds[1] == j)
+                        //             col2 = gl_z_pt[j];
+                        //     }
                     
-                            V col = col1;
+                        //     V col = col1;
                     
-                            // Texturing
-                            //
-                            // layers
-                            if(colIds.z == 1)
-                                if(sin(p.y * PI * 3.) > 0.)
-                                    col = col2;
-                            if(colIds.z == 2)
-                                if(sin((p.x + fract(gl_z_ps[0].x - gl_z_ss[0].x / 2.)) * PI * 2. * 1.5) > 0.)
-                                    col = col2;
+                        //     // Texturing
+                        //     //
+                        //     // layers
+                        //     if(colIds.z == 1)
+                        //         if(sin(p.y * PI * 3.) > 0.)
+                        //             col = col2;
+                        //     if(colIds.z == 2)
+                        //         if(sin((p.x + fract(gl_z_ps[0].x - gl_z_ss[0].x / 2.)) * PI * 2. * 1.5) > 0.)
+                        //             col = col2;
                                     
-                            // pride
-                            if(${features[3]} == 3)
-                                col = sin((L(p) / max(F(${gs}), F(${features[8]})) * 2. - V(0, .3, .6)) * 6.28) * .5 + .5;
+                        //     // pride
+                        //     if(${features[3]} == 3)
+                        //         col = sin((L(p) / max(F(${gs}), F(${features[8]})) * 2. - V(0, .3, .6)) * 6.28) * .5 + .5;
                             
-                            if(eye == 1) {
-                                col = V(0);
-                                V pe = p + fract(${gs}. / 2.);
-                                pe = fract(pe) - .5;
-                                col += step(.3, L(pe.xz));
-                                col += step(-.1, -L(pe.xz + .1));
-                            }
+                        //     if(eye == 1) {
+                        //         col = V(0);
+                        //         V pe = p + fract(${gs}. / 2.);
+                        //         pe = fract(pe) - .5;
+                        //         col += step(.3, L(pe.xz));
+                        //         col += step(-.1, -L(pe.xz + .1));
+                        //     }
                                     
-                            if(colIds.z == -1) {
-                                c = V(${bg})/255.;
-                                if(L(c) > .4){
-                                    c *= S(5., 0., L(uv + v(${features[6]}, -1)));
-                                }
-                                // c = V(1,0,1);
-                                if(${features[3]} == 3){
-                                    c = V(.2);
-                                }
-                                if(sin(L(pow(abs(uv), v(${features[5]}))) * 32.) > 0.)
-                                    c *= .95;
-                            } else {
-                                c = V(1,0,1);
-                                // shading
-                                c = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), N(V(0, 1, 1))) * .2 + .8) * col;
+                        //     if(colIds.z == -1) {
+                        //         // // фончик
+                        //         c = texture2D(tex3d,gl_FragCoord.xy / gl_z_rs).rgb;
                                 
-                                // glare
-                                c += pow(abs(dot(norm(p), N(V(0., 3., 1.)))), 40.);
-                            }
-                            // gazya
-                            if(${features[3]} == 4)
-                                c = (V(7. / j));
-                        }
+                        //         // c = V(${bg})/255.;
+                        //         // if(L(c) > .4){
+                        //         //     c *= S(5., 0., L(uv + v(${features[6]}, -1)));
+                        //         // }
+                        //         // // c = V(1,0,1);
+                        //         // if(${features[3]} == 3){
+                        //         //     c = V(.2);
+                        //         // }
+                        //         // if(sin(L(pow(abs(uv), v(${features[5]}))) * 32.) > 0.)
+                        //         //     c *= .95;
+                        //     } else {
+                        //         c = V(1,0,1);
+                        //         // shading
+                        //         c = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), N(V(0, 1, 1))) * .2 + .8) * col;
+                                
+                        //         // glare
+                        //         c += pow(abs(dot(norm(p), N(V(0., 3., 1.)))), 40.);
+                        //     }
+                        //     // gazya
+                        //     if(${features[3]} == 4)
+                        //         c = (V(7. / j));
+                            c = n * .5 + .5;
+                        // }
                         o += c;
                     }
                     gl_FragColor = vec4(o/gl_z_aa,1);
@@ -772,6 +841,7 @@ function calculateFeatures(tokenData) {
                     rs: regl.prop('r'),
                     pt: u_palette.map(v=>v/255),
                     aa: regl.prop('a'),
+                    tex3d: tex3d,
                 },
                 scissor: {
                     enable: true,
