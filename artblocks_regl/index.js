@@ -1,4 +1,6 @@
 // tokenData.hash = '0x343c93c4b2eaa14b2a21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
+// tokenData.hash = '0x343c21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
+tokenData.hash = '0x230af0a33f31d2808409b8103a87d62ecc2bb78cfd31d134f965de783a7438cd'
 
 /*begin features*/
 function calculateFeatures(tokenData) {

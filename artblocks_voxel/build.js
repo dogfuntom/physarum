@@ -9,7 +9,7 @@ const minifyOptions = {
     dead_code: true,
     // drop_console: true, // FIXME
     drop_console: false, // FIXME
-    drop_debugger: true,
+    // drop_debugger: true, // FIXME
     keep_classnames: false,
     keep_fargs: false,
     keep_fnames: false,

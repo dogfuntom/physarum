@@ -1,4 +1,6 @@
-// tokenData.hash = '0x343c93c4b2eaa14b2a21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
+// tokenData.hash = '0x343c93c4b2ea21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
+// tokenData.hash = '0x343c21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
+tokenData.hash = '0x230af0a33f31d2808409b8103a87d62ecc2bb78cfd31d134f965de783a7438cd'
 
 /*begin features*/
 function calculateFeatures(tokenData) {
@@ -39,6 +41,10 @@ function calculateFeatures(tokenData) {
         let vertices
         let viewBox
         let palette_bg
+        // let tex3dArray = [...Array(300)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
+        // let tex3dArray = [...Array(110)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
+        let tex3dArray = [...Array(110)].map(()=>Array(10).fill([0]))
+        console.log(tex3dArray)
 
         // new
         let size, ts;
@@ -393,7 +399,30 @@ function calculateFeatures(tokenData) {
                                 disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv[0][1]
                             }
                         }
+                        // for(let xx= bv[10][0]-bv[9][0]; xx<bv[10][0]+bv[9][0]; xx++)
+                        // for(let yy= bv[10][1]-bv[9][1]; yy<bv[10][1]+bv[9][1]; yy++)
+                        // for(let zz= bv[10][2]-bv[9][2]; zz<bv[10][2]+bv[9][2]; zz++)
                         blocks.push(bv)
+                        console.log(bv)
+                        
+                        for(let xx=0; xx<bv[9][0]; xx++)
+                        for(let yy=0; yy<bv[9][1]; yy++)
+                        for(let zz=0; zz<bv[9][2]; zz++){
+                            debugger
+                            // console.log('tex3dArray',tex3dArray)
+                            // console.log(bv[9], bv[10])
+                            let zzz = (bv[10][2]-bv[9][2]/2) + zz + gs/2
+                            let xxx = (bv[10][0]-bv[9][0]/2) + xx  + gs
+                            let yyy = (bv[10][1]-bv[9][1]/2) + yy
+                            console.log('xxx, yyy, zzz', xxx, yyy, zzz)
+                            if(yyy > 10) continue
+                            tex3dArray[xxx + 10 * yyy][zzz] = [255]
+                        }
+                        // for(let xx = 0; xx<2; xx++)
+                        // for(let zz = 0; zz<2; zz++)
+                        // for(let yy = 0; yy<2; yy++)
+                        // tex3dArray[zz + 10 * yy][xx] = [255]
+                        
         
                         // push vertices
                         for (let i = 0; i++ < 8;) {
@@ -536,12 +565,9 @@ function calculateFeatures(tokenData) {
             
             canvas.width = size_
             canvas.height = size_
-            let tsTarget = 16
             
             
             var regl = createREGL(gl)
-            let tex3dArray = [...Array(300)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
-            console.log(tex3dArray)
             let tex3d = regl.texture(tex3dArray)
             
             // console.log('regl.limits.maxViewportDims',regl.limits.maxViewportDims)
@@ -588,88 +614,102 @@ function calculateFeatures(tokenData) {
                 }
                 
                 F dist(V p) {
-                    →length(p)-.5;
-                    // colIds = ivec3(0, 0, -1);
-                    // p.x = abs(p.x);
-                    // // F res = 1e5;
+                    // p+=.5;
+                    // →length(fract(p)-.5)-.5;
+                    colIds = ivec3(0, 0, -1);
+                    p.x = abs(p.x);
+                    // F res = 1e5;
                     // F res = p.y + 1.; // floor plane
-                    // for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
-                    //     if(i >= ${blocks.length})
-                    //         break;
-                    //     eye = 0;
-                    //     V pb = p;
-                    //     pb -= gl_z_ps[i];
-                    //     pb.xz *= rot(gl_z_rt[i].x * PI / 2.);
+                    F res = length(p)-.5; // floor plane
+                    for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
+                        if(i >= ${blocks.length})
+                            break;
+                        eye = 0;
+                        V pb = p;
+                        pb -= gl_z_ps[i];
+                        pb.xz *= rot(gl_z_rt[i].x * PI / 2.);
                 
-                    //     // box
-                    //     F cornerR = .01, gap = .008, block;
+                        // box
+                        F cornerR = .01, gap = .008, block;
             
-                    //     V s = gl_z_ss[i] - 2. * (cornerR + gap);
-                    //     block = L(pb - clamp(pb, -s/2., s/2.)) - cornerR * 1.4;
+                        V s = gl_z_ss[i] - 2. * (cornerR + gap);
+                        block = L(pb - clamp(pb, -s/2., s/2.)) - cornerR * 1.4;
                 
-                    //     if(gl_z_rt[i].y == 5.) { // arc
-                    //         F cyl = L(pb.zy) - .5;
-                    //         F box = max(abs(pb.z) - .5, abs(pb.y + gl_z_ss[i].y / 2.) - 1.);
-                    //         F hole = min(cyl, box);
-                    //         block = max(block, -hole);
-                    //     }
+                        if(gl_z_rt[i].y == 5.) { // arc
+                            F cyl = L(pb.zy) - .5;
+                            F box = max(abs(pb.z) - .5, abs(pb.y + gl_z_ss[i].y / 2.) - 1.);
+                            F hole = min(cyl, box);
+                            block = max(block, -hole);
+                        }
     
-                    //     if(gl_z_rt[i].y == 6.) { // pillar
-                    //         F narrow = tube(pb+V(0,1.6-cornerR*2.,0),V(3.55,.15,0));
-                    //         F base = tube(pb+V(0,2.-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
-                    //         block = min(narrow, base);
-                    //     }
+                        if(gl_z_rt[i].y == 6.) { // pillar
+                            F narrow = tube(pb+V(0,1.6-cornerR*2.,0),V(3.55,.15,0));
+                            F base = tube(pb+V(0,2.-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
+                            block = min(narrow, base);
+                        }
 
-                    //     // studs
-                    //     if(gl_z_rt[i].y != 6.) { // not pillar
-                    //         V ps = pb;
-                    //         // repetition
-                    //         v l = gl_z_ss[i].xz;
-                    //         ps.xz += (l - 1.) / 2.;
-                    //         ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
+                        // studs
+                        if(gl_z_rt[i].y != 6.) { // not pillar
+                            V ps = pb;
+                            // repetition
+                            v l = gl_z_ss[i].xz;
+                            ps.xz += (l - 1.) / 2.;
+                            ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
                             
-                    //         // position
-                    //         ps.y -= gl_z_ss[i].y / 2. + .02;
+                            // position
+                            ps.y -= gl_z_ss[i].y / 2. + .02;
     
-                    //         F stud = tube(ps, V(.24, .28, mix(EPS,.18,${features[1]}.)));
-                    //         block = min(stud, block);
-                    //     }
+                            F stud = tube(ps, V(.24, .28, mix(EPS,.18,${features[1]}.)));
+                            block = min(stud, block);
+                        }
                 
-                    //     if(pb.z<.01 && (gl_z_rt[i].y == 3. || gl_z_rt[i].y == 4.)) { // beak
-                    //         block = smax(block,dot(pb,V(0,.78*(7.-2.*gl_z_rt[i].y),-.624))-.39);
-                    //     }
+                        if(pb.z<.01 && (gl_z_rt[i].y == 3. || gl_z_rt[i].y == 4.)) { // beak
+                            block = smax(block,dot(pb,V(0,.78*(7.-2.*gl_z_rt[i].y),-.624))-.39);
+                        }
                 
                 
                 
-                    //     if(gl_z_rt[i].y == 7.) { // eye
-                    //         // F eye_ = cyl(pb, V(.2, .25, .2), cornerR);
-                    //         F eye_ = tube(pb+V(0,.25-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
-                    //         block = eye_;
-                    //         if(eye_ < EPS) {
-                    //             eye = 1;
-                    //         }
-                    //     }
+                        if(gl_z_rt[i].y == 7.) { // eye
+                            // F eye_ = cyl(pb, V(.2, .25, .2), cornerR);
+                            F eye_ = tube(pb+V(0,.25-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
+                            block = eye_;
+                            if(eye_ < EPS) {
+                                eye = 1;
+                            }
+                        }
                 
-                    //     // block = L(pb)-2.;
-                    //     if(block < res) {
-                    //         res = block;
-                    //         colIds = gl_z_cs[i];
-                    //     }
-                    //     if(res < EPS)
-                    //         break;
-                    // }
-                    // →res;
+                        // block = L(pb)-2.;
+                        if(block < res) {
+                            res = block;
+                            colIds = gl_z_cs[i];
+                        }
+                        if(res < EPS)
+                            break;
+                    }
+                    →res;
                 }
                 
                 V norm(V p) {
+                    // p+=.5;
+                    // →normalize(fract(p));
                     v e = v(.01, 0.);
                     →N(V(dist(p + e.xyy) - dist(p - e.xyy), dist(p + e.yxy) - dist(p - e.yxy), dist(p + e.yyx) - dist(p - e.yyx)));
                 }
 
                 float sdfVoxel(vec3 p){
-                    p = floor(p) + .5;
-                    // return fract(9e5*sin(9e5*dot(p,vec3(7,2,3))))-.5;
-                    return length(p) - 2.;
+                    p.xz = p.zx;
+                    p.x -= 2.;
+                    p.z = abs(p.z);
+                    p.x += 4.;
+                    p.z += 4.;
+                    p = floor(p);
+                    vec3 boundingBox = vec3(10,11,10);
+                    if(fract(p/boundingBox) != p/boundingBox) return 1.;
+                    vec2 vox, texSize = vec2(boundingBox.x, boundingBox.y*boundingBox.z);
+                    vox.x = p.x;
+                    vox.y = p.z + p.y * 10.; // FIXME
+                    vec2 voxN = (vox+.5) / texSize;
+                    return .5 - texture2D(tex3d, voxN).r; // is full
                 }
 
                 void main() {
@@ -692,8 +732,9 @@ function calculateFeatures(tokenData) {
                         uv += pos * 2. / gl_z_rs;
         
                         V n, p, ro = V(uv * F(${viewBox[6]}) +
+                        // V n, p, ro = V(uv * 4. * F(${viewBox[6]}) + // FIXME remore * 4.
                             v(${viewBox[7]},
-                            ${viewBox[8]}), -camDist), 
+                            ${viewBox[8]}), -camDist),
                            rd = V(0, 0, .9 + .1 * fract(1e3 * sin(1e3 * fract(L(uv)))));
                         bool outline = false;
 
@@ -738,13 +779,12 @@ function calculateFeatures(tokenData) {
                             bool breaker = false;
                             if(sdfVoxel(p) < 0.) {
                                 float ddd = 0.;
-                                for(float backupI = 0.; backupI < 200.;backupI++) {
+                                for(float backupI = 0.; backupI < 200.; backupI++) {
                                     ii++;
                                     p = ro + rd * (d + ddd);
-                                    ddd += e = dist(fract(p) - .5);
+                                    ddd += e = dist(p);
                                     // if(e < .001 || ++i > 200.) { // FIXME restore this i++ condition
-                                    if(e < .001 || ii > 100.) { // налетели на сферу
-                                        n = norm(fract(p) - .5);
+                                    if(e < .001 || ii > 200.) { // налетели на сферу
                                         // if(id > 0.)
                                         //     col *= color(id);
                                             // col *= n+.5;
@@ -763,69 +803,72 @@ function calculateFeatures(tokenData) {
                 
                             d += dpmin;
                         }
-                
 
                         V c;
-                        // if(!outline) {
-                        //     V col1, col2;
-                        //     for(int j = 0; j < 5; j++) {
-                        //         if(colIds[0] == j)
-                        //             col1 = gl_z_pt[j];
-                        //         if(colIds[1] == j)
-                        //             col2 = gl_z_pt[j];
-                        //     }
+                        if(!outline) {
+                            V col1, col2;
+                            for(int j = 0; j < 5; j++) {
+                                if(colIds[0] == j)
+                                    col1 = gl_z_pt[j];
+                                if(colIds[1] == j)
+                                    col2 = gl_z_pt[j];
+                            }
                     
-                        //     V col = col1;
+                            V col = col1;
                     
-                        //     // Texturing
-                        //     //
-                        //     // layers
-                        //     if(colIds.z == 1)
-                        //         if(sin(p.y * PI * 3.) > 0.)
-                        //             col = col2;
-                        //     if(colIds.z == 2)
-                        //         if(sin((p.x + fract(gl_z_ps[0].x - gl_z_ss[0].x / 2.)) * PI * 2. * 1.5) > 0.)
-                        //             col = col2;
+                            // Texturing
+                            //
+                            // layers
+                            if(colIds.z == 1)
+                                if(sin(p.y * PI * 3.) > 0.)
+                                    col = col2;
+                            if(colIds.z == 2)
+                                if(sin((p.x + fract(gl_z_ps[0].x - gl_z_ss[0].x / 2.)) * PI * 2. * 1.5) > 0.)
+                                    col = col2;
                                     
-                        //     // pride
-                        //     if(${features[3]} == 3)
-                        //         col = sin((L(p) / max(F(${gs}), F(${features[8]})) * 2. - V(0, .3, .6)) * 6.28) * .5 + .5;
+                            // pride
+                            if(${features[3]} == 3)
+                                col = sin((L(p) / max(F(${gs}), F(${features[8]})) * 2. - V(0, .3, .6)) * 6.28) * .5 + .5;
                             
-                        //     if(eye == 1) {
-                        //         col = V(0);
-                        //         V pe = p + fract(${gs}. / 2.);
-                        //         pe = fract(pe) - .5;
-                        //         col += step(.3, L(pe.xz));
-                        //         col += step(-.1, -L(pe.xz + .1));
-                        //     }
+                            if(eye == 1) {
+                                col = V(0);
+                                V pe = p + fract(${gs}. / 2.);
+                                pe = fract(pe) - .5;
+                                col += step(.3, L(pe.xz));
+                                col += step(-.1, -L(pe.xz + .1));
+                            }
                                     
-                        //     if(colIds.z == -1) {
-                        //         // // фончик
-                        //         c = texture2D(tex3d,gl_FragCoord.xy / gl_z_rs).rgb;
+                            if(colIds.z == -1) {
+                                // // фончик
+                                c = texture2D(tex3d,gl_FragCoord.xy / gl_z_rs).rgb;
                                 
-                        //         // c = V(${bg})/255.;
-                        //         // if(L(c) > .4){
-                        //         //     c *= S(5., 0., L(uv + v(${features[6]}, -1)));
-                        //         // }
-                        //         // // c = V(1,0,1);
-                        //         // if(${features[3]} == 3){
-                        //         //     c = V(.2);
-                        //         // }
-                        //         // if(sin(L(pow(abs(uv), v(${features[5]}))) * 32.) > 0.)
-                        //         //     c *= .95;
-                        //     } else {
-                        //         c = V(1,0,1);
-                        //         // shading
-                        //         c = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), N(V(0, 1, 1))) * .2 + .8) * col;
+                                // c = V(${bg})/255.;
+                                // if(L(c) > .4){
+                                //     c *= S(5., 0., L(uv + v(${features[6]}, -1)));
+                                // }
+                                // // c = V(1,0,1);
+                                // if(${features[3]} == 3){
+                                //     c = V(.2);
+                                // }
+                                // if(sin(L(pow(abs(uv), v(${features[5]}))) * 32.) > 0.)
+                                //     c *= .95;
+                            } else {
+                                c = V(1,0,1);
+                                // shading
+                                c = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), N(V(0, 1, 1))) * .2 + .8) * col;
                                 
-                        //         // glare
-                        //         c += pow(abs(dot(norm(p), N(V(0., 3., 1.)))), 40.);
-                        //     }
-                        //     // gazya
-                        //     if(${features[3]} == 4)
-                        //         c = (V(7. / j));
-                            c = n * .5 + .5;
-                        // }
+                                // glare
+                                c += pow(abs(dot(norm(p), N(V(0., 3., 1.)))), 40.);
+                            }
+                            // gazya
+                            if(${features[3]} == 4)
+                                c = (V(7. / j));
+                            }
+                        // n = norm(p);
+                        // c = n * .5 + .5;
+                        // // texture debug
+                        // c.g += fract(gl_FragCoord.y / gl_z_rs * 11.) * fract(gl_FragCoord.y / gl_z_rs * 110.) * fract(gl_FragCoord.x / gl_z_rs * 10.);
+                        // c.g += .5 * texture2D(tex3d, gl_FragCoord.xy / gl_z_rs).r;
                         o += c;
                     }
                     gl_FragColor = vec4(o/gl_z_aa,1);
@@ -866,7 +909,7 @@ function calculateFeatures(tokenData) {
             if(params_aa)aa = Number(params_aa)
             
             let steps = 1
-            ts=32
+            ts=256
 
             // program({r: size_, x: 0, y: 0, t:size_/2, a: 1})
             // program({r: size_, x: size_/2, y: 0, t:size_/2, a: 1})

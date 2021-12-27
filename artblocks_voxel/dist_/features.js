@@ -1,4 +1,6 @@
-// tokenData.hash = '0x343c93c4b2eaa14b2a21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
+// tokenData.hash = '0x343c93c4b2ea21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
+// tokenData.hash = '0x343c21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
+tokenData.hash = '0x230af0a33f31d2808409b8103a87d62ecc2bb78cfd31d134f965de783a7438cd'
 
 /*begin features*/
 function calculateFeatures(tokenData) {
@@ -33,6 +35,10 @@ function calculateFeatures(tokenData) {
         let vertices
         let viewBox
         let palette_bg
+        // let tex3dArray = [...Array(300)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
+        // let tex3dArray = [...Array(110)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
+        let tex3dArray = [...Array(110)].map(()=>Array(10).fill([0]))
+        console.log(tex3dArray)
 
         // new
         let size, ts;
@@ -387,7 +393,30 @@ function calculateFeatures(tokenData) {
                                 disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv[0][1]
                             }
                         }
+                        // for(let xx= bv[10][0]-bv[9][0]; xx<bv[10][0]+bv[9][0]; xx++)
+                        // for(let yy= bv[10][1]-bv[9][1]; yy<bv[10][1]+bv[9][1]; yy++)
+                        // for(let zz= bv[10][2]-bv[9][2]; zz<bv[10][2]+bv[9][2]; zz++)
                         blocks.push(bv)
+                        console.log(bv)
+                        
+                        for(let xx=0; xx<bv[9][0]; xx++)
+                        for(let yy=0; yy<bv[9][1]; yy++)
+                        for(let zz=0; zz<bv[9][2]; zz++){
+                            debugger
+                            // console.log('tex3dArray',tex3dArray)
+                            // console.log(bv[9], bv[10])
+                            let zzz = (bv[10][2]-bv[9][2]/2) + zz + gs/2
+                            let xxx = (bv[10][0]-bv[9][0]/2) + xx  + gs
+                            let yyy = (bv[10][1]-bv[9][1]/2) + yy
+                            console.log('xxx, yyy, zzz', xxx, yyy, zzz)
+                            if(yyy > 10) continue
+                            tex3dArray[xxx + 10 * yyy][zzz] = [255]
+                        }
+                        // for(let xx = 0; xx<2; xx++)
+                        // for(let zz = 0; zz<2; zz++)
+                        // for(let yy = 0; yy<2; yy++)
+                        // tex3dArray[zz + 10 * yy][xx] = [255]
+                        
         
                         // push vertices
                         for (let i = 0; i++ < 8;) {
