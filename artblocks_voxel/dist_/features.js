@@ -1,6 +1,6 @@
 // tokenData.hash = '0x343c93c4b2ea21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
 // tokenData.hash = '0x343c21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
-// tokenData.hash = '0x42351030c54387c8c61918382c3884956b7a69b70163d6aa574d2230a30556b5'
+// tokenData.hash = '0xcb210748dc9b93033409ce9cf53de9fec5b261fc7ba0287fe1d664c041b2cc36'
 
 /*begin features*/
 function calculateFeatures(tokenData) {
@@ -36,8 +36,8 @@ function calculateFeatures(tokenData) {
         let viewBox
         let palette_bg
         // let tex3dArray = [...Array(300)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
-        // let tex3dArray = [...Array(110.)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
-        let tex3dArray = [...Array(110.)].map(()=>Array(10).fill([0]))
+        // let tex3dArray = [...Array(1000.)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
+        let tex3dArray = [...Array(1000.)].map(()=>Array(10).fill([0]))
         console.log(tex3dArray)
 
         // new

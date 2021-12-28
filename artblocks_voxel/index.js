@@ -1,6 +1,6 @@
 // tokenData.hash = '0x343c93c4b2ea21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
 // tokenData.hash = '0x343c21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
-// tokenData.hash = '0x42351030c54387c8c61918382c3884956b7a69b70163d6aa574d2230a30556b5'
+// tokenData.hash = '0xcb210748dc9b93033409ce9cf53de9fec5b261fc7ba0287fe1d664c041b2cc36'
 
 /*begin features*/
 function calculateFeatures(tokenData) {
@@ -42,8 +42,8 @@ function calculateFeatures(tokenData) {
         let viewBox
         let palette_bg
         // let tex3dArray = [...Array(300)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
-        // let tex3dArray = [...Array(110.)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
-        let tex3dArray = [...Array(110.)].map(()=>Array(10).fill([0]))
+        // let tex3dArray = [...Array(1000.)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
+        let tex3dArray = [...Array(1000.)].map(()=>Array(10).fill([0]))
         console.log(tex3dArray)
 
         // new
@@ -615,7 +615,6 @@ function calculateFeatures(tokenData) {
                 }
                 
                 F dist(V p) {
-                    // p.xz+=.5;
                     // →length(fract(p)-.5)-.5;
                     colIds = ivec3(0, 0, -1);
                     p.x = abs(p.x);
@@ -700,10 +699,10 @@ function calculateFeatures(tokenData) {
                 }
 
                 float sdfVoxel(vec3 p){
+                    p.xz += fract(float(${gs/2}));  // ODD
                     p.xz = p.zx;
                     p.z = abs(p.z);
-                    // p.x -= .5;
-                    // p.z -= .5;
+                    p.zx -= fract(float(${gs/2})); // ODD
                     // p.x += ${gs}.-1.;
                     // p.z += ${gs}.;
                     p.x += 5.;
@@ -711,7 +710,7 @@ function calculateFeatures(tokenData) {
                     p = floor(p+vec3(0,0,.0));
                     // p.x -= .5;
                     // p.z -= .5;
-                    vec3 boundingBox = vec3(10,110 / 10,10);
+                    vec3 boundingBox = vec3(10,1000 / 10,10);
                     if(fract(p/boundingBox) != p/boundingBox) return 1.;
                     vec2 vox, texSize = vec2(boundingBox.x, boundingBox.y*boundingBox.z);
                     vox.x = p.x;
@@ -780,6 +779,7 @@ function calculateFeatures(tokenData) {
                         for(float i = 0.; i < 200.; i++) {
                             ii++;
                             p = ro + rd * d;
+                            p.xz -= fract(float(${gs/2})); // ODD
                             vec3 dp = (step(0., rd) - fract(p)) / rd;
                             float dpmin;
                 
@@ -877,7 +877,7 @@ function calculateFeatures(tokenData) {
                         // c = n;
                         // // texture debug
                         // c.g = fract(gl_FragCoord.y / gl_z_rs * 11.);
-                        // c.g *= pow(fract(gl_FragCoord.y / gl_z_rs * 110.),8.);// * fract(gl_FragCoord.x / gl_z_rs * 10.);
+                        // c.g *= pow(fract(gl_FragCoord.y / gl_z_rs * 1000.),8.);// * fract(gl_FragCoord.x / gl_z_rs * 10.);
                         // c.g += step(0.001,texture2D(tex3d, gl_FragCoord.xy / gl_z_rs).r) * 8.;
                         // c *= 30./ii;
                         o += c;
