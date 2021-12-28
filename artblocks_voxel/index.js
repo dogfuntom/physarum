@@ -1,6 +1,6 @@
 // tokenData.hash = '0x343c93c4b2ea21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
 // tokenData.hash = '0x343c21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
-tokenData.hash = '0x230af0a33f31d2808409b8103a87d62ecc2bb78cfd31d134f965de783a7438cd'
+// tokenData.hash = '0x42351030c54387c8c61918382c3884956b7a69b70163d6aa574d2230a30556b5'
 
 /*begin features*/
 function calculateFeatures(tokenData) {
@@ -42,8 +42,8 @@ function calculateFeatures(tokenData) {
         let viewBox
         let palette_bg
         // let tex3dArray = [...Array(300)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
-        // let tex3dArray = [...Array(110)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
-        let tex3dArray = [...Array(110)].map(()=>Array(10).fill([0]))
+        // let tex3dArray = [...Array(110.)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
+        let tex3dArray = [...Array(110.)].map(()=>Array(10).fill([0]))
         console.log(tex3dArray)
 
         // new
@@ -108,7 +108,8 @@ function calculateFeatures(tokenData) {
                 // RL([
                 [ // cutie
                     4,
-                    3 + R() * 4 | 0,
+                    3 + R() * 4 | 0, // FIXME restore
+                    // 6 + R() * 0,
                     0,
                     1,
                     1,
@@ -138,8 +139,10 @@ function calculateFeatures(tokenData) {
         
             // features[4] = R() ** .4 * presets.length | 0;
             features[4] = M.sqrt(1-(R()-1)**2) * presets.length | 0;
+            // features[4] = 1; // FIXME remove
           
             ([ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra ] = presets[features[4]])
+            console.log('presets[features[4]',presets[features[4]])
             numberOfBlockTypes = 2 + R() * 2 | 0
         
             blocks = [];
@@ -408,9 +411,9 @@ function calculateFeatures(tokenData) {
                             debugger
                             // console.log('tex3dArray',tex3dArray)
                             // console.log(bv[9], bv[10])
-                            let zzz = (bv[10][2]-bv[9][2]/2) + zz + gs/2
-                            let xxx = (bv[10][0]-bv[9][0]/2) + xx  + gs
-                            let yyy = (bv[10][1]-bv[9][1]/2) + yy
+                            let zzz = (bv[10][2]-bv[9][2]/2) + zz + 5 | 0
+                            let xxx = (bv[10][0]-bv[9][0]/2) + xx  + 5 | 0
+                            let yyy = (bv[10][1]-bv[9][1]/2) + yy | 0
                             console.log('xxx, yyy, zzz', xxx, yyy, zzz)
                             if(yyy > 10) continue
                             tex3dArray[xxx + 10 * yyy][zzz] = [255 * (blocks.length+1) / 64]
@@ -612,7 +615,7 @@ function calculateFeatures(tokenData) {
                 }
                 
                 F dist(V p) {
-                    // p+=.5;
+                    // p.xz+=.5;
                     // →length(fract(p)-.5)-.5;
                     colIds = ivec3(0, 0, -1);
                     p.x = abs(p.x);
@@ -698,12 +701,17 @@ function calculateFeatures(tokenData) {
 
                 float sdfVoxel(vec3 p){
                     p.xz = p.zx;
-                    p.x -= 2.;
                     p.z = abs(p.z);
-                    p.x += 4.;
-                    p.z += 4.;
-                    p = floor(p);
-                    vec3 boundingBox = vec3(10,11,10);
+                    // p.x -= .5;
+                    // p.z -= .5;
+                    // p.x += ${gs}.-1.;
+                    // p.z += ${gs}.;
+                    p.x += 5.;
+                    p.z += 5.;
+                    p = floor(p+vec3(0,0,.0));
+                    // p.x -= .5;
+                    // p.z -= .5;
+                    vec3 boundingBox = vec3(10,110 / 10,10);
                     if(fract(p/boundingBox) != p/boundingBox) return 1.;
                     vec2 vox, texSize = vec2(boundingBox.x, boundingBox.y*boundingBox.z);
                     vox.x = p.x;
@@ -866,10 +874,12 @@ function calculateFeatures(tokenData) {
                                 c = (V(7. / j));
                             }
                         // n = norm(p);
-                        // c = n * .5 + .5;
+                        // c = n;
                         // // texture debug
-                        c.g += fract(gl_FragCoord.y / gl_z_rs * 11.) * fract(gl_FragCoord.y / gl_z_rs * 110.) * fract(gl_FragCoord.x / gl_z_rs * 10.);
-                        c.g += .5 * texture2D(tex3d, gl_FragCoord.xy / gl_z_rs).r *8.;
+                        // c.g = fract(gl_FragCoord.y / gl_z_rs * 11.);
+                        // c.g *= pow(fract(gl_FragCoord.y / gl_z_rs * 110.),8.);// * fract(gl_FragCoord.x / gl_z_rs * 10.);
+                        // c.g += step(0.001,texture2D(tex3d, gl_FragCoord.xy / gl_z_rs).r) * 8.;
+                        // c *= 30./ii;
                         o += c;
                     }
                     gl_FragColor = vec4(o/gl_z_aa,1);
