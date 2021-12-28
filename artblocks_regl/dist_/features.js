@@ -1,7 +1,9 @@
 // tokenData.hash = '0x343c93c4b2eaa14b2a21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
 // tokenData.hash = '0x343c21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
-tokenData.hash = '0x230af0a33f31d2808409b8103a87d62ecc2bb78cfd31d134f965de783a7438cd'
-
+// tokenData.hash = '0xbd9fcc1aff7d2f69742964455faba73442a9a61ea16ab4b0b6d6349a7e9e1e57'
+if (window.location.hash) {
+    tokenData.hash = window.location.hash.slice(1)
+}
 /*begin features*/
 function calculateFeatures(tokenData) {
     /*end features*/ 
