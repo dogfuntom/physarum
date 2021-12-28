@@ -399,12 +399,9 @@ function calculateFeatures(tokenData) {
                                 disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv[0][1]
                             }
                         }
-                        // for(let xx= bv[10][0]-bv[9][0]; xx<bv[10][0]+bv[9][0]; xx++)
-                        // for(let yy= bv[10][1]-bv[9][1]; yy<bv[10][1]+bv[9][1]; yy++)
-                        // for(let zz= bv[10][2]-bv[9][2]; zz<bv[10][2]+bv[9][2]; zz++)
                         blocks.push(bv)
                         console.log(bv)
-                        
+
                         for(let xx=0; xx<bv[9][0]; xx++)
                         for(let yy=0; yy<bv[9][1]; yy++)
                         for(let zz=0; zz<bv[9][2]; zz++){
@@ -416,7 +413,7 @@ function calculateFeatures(tokenData) {
                             let yyy = (bv[10][1]-bv[9][1]/2) + yy
                             console.log('xxx, yyy, zzz', xxx, yyy, zzz)
                             if(yyy > 10) continue
-                            tex3dArray[xxx + 10 * yyy][zzz] = [255]
+                            tex3dArray[xxx + 10 * yyy][zzz] = [255 * (blocks.length+1) / 64]
                         }
                         // for(let xx = 0; xx<2; xx++)
                         // for(let zz = 0; zz<2; zz++)
@@ -604,6 +601,7 @@ function calculateFeatures(tokenData) {
                 ivec3 colIds;
                 F gl;
                 F camDist = 2e1;
+                int blockId;
                 
                 int eye;
     
@@ -624,6 +622,8 @@ function calculateFeatures(tokenData) {
                     for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
                         if(i >= ${blocks.length})
                             break;
+                        if(i != blockId)
+                            continue;
                         eye = 0;
                         V pb = p;
                         pb -= gl_z_ps[i];
@@ -709,7 +709,9 @@ function calculateFeatures(tokenData) {
                     vox.x = p.x;
                     vox.y = p.z + p.y * 10.; // FIXME
                     vec2 voxN = (vox+.5) / texSize;
-                    return .5 - texture2D(tex3d, voxN).r; // is full
+                    blockId = int(texture2D(tex3d, voxN).r * 64.) - 1;
+                    // if(blockId == 2) discard;
+                    return -float(blockId); // is full
                 }
 
                 void main() {
@@ -739,7 +741,6 @@ function calculateFeatures(tokenData) {
                         bool outline = false;
 
                         // RAYMARCH
-
 
                         // TODO ro, rd
 
@@ -867,8 +868,8 @@ function calculateFeatures(tokenData) {
                         // n = norm(p);
                         // c = n * .5 + .5;
                         // // texture debug
-                        // c.g += fract(gl_FragCoord.y / gl_z_rs * 11.) * fract(gl_FragCoord.y / gl_z_rs * 110.) * fract(gl_FragCoord.x / gl_z_rs * 10.);
-                        // c.g += .5 * texture2D(tex3d, gl_FragCoord.xy / gl_z_rs).r;
+                        c.g += fract(gl_FragCoord.y / gl_z_rs * 11.) * fract(gl_FragCoord.y / gl_z_rs * 110.) * fract(gl_FragCoord.x / gl_z_rs * 10.);
+                        c.g += .5 * texture2D(tex3d, gl_FragCoord.xy / gl_z_rs).r *8.;
                         o += c;
                     }
                     gl_FragColor = vec4(o/gl_z_aa,1);

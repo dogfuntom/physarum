@@ -393,12 +393,9 @@ function calculateFeatures(tokenData) {
                                 disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv[0][1]
                             }
                         }
-                        // for(let xx= bv[10][0]-bv[9][0]; xx<bv[10][0]+bv[9][0]; xx++)
-                        // for(let yy= bv[10][1]-bv[9][1]; yy<bv[10][1]+bv[9][1]; yy++)
-                        // for(let zz= bv[10][2]-bv[9][2]; zz<bv[10][2]+bv[9][2]; zz++)
                         blocks.push(bv)
                         console.log(bv)
-                        
+
                         for(let xx=0; xx<bv[9][0]; xx++)
                         for(let yy=0; yy<bv[9][1]; yy++)
                         for(let zz=0; zz<bv[9][2]; zz++){
@@ -410,7 +407,7 @@ function calculateFeatures(tokenData) {
                             let yyy = (bv[10][1]-bv[9][1]/2) + yy
                             console.log('xxx, yyy, zzz', xxx, yyy, zzz)
                             if(yyy > 10) continue
-                            tex3dArray[xxx + 10 * yyy][zzz] = [255]
+                            tex3dArray[xxx + 10 * yyy][zzz] = [255 * (blocks.length+1) / 64]
                         }
                         // for(let xx = 0; xx<2; xx++)
                         // for(let zz = 0; zz<2; zz++)
