@@ -1,6 +1,6 @@
 // tokenData.hash = '0x343c93c4b2ea21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
 // tokenData.hash = '0x343c21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
-// tokenData.hash = '0xcb210748dc9b93033409ce9cf53de9fec5b261fc7ba0287fe1d664c041b2cc36'
+tokenData.hash = '0xde76d439c0ee40b11ab2f13bf801a06dc75f61a7d3bc1cc8244b43e84d767dae'
 
 /*begin features*/
 function calculateFeatures(tokenData) {
@@ -402,15 +402,11 @@ function calculateFeatures(tokenData) {
                         for(let xx=0; xx<bv[9][0]; xx++)
                         for(let yy=0; yy<bv[9][1]; yy++)
                         for(let zz=0; zz<bv[9][2]; zz++){
-                            debugger
-                            // console.log('tex3dArray',tex3dArray)
-                            // console.log(bv[9], bv[10])
                             let zzz = (bv[10][2]-bv[9][2]/2) + zz + 5 | 0
                             let xxx = (bv[10][0]-bv[9][0]/2) + xx  + 5 | 0
                             let yyy = (bv[10][1]-bv[9][1]/2) + yy | 0
                             console.log('xxx, yyy, zzz', xxx, yyy, zzz)
-                            if(yyy > 10) continue
-                            tex3dArray[xxx + 10 * yyy][zzz] = [255 * (blocks.length+1) / 64]
+                            tex3dArray[xxx + 10 * yyy][zzz] = [255 * (blocks.length+2) / 64]
                         }
                         // for(let xx = 0; xx<2; xx++)
                         // for(let zz = 0; zz<2; zz++)
