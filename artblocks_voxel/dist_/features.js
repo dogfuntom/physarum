@@ -1,7 +1,7 @@
 // tokenData.hash = '0x343c93c4b2ea21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
 // tokenData.hash = '0x343c21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
 
-// tokenData.hash = '0x728dde77229abe77b22883f02d9d9e61e77676bae86bb1f2f1b712abbfa7aba5'
+// tokenData.hash = '0x0c91417602b6e1469a56fc5ff264310cc6b57490079a3a164ecc723c79143a09' // не совпадают ножка арки и кубик под ней
 
 /*begin features*/
 function calculateFeatures(tokenData) {

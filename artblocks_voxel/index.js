@@ -1,7 +1,7 @@
 // tokenData.hash = '0x343c93c4b2ea21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
 // tokenData.hash = '0x343c21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
 
-// tokenData.hash = '0x728dde77229abe77b22883f02d9d9e61e77676bae86bb1f2f1b712abbfa7aba5'
+// tokenData.hash = '0x0c91417602b6e1469a56fc5ff264310cc6b57490079a3a164ecc723c79143a09' // не совпадают ножка арки и кубик под ней
 
 /*begin features*/
 function calculateFeatures(tokenData) {
@@ -605,10 +605,10 @@ function calculateFeatures(tokenData) {
                 F gl;
                 F camDist = 2e1;
                 ivec2 blockId;
-                F cornerR = .001, gap = .015, block;
+                F cornerR = .00001, gap = .01, block;
                 F outlineWidth = .02;//((cornerR+gap)*sqrt(2.) - cornerR);
                 
-                int eye;
+                int eye = 0;
     
                 F tube(V p, V s){
                     v po = v(L(p.xz), p.y - clamp(p.y, EPS, s.x));
@@ -628,7 +628,6 @@ function calculateFeatures(tokenData) {
                         if(i != blockId.x - 1 && i != blockId.y - 1)
                         // if(i != blockId.y - 1)
                             continue;
-                        eye = 0;
                         V pb = p;
                         pb -= gl_z_ps[i];
                         pb.xz *= rot(gl_z_rt[i].x * PI / 2.);
@@ -680,6 +679,7 @@ function calculateFeatures(tokenData) {
                             block = eye_;
                             if(eye_ < EPS) {
                                 eye = 1;
+                                // discard;
                             }
                         }
                 
