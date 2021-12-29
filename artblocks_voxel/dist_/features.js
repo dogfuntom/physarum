@@ -1,6 +1,6 @@
 // tokenData.hash = '0x343c93c4b2ea21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
 // tokenData.hash = '0x343c21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
-tokenData.hash = '0xde76d439c0ee40b11ab2f13bf801a06dc75f61a7d3bc1cc8244b43e84d767dae'
+// tokenData.hash = '0x010ee890facc6bee28fb97146ccb9b536669862af6068411c5a40c2184ecf224'
 
 /*begin features*/
 function calculateFeatures(tokenData) {
@@ -397,16 +397,16 @@ function calculateFeatures(tokenData) {
                             }
                         }
                         blocks.push(bv)
-                        console.log(bv)
+                        // console.log(bv)
 
                         for(let xx=0; xx<bv[9][0]; xx++)
                         for(let yy=0; yy<bv[9][1]; yy++)
                         for(let zz=0; zz<bv[9][2]; zz++){
-                            let zzz = (bv[10][2]-bv[9][2]/2) + zz + 5 | 0
                             let xxx = (bv[10][0]-bv[9][0]/2) + xx  + 5 | 0
                             let yyy = (bv[10][1]-bv[9][1]/2) + yy | 0
-                            console.log('xxx, yyy, zzz', xxx, yyy, zzz)
-                            tex3dArray[xxx + 10 * yyy][zzz] = [255 * (blocks.length+2) / 64]
+                            let zzz = (bv[10][2]-bv[9][2]/2) + zz + 5 | 0
+                            // console.log('xxx, yyy, zzz', xxx, yyy, zzz)
+                            tex3dArray[zzz + 10 * yyy][xxx] = [255 * (blocks.length+1) / 64]
                         }
                         // for(let xx = 0; xx<2; xx++)
                         // for(let zz = 0; zz<2; zz++)
