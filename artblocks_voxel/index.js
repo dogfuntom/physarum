@@ -1,6 +1,7 @@
 // tokenData.hash = '0x343c93c4b2ea21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
 // tokenData.hash = '0x343c21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
-// tokenData.hash = '0x010ee890facc6bee28fb97146ccb9b536669862af6068411c5a40c2184ecf224'
+
+// tokenData.hash = '0x728dde77229abe77b22883f02d9d9e61e77676bae86bb1f2f1b712abbfa7aba5'
 
 /*begin features*/
 function calculateFeatures(tokenData) {
@@ -43,7 +44,7 @@ function calculateFeatures(tokenData) {
         let palette_bg
         // let tex3dArray = [...Array(300)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
         // let tex3dArray = [...Array(1000.)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
-        let tex3dArray = [...Array(1000.)].map(()=>Array(10).fill([0]))
+        let tex3dArray = [...Array(1000.)].map(()=>[...Array(10)].map(_=>[0,0,0]))
         console.log(tex3dArray)
 
         // new
@@ -412,8 +413,11 @@ function calculateFeatures(tokenData) {
                             let yyy = (bv[10][1]-bv[9][1]/2) + yy | 0
                             let zzz = (bv[10][2]-bv[9][2]/2) + zz + 5 | 0
                             // console.log('xxx, yyy, zzz', xxx, yyy, zzz)
-                            tex3dArray[zzz + 10 * yyy][xxx] = [255 * (blocks.length+1) / 64]
+                            tex3dArray[zzz + 10 * yyy][xxx][0] = 
+                            tex3dArray[zzz + 10 * yyy + 10][xxx][1] = 
+                            255 * (blocks.length+1) / 64
                         }
+                        console.log(tex3dArray)
                         // for(let xx = 0; xx<2; xx++)
                         // for(let zz = 0; zz<2; zz++)
                         // for(let yy = 0; yy<2; yy++)
@@ -582,7 +586,7 @@ function calculateFeatures(tokenData) {
                 #define v vec2
                 mat2 rot(F a) {→mat2(cos(a),-sin(a),sin(a),cos(a));} // FIXME
                 // #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
-                #define EPS .001
+                #define EPS .0001
                 F sabs(F p) {→sqrt(abs(p)*abs(p)+5e-5);}
                 F smax(F a, F b) {→(a+b+sabs(a-b))*.5;}
                 
@@ -600,7 +604,9 @@ function calculateFeatures(tokenData) {
                 ivec3 colIds;
                 F gl;
                 F camDist = 2e1;
-                int blockId;
+                ivec2 blockId;
+                F cornerR = .001, gap = .015, block;
+                F outlineWidth = .02;//((cornerR+gap)*sqrt(2.) - cornerR);
                 
                 int eye;
     
@@ -612,7 +618,6 @@ function calculateFeatures(tokenData) {
                 
                 F dist(V p) {
                     // →length(fract(p)-.5)-.5;
-                    colIds = ivec3(0, 0, -1);
                     p.x = abs(p.x);
                     // F res = 1e5;
                     F res = p.y + 1.; // floor plane
@@ -620,15 +625,16 @@ function calculateFeatures(tokenData) {
                     for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
                         if(i >= ${blocks.length})
                             break;
-                        // if(i != blockId)
-                        //     continue;
+                        if(i != blockId.x - 1 && i != blockId.y - 1)
+                        // if(i != blockId.y - 1)
+                            continue;
                         eye = 0;
                         V pb = p;
                         pb -= gl_z_ps[i];
                         pb.xz *= rot(gl_z_rt[i].x * PI / 2.);
                         
                         // box
-                        F cornerR = .01, gap = .008, block;
+                        // F cornerR = .01, gap = .008, block;
                         
                         V s = gl_z_ss[i] - 2. * (cornerR + gap);
                         block = L(pb - clamp(pb, -s/2., s/2.)) - cornerR * 1.4;
@@ -679,10 +685,10 @@ function calculateFeatures(tokenData) {
                 
                         // block = L(pb)-2.;
                         if(block < res) {
+                            colIds = gl_z_cs[i];
                             res = block;
                         }
                         if(res < EPS)
-                            colIds = gl_z_cs[i];
                             break;
                     }
                     →res;
@@ -695,7 +701,7 @@ function calculateFeatures(tokenData) {
                     →N(V(dist(p + e.xyy) - dist(p - e.xyy), dist(p + e.yxy) - dist(p - e.yxy), dist(p + e.yyx) - dist(p - e.yyx)));
                 }
 
-                float sdfVoxel(vec3 p){
+                vec2 sdfVoxel(vec3 p){
                     p.xz += fract(float(${gs/2}));  // ODD
                     // p.xz = p.zx;
                     p.x = abs(p.x);
@@ -705,17 +711,18 @@ function calculateFeatures(tokenData) {
                     p.x += 5.;
                     p.z += 5.;
                     p = floor(p+vec3(0,0,.0));
+                    if(p.y < 0.) return v(0);
                     // p.x -= .5;
                     // p.z -= .5;
                     vec3 boundingBox = vec3(10,1000 / 10,10);
-                    if(fract(p/boundingBox) != p/boundingBox) return 1.;
+                    if(fract(p/boundingBox) != p/boundingBox) return -v(1.);
                     vec2 vox, texSize = vec2(boundingBox.x, boundingBox.y*boundingBox.z);
                     vox.x = p.x;
                     vox.y = p.z + p.y * 10.; // FIXME
                     vec2 voxN = (vox+.5) / texSize;
-                    blockId = int(texture2D(tex3d, voxN).r * 64.);
+                    blockId = ivec2(texture2D(tex3d, voxN).rg * 64.);
                     // if(blockId == 2) discard;
-                    return -float(blockId); // is full
+                    return vec2(blockId); // is full
                 }
 
                 void main() {
@@ -726,7 +733,7 @@ function calculateFeatures(tokenData) {
                     for(F A = 0.; A < 8.; A++){
                         if(A >= gl_z_aa) break;
                         gl = 0.;
-                        F d = 0., e = 1e9, ep, j; // here highp
+                        F d = 0., e = 1e9, ep=9., j; // here highp
         
                         F fl = floor(A/2.);
                         F fr = mod(A,2.);
@@ -783,13 +790,18 @@ function calculateFeatures(tokenData) {
                             dpmin = min(min(dp.x,dp.y),dp.z) + 1e-4;
                 
                             bool breaker = false;
-                            if(sdfVoxel(p) < 0.) {
+                            if(length(sdfVoxel(p)) > 0.) {
                                 float ddd = 0.;
-                                for(float backupI = 0.; backupI < 200.; backupI++) {
+                                for(float backupI = 0.; backupI < 200.; backupI++) { // FIXME get rid of backupI
                                     ii++;
                                     p = ro + rd * (d + ddd);
                                     ddd += e = dist(p);
                                     // if(e < .001 || ++i > 200.) { // FIXME restore this i++ condition
+                                    if(ep < e && e < outlineWidth) {
+                                        outline = true;
+                                        break;
+                                    }
+                                    ep = e;
                                     if(e < .001 || ii > 200.) { // налетели на сферу
                                         // if(id > 0.)
                                         //     col *= color(id);
@@ -803,6 +815,9 @@ function calculateFeatures(tokenData) {
                                         break;
                                     }
                                 }
+                            }
+                            else{
+                                colIds = ivec3(0, 0, -1);
                             }
                             if(breaker == true || ii > 100.)
                                 break;
@@ -846,18 +861,18 @@ function calculateFeatures(tokenData) {
                                     
                             if(colIds.z == -1) {
                                 // // фончик
-                                c = texture2D(tex3d,gl_FragCoord.xy / gl_z_rs).rgb;
+                                // c = texture2D(tex3d,gl_FragCoord.xy / gl_z_rs).rgb;
                                 
-                                // c = V(${bg})/255.;
-                                // if(L(c) > .4){
-                                //     c *= S(5., 0., L(uv + v(${features[6]}, -1)));
-                                // }
-                                // // c = V(1,0,1);
-                                // if(${features[3]} == 3){
-                                //     c = V(.2);
-                                // }
-                                // if(sin(L(pow(abs(uv), v(${features[5]}))) * 32.) > 0.)
-                                //     c *= .95;
+                                c = V(${bg})/255.;
+                                if(L(c) > .4){
+                                    c *= S(5., 0., L(uv + v(${features[6]}, -1)));
+                                }
+                                // c = V(1,0,1);
+                                if(${features[3]} == 3){
+                                    c = V(.2);
+                                }
+                                if(sin(L(pow(abs(uv), v(${features[5]}))) * 32.) > 0.)
+                                    c *= .95;
                             } else {
                                 c = V(1,0,1);
                                 // shading
@@ -867,8 +882,8 @@ function calculateFeatures(tokenData) {
                                 c += pow(abs(dot(norm(p), N(V(0., 3., 1.)))), 40.);
                             }
                             // gazya
-                            if(${features[3]} == 4)
-                                c = (V(7. / j));
+                            if(${features[3]} == 4) // FIXME газю выпилиииить :-(
+                                c = (V(20. / ii));
                             }
                         // n = norm(p);
                         // c = n;

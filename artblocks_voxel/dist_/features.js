@@ -1,6 +1,7 @@
 // tokenData.hash = '0x343c93c4b2ea21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
 // tokenData.hash = '0x343c21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
-// tokenData.hash = '0x010ee890facc6bee28fb97146ccb9b536669862af6068411c5a40c2184ecf224'
+
+// tokenData.hash = '0x728dde77229abe77b22883f02d9d9e61e77676bae86bb1f2f1b712abbfa7aba5'
 
 /*begin features*/
 function calculateFeatures(tokenData) {
@@ -37,7 +38,7 @@ function calculateFeatures(tokenData) {
         let palette_bg
         // let tex3dArray = [...Array(300)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
         // let tex3dArray = [...Array(1000.)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
-        let tex3dArray = [...Array(1000.)].map(()=>Array(10).fill([0]))
+        let tex3dArray = [...Array(1000.)].map(()=>[...Array(10)].map(_=>[0,0,0]))
         console.log(tex3dArray)
 
         // new
@@ -406,8 +407,11 @@ function calculateFeatures(tokenData) {
                             let yyy = (bv[10][1]-bv[9][1]/2) + yy | 0
                             let zzz = (bv[10][2]-bv[9][2]/2) + zz + 5 | 0
                             // console.log('xxx, yyy, zzz', xxx, yyy, zzz)
-                            tex3dArray[zzz + 10 * yyy][xxx] = [255 * (blocks.length+1) / 64]
+                            tex3dArray[zzz + 10 * yyy][xxx][0] = 
+                            tex3dArray[zzz + 10 * yyy + 10][xxx][1] = 
+                            255 * (blocks.length+1) / 64
                         }
+                        console.log(tex3dArray)
                         // for(let xx = 0; xx<2; xx++)
                         // for(let zz = 0; zz<2; zz++)
                         // for(let yy = 0; yy<2; yy++)
