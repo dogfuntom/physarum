@@ -4,6 +4,8 @@
 // tokenData.hash = '0x0c91417602b6e1469a56fc5ff264310cc6b57490079a3a164ecc723c79143a09' // не совпадают ножка арки и кубик под ней
 // tokenData.hash = '0xc961a81a3949a7b3ef6ab19a5882509a755c2606d895025389b2a41399d8c14a'
 // tokenData.hash = '0xb578aeb4b58e39423c9ff40fde67c2d416082d6fc09aedd5c5a5ecf5db25e1a6' // антенка заберает шаги и пипке не достаётся
+// tokenData.hash = '0x5f38546190c55b50d86e95c8652a2d5a42bb0241f6d4fb54fd90ab82f930d81e'
+
 // 
 
 /*begin features*/
@@ -877,9 +879,12 @@ function calculateFeatures(tokenData) {
                                 if(sin(L(pow(abs(uv), v(${features[5]}))) * 32.) > 0.)
                                     c *= .95;
                             } else {
-                                c = V(1,0,1);
+                                // c = V(1,0,1);
                                 // shading
-                                c = (min(1.5, 55. / jj) * .2 + .8) * (dot(norm(p), N(V(0, 1, 1))) * .2 + .8) * col;
+                                c = col;
+                                // if(eye==0)
+                                c *= min(1.5, 55. / jj) * .2 + .8;
+                                c *= dot(norm(p), N(V(0, 1, 1))) * .2 + .8;
                                 
                                 // glare
                                 c += pow(abs(dot(norm(p), N(V(0., 3., 1.)))), 40.);
