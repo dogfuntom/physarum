@@ -2,6 +2,9 @@
 // tokenData.hash = '0x343c21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
 
 // tokenData.hash = '0x0c91417602b6e1469a56fc5ff264310cc6b57490079a3a164ecc723c79143a09' // не совпадают ножка арки и кубик под ней
+// tokenData.hash = '0xc961a81a3949a7b3ef6ab19a5882509a755c2606d895025389b2a41399d8c14a'
+// tokenData.hash = '0xb578aeb4b58e39423c9ff40fde67c2d416082d6fc09aedd5c5a5ecf5db25e1a6' // антенка заберает шаги и пипке не достаётся
+// 
 
 /*begin features*/
 function calculateFeatures(tokenData) {
@@ -603,10 +606,10 @@ function calculateFeatures(tokenData) {
         
                 ivec3 colIds;
                 F gl;
-                F camDist = 2e1;
+                F camDist = 30.;
                 ivec2 blockId;
-                F cornerR = .00001, gap = .01, block;
-                F outlineWidth = .02;//((cornerR+gap)*sqrt(2.) - cornerR);
+                F cornerR = .01, gap = .01, block;
+                F outlineWidth = .01;//((cornerR+gap)*sqrt(2.) - cornerR);
                 
                 int eye = 0;
     
@@ -779,9 +782,9 @@ function calculateFeatures(tokenData) {
                         rd.yz *= rot(${u_camAngYZ});
                         ro.xz *= rot(${u_camAngXZ});
                         rd.xz *= rot(${u_camAngXZ});
-                        float ii = 0.;
+                        float jj = 0.;
                         for(float i = 0.; i < 200.; i++) {
-                            ii++;
+                            jj++;
                             p = ro + rd * d;
                             p.xz -= fract(float(${gs/2})); // ODD
                             vec3 dp = (step(0., rd) - fract(p)) / rd;
@@ -793,7 +796,7 @@ function calculateFeatures(tokenData) {
                             if(length(sdfVoxel(p)) > 0.) {
                                 float ddd = 0.;
                                 for(float backupI = 0.; backupI < 200.; backupI++) { // FIXME get rid of backupI
-                                    ii++;
+                                    jj++;
                                     p = ro + rd * (d + ddd);
                                     ddd += e = dist(p);
                                     // if(e < .001 || ++i > 200.) { // FIXME restore this i++ condition
@@ -802,7 +805,7 @@ function calculateFeatures(tokenData) {
                                         break;
                                     }
                                     ep = e;
-                                    if(e < .001 || ii > 200.) { // налетели на сферу
+                                    if(e < .001 || jj > 200. || d > camDist*2.) { // налетели на сферу
                                         // if(id > 0.)
                                         //     col *= color(id);
                                             // col *= n+.5;
@@ -819,7 +822,7 @@ function calculateFeatures(tokenData) {
                             else{
                                 colIds = ivec3(0, 0, -1);
                             }
-                            if(breaker == true || ii > 100.)
+                            if(breaker == true || jj > 200.)
                                 break;
                 
                             d += dpmin;
@@ -876,14 +879,14 @@ function calculateFeatures(tokenData) {
                             } else {
                                 c = V(1,0,1);
                                 // shading
-                                c = (min(1.5, 14. / j) * .2 + .8) * (dot(norm(p), N(V(0, 1, 1))) * .2 + .8) * col;
+                                c = (min(1.5, 55. / jj) * .2 + .8) * (dot(norm(p), N(V(0, 1, 1))) * .2 + .8) * col;
                                 
                                 // glare
                                 c += pow(abs(dot(norm(p), N(V(0., 3., 1.)))), 40.);
                             }
                             // gazya
                             if(${features[3]} == 4) // FIXME газю выпилиииить :-(
-                                c = (V(20. / ii));
+                                c = (V(20. / jj));
                             }
                         // n = norm(p);
                         // c = n;
@@ -891,7 +894,7 @@ function calculateFeatures(tokenData) {
                         // c.g = fract(gl_FragCoord.y / gl_z_rs * 11.);
                         // c.g *= pow(fract(gl_FragCoord.y / gl_z_rs * 1000.),8.);// * fract(gl_FragCoord.x / gl_z_rs * 10.);
                         // c.g += step(0.001,texture2D(tex3d, gl_FragCoord.xy / gl_z_rs).r) * 8.;
-                        // c *= 30./ii;
+                        // c *= 30./jj;
                         o += c;
                     }
                     gl_FragColor = vec4(o/gl_z_aa,1);
