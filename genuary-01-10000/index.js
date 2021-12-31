@@ -18,6 +18,15 @@ palette = palette.map(c => chroma(c).gl())
 palette = palette.sort((a, b) => chroma(a).get('lch.l') - chroma(b).get('lch.l'))
 let passes
 
+let texVoxelsArray = [...Array(128)].map(()=>[...Array(128)].map(()=>[...Array(128)].map(_=>[0,0,0,0])))
+for(let xx = 0; xx<128; xx++)
+  for(let zz = 0; zz<128; zz++)
+    for(let yy = 0; yy<128; yy++)
+      if(Math.random()<.1)
+      texVoxelsArray[zz][yy][xx] = [255,255,255,255]
+      // texVoxelsArray[zz][yy][xx] = [xx*2,yy*2,zz*2,1]
+console.log(texVoxelsArray.flat(3))
+
 
 function Pass({ frag, size = 8, texture }) {
   if (size.length)
@@ -90,14 +99,13 @@ gl.getExtension('OES_texture_float_linear');
 let dt;
 let prevTime;
 
-// let conwayInitTexture = twgl.createTexture(gl, {
-//   // src: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARAQMAAAABo9W5AAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAZQTFRFAAAA////pdmf3QAAABVJREFUeJxjYMAD+CwYGLg0IDQeAAAZpgC/nhpjBAAAAABJRU5ErkJggg==',
-//   src: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARAQMAAAABo9W5AAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAZQTFRFAAAA////pdmf3QAAADBJREFUeJxjYIACHgkGBjYDBgbVIAYG6zwGBtEQBgY+C4gciAbxQeIgeZA6kHooAACUUgRTZfOwlgAAAABJRU5ErkJggg==',
-//   crossOrigin: '', // not needed if image on same origin
-// }, function (err, tex, img) {
-//   // wait for the image to load because we need to know it's size
-//   // start();
-// });
+let texVoxels = twgl.createTexture(gl, {
+  src: texVoxelsArray.flat(3),
+  // height: texVoxelsArray.length,
+  width: texVoxelsArray[0].length,
+  mag: gl.NEAREST,
+  min: gl.NEAREST,
+}, (err, tex, img)=>{});
 
 twgl.resizeCanvasToDisplaySize(gl.canvas);
 passes = {
@@ -125,6 +133,7 @@ function draw(time) {
       tex: passes.gi.b,
       u_time: time,
       u_params: params,
+      u_tex_voxels: texVoxels,
     },
     target: 'self',
   })
@@ -149,8 +158,8 @@ function animate(now) {
   draw(now / 1000);
   // setTimeout(requestAnimationFrame, 50, animate);
   // if (isRendering == false)
-  // if (tick < 4) 
-  requestAnimationFrame(animate);
+  // if (tick < 40)
+    requestAnimationFrame(animate);
 }
 
 window.addEventListener('resize', (e) => {

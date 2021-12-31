@@ -6,6 +6,7 @@ uniform float u_time;
 uniform float u_frame;
 uniform float u_params[10];
 uniform sampler2D backbuffer;
+uniform sampler2D u_tex_voxels;
 #define rnd(x) fract(54321.987 * sin(987.12345 * x + .1))
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
 
@@ -30,21 +31,27 @@ mat3 rotate3D(float angle, vec3 axis) {
 
 float sdfVoxel(vec3 p) {
     id = 0.;
-    float texture = step(.5, fract(p.y * 8.) - .25);
-    p = floor(p) + .5;
-    vec3 pI = p;
 
-    float res = p.y + 2.;
-    p = pI;
 
-    p.xz = abs(p.xz);
-    if(p.x < p.z)
-        p.xz = p.zx;
-    float thing = abs(length(p) - 2.) - rnd(dot(p, vec3(2, 3, u_params[0]))) - u_params[2] * .2 - abs(dot(sin(p / u_params[4] - u_params[3] * 99.), cos(p.zxy / u_params[4] - u_params[4] * 99.)));
-    if(thing < res && p.y > -2.) {
-        id = rnd(dot(p, vec3(2, 3, u_params[1])));
-        res = thing;
-    }
+
+    // float texture = step(.5, fract(p.y * 8.) - .25);
+    p = floor(p);
+    // vec3 pI = p;
+
+    vec3 pTex = p + 128./2.;
+    vec2 uvTex = vec2(pTex.x, pTex.y + 128. * pTex.z)/vec2(128., 128.*128.);
+    // float res = p.y;//texture(u_tex_voxels, uvTex).r;
+    float res = .5 - texture(u_tex_voxels, uvTex).r;
+    // p = pI;
+
+    // p.xz = abs(p.xz);
+    // if(p.x < p.z)
+    //     p.xz = p.zx;
+    // float thing = abs(length(p) - 2.) - rnd(dot(p, vec3(2, 3, u_params[0]))) - u_params[2] * .2 - abs(dot(sin(p / u_params[4] - u_params[3] * 99.), cos(p.zxy / u_params[4] - u_params[4] * 99.)));
+    // if(thing < res && p.y > -2.) {
+    //     id = rnd(dot(p, vec3(2, 3, u_params[1])));
+    //     res = thing;
+    // }
 
     return res;
 }
@@ -78,11 +85,11 @@ void main() {
     float i, d, e, s, l;
 
     vec2 uv = (gl_FragCoord.xy + rnd(dot(gl_FragCoord.xy, vec2(mod(u_time, 3.14), .1))) - .5 - u_resolution * .5) / u_resolution.y + .001;
-    vec3 rd = (vec3(0, 0, 1)), ro, p, pf;
-    ro.xy = uv * 12.;
-    ro.z = -10.;
-    // vec3 rd = (vec3(uv, 1)), ro, p, pf;
-    // ro = vec3(0,0,-20);
+    // vec3 rd = (vec3(0, 0, 1)), ro, p, pf;
+    // ro.xy = uv * 12.;
+    // ro.z = -10.;
+    vec3 rd = (vec3(uv, 1)), ro, p, pf;
+    ro = vec3(0,0,-20);
     rd.yz *= rot(atan(1. / sqrt(2.)));
     ro.yz *= rot(atan(1. / sqrt(2.)));
     rd.xz *= rot(3.1415 / 4.);
@@ -140,4 +147,5 @@ void main() {
         col *= 0.;
     }
     o += mix(texture(backbuffer, gl_FragCoord.xy / u_resolution), col.rgbb, 1. / (u_frame + 1.));
+    // o += texture
 }
