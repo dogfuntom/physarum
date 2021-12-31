@@ -5,6 +5,8 @@
 // tokenData.hash = '0xc961a81a3949a7b3ef6ab19a5882509a755c2606d895025389b2a41399d8c14a'
 // tokenData.hash = '0xb578aeb4b58e39423c9ff40fde67c2d416082d6fc09aedd5c5a5ecf5db25e1a6' // антенка заберает шаги и пипке не достаётся
 // tokenData.hash = '0x5f38546190c55b50d86e95c8652a2d5a42bb0241f6d4fb54fd90ab82f930d81e'
+// 0xab19d56b9b3b8d9ce69981b78f771458a258aa2000179624e6a0f2c20edb9cdd // текстура глаз проглядывает
+// tokenData.hash = '0xa7276e8e9fda862eb322b0f93879447b5e622c241517b30082225300145eee04'
 
 // 
 
@@ -579,6 +581,24 @@ function calculateFeatures(tokenData) {
             // console.log('regl.limits.maxRenderbufferSize',regl.limits.maxRenderbufferSize)
             // console.log('u_palette.map(v=>v/255)',u_palette.map(v=>v/255))
     
+            // FIXME
+            let light1 = [M.random(),M.random(),M.random()]
+            let light2 = [M.random(),M.random(),M.random()]
+            console.log('light1, light2', light1, light2)
+
+            // light1, light2 (3) [0.992003076007242, 0.7092260590879944, 0.38469805290430803] (3) [0.9041283356507044, 0.8380552919223743, 0.5778508941006015]
+            // light1, light2 (3) [0.924254643441605, 0.7079949946913848, 0.0493938126635769] (3) [0.20541698348156623, 0.37254540967860383, 0.8433268946490056]
+            // light1, light2 (3) [0.6158531508882272, 0.6139008579420566, 0.17786659907275837] (3) [0.9813180321794011, 0.9982992602452041, 0.7668910925091919]
+            // light1, light2 (3) [0.932442501868983, 0.9082303618338488, 0.009844186105287589] (3) [0.7006932913286141, 0.9490704848787237, 0.09868423307048912] 4 
+            // ight1, light2 (3) [0.8248451361057292, 0.06409106245324048, 0.5490512027458267] (3) [0.07415444316095177, 0.08629829081972429, 0.43827276903683243] 4
+            // light1, light2 (3) [0.7467026486517054, 0.5708240254317805, 0.5800314813287009] (3) [0.3369273320379955, 0.1340341420950686, 0.1433960574894524] 4
+
+            // light1 = [0.9647469871703527, 0.8489233290981129, 0.24612093748053598]
+            // light2 = [0.6555195159791192, 0.905291854899702, 0.41970827215701045]
+            light1 = [0,1,.5]
+            // light2 = [.5,2,1]
+
+
             let program = regl({
                 frag: /*glsl*/`precision highp float;
                 #define BLOCKS_NUMBER_MAX 60
@@ -610,8 +630,8 @@ function calculateFeatures(tokenData) {
                 F gl;
                 F camDist = 30.;
                 ivec2 blockId;
-                F cornerR = .01, gap = .01, block;
-                F outlineWidth = .01;//((cornerR+gap)*sqrt(2.) - cornerR);
+                F cornerR = .01, gap = .015, block;
+                F outlineWidth = .015;//((cornerR+gap)*sqrt(2.) - cornerR);
                 
                 int eye = 0;
     
@@ -652,9 +672,13 @@ function calculateFeatures(tokenData) {
                         }
     
                         if(gl_z_rt[i].y == 6.) { // pillar
-                            F narrow = tube(pb+V(0,1.6-cornerR*2.,0),V(3.55,.15,0));
+                            F narrow = tube(pb+V(0,1.6-cornerR*3.,0),V(3.55,.15,0));
                             F base = tube(pb+V(0,2.-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
                             block = min(narrow, base);
+                            // // F narrow = tube(pb+V(0,1.6-cornerR-gap,0),V(3.55,.15,0));
+                            // F narrow = tube(pb+V(0,4./2.-.4-cornerR*2.-gap,0),V(3.55,.15-cornerR,0));
+                            // F base = tube(pb+V(0,2.-cornerR*2.,0),V(.4-cornerR*2.-gap,.45,0));
+                            // block = min(narrow, base)-cornerR;
                         }
 
                         // studs
@@ -882,12 +906,12 @@ function calculateFeatures(tokenData) {
                                 // c = V(1,0,1);
                                 // shading
                                 c = col;
-                                // if(eye==0)
                                 c *= min(1.5, 55. / jj) * .2 + .8;
-                                c *= dot(norm(p), N(V(0, 1, 1))) * .2 + .8;
+                                c *= dot(norm(p), N(V(-.5,.5,0))) * .2 + 1.;
                                 
                                 // glare
-                                c += pow(abs(dot(norm(p), N(V(0., 3., 1.)))), 40.);
+                                if(eye==0)
+                                c += pow(abs(dot(norm(p), N(V(0, 1.5, .5)))), 40.);
                             }
                             // gazya
                             if(${features[3]} == 4) // FIXME газю выпилиииить :-(
