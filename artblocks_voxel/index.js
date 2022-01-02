@@ -6,7 +6,7 @@
 // tokenData.hash = '0xb578aeb4b58e39423c9ff40fde67c2d416082d6fc09aedd5c5a5ecf5db25e1a6' // антенка заберает шаги и пипке не достаётся
 // tokenData.hash = '0x5f38546190c55b50d86e95c8652a2d5a42bb0241f6d4fb54fd90ab82f930d81e'
 // 0xab19d56b9b3b8d9ce69981b78f771458a258aa2000179624e6a0f2c20edb9cdd // текстура глаз проглядывает
-// tokenData.hash = '0xa7276e8e9fda862eb322b0f93879447b5e622c241517b30082225300145eee04'
+tokenData.hash = '0x104913f78ee1ea3142baa285b1e18add645f794165bd498f51b28b17b52a43fd'
 
 // 
 
@@ -566,6 +566,7 @@ function calculateFeatures(tokenData) {
             let gl = canvas.getContext('webgl', {
                 preserveDrawingBuffer: true,
             });
+
             document.body.appendChild(canvas)
             let bg = u_palette.slice(3*palette_bg,3+3*palette_bg)//.map(v=>v*255)
             canvas.style.background=(features[3] == 4 || features[3] == 3)? '#333':`rgb(${bg})`
@@ -574,7 +575,11 @@ function calculateFeatures(tokenData) {
             canvas.height = size_
             
             
-            var regl = createREGL(gl)
+            // var regl = createREGL(gl)
+            let regl = createREGL({
+                gl: gl,
+                extensions: ['webgl_draw_buffers', 'oes_texture_float'],
+              })
             let tex3d = regl.texture(tex3dArray)
             
             // console.log('regl.limits.maxViewportDims',regl.limits.maxViewportDims)
@@ -598,9 +603,18 @@ function calculateFeatures(tokenData) {
             light1 = [0,1,.5]
             // light2 = [.5,2,1]
 
+            const fbo = regl.framebuffer({
+                color: [
+                    regl.texture({type: 'float'}), // color
+                    regl.texture({type: 'float'}), // normal + depth
+                ],
+                depth: false,
+              })
+
 
             let program = regl({
-                frag: /*glsl*/`precision highp float;
+                frag: /*glsl*/`#extension GL_EXT_draw_buffers : require
+                precision highp float;
                 #define BLOCKS_NUMBER_MAX 60
                 #define PI 3.1415
                 #define S smoothstep
@@ -626,14 +640,16 @@ function calculateFeatures(tokenData) {
 
                 uniform sampler2D gl_z_tex3d;
         
-                ivec3 colIds;
+                ivec3 colIds = ivec3(0);
                 F gl;
                 F camDist = 30.;
                 ivec2 blockId;
                 F cornerR = .01, gap = .015, block;
                 F outlineWidth = .015;//((cornerR+gap)*sqrt(2.) - cornerR);
                 
-                int eye = 0;
+                // int eye = 0;
+                // V eye = V(0.);
+                // eye = 0;
     
                 F tube(V p, V s){
                     v po = v(L(p.xz), p.y - clamp(p.y, EPS, s.x));
@@ -707,14 +723,18 @@ function calculateFeatures(tokenData) {
                             F eye_ = tube(pb+V(0,.25-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
                             block = eye_;
                             if(eye_ < EPS) {
-                                eye = 1;
+                                colIds.z = 9; // eye
                                 // discard;
+                                // return block;
                             }
                         }
                 
                         // block = L(pb)-2.;
                         if(block < res) {
-                            colIds = gl_z_cs[i];
+                            if(colIds.z == 9)// FIXME как-то эти ифы упростить, они нужны только чтобы глаза работали.
+                                colIds = ivec3(gl_z_cs[i].xy, 9);
+                            else
+                                colIds = gl_z_cs[i];
                             res = block;
                         }
                         if(res < EPS)
@@ -756,7 +776,7 @@ function calculateFeatures(tokenData) {
 
                 void main() {
                     ${uniforms}
-                    V o = V(0);
+                    V o = V(0), nnn;
                     v uv, uvI = (gl_FragCoord.xy * 2. - gl_z_rs)/gl_z_rs;
         
                     for(F A = 0.; A < 8.; A++){
@@ -845,9 +865,8 @@ function calculateFeatures(tokenData) {
                                     }
                                 }
                             }
-                            else{
+                            else
                                 colIds = ivec3(0, 0, -1);
-                            }
                             if(breaker == true || jj > 200.)
                                 break;
                 
@@ -859,35 +878,37 @@ function calculateFeatures(tokenData) {
                             V col1, col2;
                             for(int j = 0; j < 5; j++) {
                                 if(colIds[0] == j)
-                                    col1 = gl_z_pt[j];
+                                col1 = gl_z_pt[j];
                                 if(colIds[1] == j)
-                                    col2 = gl_z_pt[j];
+                                col2 = gl_z_pt[j];
                             }
-                    
+                            
                             V col = col1;
-                    
+                            
                             // Texturing
                             //
                             // layers
                             if(colIds.z == 1)
-                                if(sin(p.y * PI * 3.) > 0.)
-                                    col = col2;
+                            if(sin(p.y * PI * 3.) > 0.)
+                            col = col2;
                             if(colIds.z == 2)
-                                if(sin((p.x + fract(gl_z_ps[0].x - gl_z_ss[0].x / 2.)) * PI * 2. * 1.5) > 0.)
-                                    col = col2;
-                                    
+                            if(sin((p.x + fract(gl_z_ps[0].x - gl_z_ss[0].x / 2.)) * PI * 2. * 1.5) > 0.)
+                            col = col2;
+                            
                             // pride
                             if(${features[3]} == 3)
-                                col = sin((L(p) / max(F(${gs}), F(${features[8]})) * 2. - V(0, .3, .6)) * 6.28) * .5 + .5;
-                            
-                            if(eye == 1) {
+                            col = sin((L(p) / max(F(${gs}), F(${features[8]})) * 2. - V(0, .3, .6)) * 6.28) * .5 + .5;
+
+                            nnn = norm(p); // надо тут вычислять, видимо, где-то выше я сбиваю colIds выполняя дист
+                            // иначе colIds.z равен 0 с чего-то. Но почему тогда dist(p); не помогает?
+                            if(colIds.z == 9) {
                                 col = V(0);
                                 V pe = p + fract(${gs}. / 2.);
                                 pe = fract(pe) - .5;
                                 col += step(.3, L(pe.xz));
                                 col += step(-.1, -L(pe.xz + .1));
                             }
-                                    
+                        
                             if(colIds.z == -1) {
                                 // // фончик
                                 // c = texture2D(tex3d,gl_FragCoord.xy / gl_z_rs).rgb;
@@ -901,22 +922,22 @@ function calculateFeatures(tokenData) {
                                     c = V(.2);
                                 }
                                 if(sin(L(pow(abs(uv), v(${features[5]}))) * 32.) > 0.)
-                                    c *= .95;
+                                c *= .95;
                             } else {
                                 // c = V(1,0,1);
                                 // shading
                                 c = col;
                                 c *= min(1.5, 55. / jj) * .2 + .8;
-                                c *= dot(norm(p), N(V(-.5,.5,0))) * .2 + 1.;
-                                
+                                c *= dot(nnn, N(V(-.5,.5,0))) * .2 + 1.;
+
                                 // glare
-                                if(eye==0)
-                                c += pow(abs(dot(norm(p), N(V(0, 1.5, .5)))), 40.);
+                                if(colIds.z!=9)
+                                    c += pow(abs(dot(nnn, N(V(0, 1.5, .5)))), 40.);
                             }
                             // gazya
                             if(${features[3]} == 4) // FIXME газю выпилиииить :-(
                                 c = (V(20. / jj));
-                            }
+                        }
                         // n = norm(p);
                         // c = n;
                         // // texture debug
@@ -926,7 +947,7 @@ function calculateFeatures(tokenData) {
                         // c *= 30./jj;
                         o += c;
                     }
-                    gl_FragColor = vec4(o/gl_z_aa,1);
+                    gl_FragData[0] = vec4(o/gl_z_aa,1);
                 }`/*glsl*/.replace(/@/g,'\n#define ').replace(/→/g,'return '),
               
                 vert: `attribute vec2 g;void main(){gl_Position=vec4(g,0,1);}`,
@@ -952,7 +973,8 @@ function calculateFeatures(tokenData) {
                 },
                 depth: {
                     enable: false
-                  },
+                },
+                framebuffer: null,
                 count: 3
             })
             let rows = (size_ / ts | 0) + 1
@@ -966,7 +988,9 @@ function calculateFeatures(tokenData) {
             let steps = 1
             ts=256
 
-            program({r: size_, x: 0, y: 0, t:size_, a: 8})
+            program({r: size_, x: 0, y: 0, t:size_, a: 1})
+
+            // program({r: size_, x: 0, y: 0, t:size_, a: 1})
             // // program({r: size_, x: size_/2, y: 0, t:size_/2, a: 1})
             // // program({r: size_, x: 0, y: size_/2, t:size_/2, a: 1})
             // // program({r: size_, x: size_/2, y: size_/2, t:size_/2, a: 1})
