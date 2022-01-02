@@ -19,6 +19,7 @@ vec3 add = vec3(.5, .5, .5);
 
 float tex;
 float id = 0.;
+int type = 0;
 vec3 col = vec3(1);
 
 mat3 rotate3D(float angle, vec3 axis) {
@@ -31,17 +32,18 @@ mat3 rotate3D(float angle, vec3 axis) {
 
 float sdfVoxel(vec3 p) {
     id = 0.;
-
-
-
     // float texture = step(.5, fract(p.y * 8.) - .25);
     p = floor(p);
     // vec3 pI = p;
 
     vec3 pTex = p + 128./2.;
     vec2 uvTex = vec2(pTex.x, pTex.y + 128. * pTex.z)/vec2(128., 128.*128.);
+    vec4 tx = texture(u_tex_voxels, uvTex);
+    type = int(tx.r * 255.);
+    tex = tx.g;
+
     // float res = p.y;//texture(u_tex_voxels, uvTex).r;
-    float res = .5 - texture(u_tex_voxels, uvTex).r;
+    float res = .5 - step(1e-4, tx.r);
     // p = pI;
 
     // p.xz = abs(p.xz);
@@ -57,22 +59,36 @@ float sdfVoxel(vec3 p) {
 }
 
 float sdf(vec3 p) {
-    int sw = int(floor(rnd(id + u_params[0]) * 3.));
-    switch(sw) {
-        case 0:
-            return length(p) - .5;
-        case 1:
-            return length(p - clamp(p, -.499, .499)) - 1e-5;
-    }
-    float r = floor(rnd(id + 3.) * 8.) / 8. / 4. + .0001;
-    p = abs(p);
-    p -= .5 - r;
-    if(p.z < p.x)
-        p.xz = p.zx;
-    if(p.y > p.x)
-        p.xy = p.yx;
-    // p.xy -= .5-r;
-    return length(p.xz) - r;
+    // int sw = int(floor(rnd(id + u_params[0]) * 3.));
+    // int sw = 0;
+    float res;
+    // switch(type) {
+    //     case 4:
+    //         vec3 pp = p;
+    //         // pp.x = abs(pp.x);
+    //         // res = max(res, dot(pp, -normalize(cross(vec3(1,-1,1)-vec3(1,-1,-1), vec3(0,1,-1)-vec3(1,-1,-1))))) - .2236;
+    //         // // return dot(p, vec3(1,0,0));
+    //         // // return length(p) - .5;
+
+    //         // pp.xz = abs(pp.xz);
+    //         // if(pp.x < pp.z) pp.xz = pp.zx;
+    //         pp.xy *= rot(-atan(1. / 2.));
+    //         res = pp.x - .2236;
+
+    //     case 3:
+    // }
+    vec3 s = vec3(.45);
+    res = length(p - clamp(p, -s, s))-.001;
+    return res;
+    // float r = floor(rnd(id + 3.) * 8.) / 8. / 4. + .0001;
+    // p = abs(p);
+    // p -= .5 - r;
+    // if(p.z < p.x)
+    //     p.xz = p.zx;
+    // if(p.y > p.x)
+    //     p.xy = p.yx;
+    // // p.xy -= .5-r;
+    // return length(p.xz) - r;
 }
 
 vec3 norm(vec3 p) {
@@ -84,14 +100,15 @@ vec3 norm(vec3 p) {
 void main() {
     float i, d, e, s, l;
 
-    vec2 uv = (gl_FragCoord.xy + rnd(dot(gl_FragCoord.xy, vec2(mod(u_time, 3.14), .1))) - .5 - u_resolution * .5) / u_resolution.y + .001;
-    // vec3 rd = (vec3(0, 0, 1)), ro, p, pf;
-    // ro.xy = uv * 12.;
-    // ro.z = -10.;
-    vec3 rd = (vec3(uv, 1)), ro, p, pf;
-    ro = vec3(0,0,-20);
+    vec2 uv = (gl_FragCoord.xy + rnd(length(mod(vec3(gl_FragCoord.xy,u_time),3.141592)))-.5 - u_resolution * .5) / u_resolution.y + .001;
+    // vec2 uv = (gl_FragCoord.xy - u_resolution * .5) / u_resolution.y + .001;
+    vec3 rd = (vec3(0, 0, 1)), ro, p, pf;
+    ro.xz = uv * 64.;
+    ro.y = 20.;
+    // vec3 rd = (vec3(uv, 1)), ro, p, pf;
+    // ro = vec3(0,0,-20);
     rd.yz *= rot(atan(1. / sqrt(2.)));
-    ro.yz *= rot(atan(1. / sqrt(2.)));
+    // ro.yz *= rot(atan(1. / sqrt(2.)));
     rd.xz *= rot(3.1415 / 4.);
     ro.xz *= rot(3.1415 / 4.);
 
@@ -113,8 +130,8 @@ void main() {
                     ddd += e = sdf(fract(p) - .5);
                     if(e < .001 || ++i > 200.) { // налетели на сферу
                         n = norm(fract(p) - .5);
-                        if(id > 0.)
-                            col *= color(id);
+                        col *= color(tex);
+                        // if(id > 0.)
                             // col *= n+.5;
                         // if(s > 1.)
                         //     col *= .6;
@@ -132,20 +149,20 @@ void main() {
             d += dpmin;
 
         }
-        if(p.y > 10.) {
+        if(p.y > 30.) {
             break;
         } else {
             rd = reflect(rd, n);
-            rd.x += (rnd(length(uv) + u_frame + .0) * 2. - 1.) * rnd(id);
-            rd.y += (rnd(length(uv) + u_frame + .1) * 2. - 1.) * rnd(id);
-            rd.z += (rnd(length(uv) + u_frame + .2) * 2. - 1.) * rnd(id);
+            rd.x += (rnd(length(uv) + u_frame + .0) * 2. - 1.) * .7;
+            rd.y += (rnd(length(uv) + u_frame + .1) * 2. - 1.) * .7;
+            rd.z += (rnd(length(uv) + u_frame + .2) * 2. - 1.) * .7;
             rd = normalize(rd);
-            ro = p + n * .01;
+            ro = p + n * .001;
         }
     }
-    if(p.y > 10.) { } else {
+    if(p.y > 30.) {} else {
         col *= 0.;
     }
-    o += mix(texture(backbuffer, gl_FragCoord.xy / u_resolution), col.rgbb, 1. / (u_frame + 1.));
+    o += mix(texture(backbuffer, gl_FragCoord.xy / u_resolution), col.rgbb, 1. / (u_frame + 0.));
     // o += texture
 }

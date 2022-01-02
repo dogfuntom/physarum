@@ -18,14 +18,46 @@ palette = palette.map(c => chroma(c).gl())
 palette = palette.sort((a, b) => chroma(a).get('lch.l') - chroma(b).get('lch.l'))
 let passes
 
+
+
+
+
 let texVoxelsArray = [...Array(128)].map(()=>[...Array(128)].map(()=>[...Array(128)].map(_=>[0,0,0,0])))
 for(let xx = 0; xx<128; xx++)
   for(let zz = 0; zz<128; zz++)
-    for(let yy = 0; yy<128; yy++)
-      if(Math.random()<.1)
-      texVoxelsArray[zz][yy][xx] = [255,255,255,255]
-      // texVoxelsArray[zz][yy][xx] = [xx*2,yy*2,zz*2,1]
-console.log(texVoxelsArray.flat(3))
+    // for(let yy = 0; yy<128; yy++)
+    {
+      // r — type (0 is empty, 1 is ground, 2 is stand, 3 is wall, 4 is roof)
+      // g — color 0…1
+      let yy = 64 + Math.random() * 10 + 1 | 0
+      let isRoof = true
+      let color = 256*Math.random()
+      for(;yy>=64;yy--){
+        let [x, y, z] = [xx,yy,zz].map(d=>d-64)
+        if(isRoof) {
+          texVoxelsArray[zz][yy][xx] = [4,color,0,0]
+          isRoof = false
+        }
+        else if(y==0) {
+          texVoxelsArray[zz][yy][xx] = [1,0,0,0]
+        }
+        else {
+          texVoxelsArray[zz][yy][xx] = [3,color,0,0]
+        }
+      }
+      // if (y < 0) {
+      //   texVoxelsArray[zz][yy][xx] = [255*.25,0,0,0]
+      //   continue
+      // }
+      // if (Math.hypot(x, y, z) < 3) texVoxelsArray[zz][yy][xx] = [255,255,255,255]
+
+    }
+      
+// texVoxelsArray[zz][yy][xx] = [xx*2,yy*2,zz*2,1]
+console.log(texVoxelsArray)
+
+
+
 
 
 function Pass({ frag, size = 8, texture }) {
@@ -34,7 +66,7 @@ function Pass({ frag, size = 8, texture }) {
   else
     this.resolution = [size, size]
 
-  console.log(this.resolution)
+  // console.log(this.resolution)
   this.vert = `#version 300 es
   precision mediump float;
   in vec2 position;
@@ -57,7 +89,7 @@ function Pass({ frag, size = 8, texture }) {
   this.positionBuffer = twgl.createBufferInfoFromArrays(gl, this.positionObject)
 
   this.texture = texture
-  console.log('texture', texture)
+  // console.log('texture', texture)
 
 
   this.draw = ({ uniforms, target }) => {
@@ -101,7 +133,6 @@ let prevTime;
 
 let texVoxels = twgl.createTexture(gl, {
   src: texVoxelsArray.flat(3),
-  // height: texVoxelsArray.length,
   width: texVoxelsArray[0].length,
   mag: gl.NEAREST,
   min: gl.NEAREST,
@@ -120,8 +151,9 @@ passes = {
 
 let params = [...Array(10)].map(() => Math.random())
 
-function draw(time) {
-
+let timeI = new Date() / 1000
+function draw() {
+  let time = new Date() / 1000
   twgl.resizeCanvasToDisplaySize(gl.canvas);
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   dt = (prevTime) ? time - prevTime : 0;
@@ -131,12 +163,13 @@ function draw(time) {
     uniforms: {
       u_frame: tick,
       tex: passes.gi.b,
-      u_time: time,
+      u_time: time - timeI,
       u_params: params,
       u_tex_voxels: texVoxels,
     },
     target: 'self',
   })
+  // console.log(time - timeI)
   passes.draw.draw({
     uniforms: {
       tex: passes.gi.b,
@@ -154,11 +187,11 @@ animate()
 
 // setInterval(animate, 200)
 
-function animate(now) {
-  draw(now / 1000);
+function animate() {
+  draw();
   // setTimeout(requestAnimationFrame, 50, animate);
   // if (isRendering == false)
-  // if (tick < 40)
+  // if (tick < 4)
     requestAnimationFrame(animate);
 }
 
