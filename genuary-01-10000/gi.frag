@@ -59,6 +59,9 @@ float sdfVoxel(vec3 p) {
 }
 
 float sdf(vec3 p) {
+
+    // пытался крыши присобачить, но не заработали https://bit.ly/3eGwpsn
+
     // int sw = int(floor(rnd(id + u_params[0]) * 3.));
     // int sw = 0;
     float res;
