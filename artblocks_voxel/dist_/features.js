@@ -6,7 +6,7 @@
 // tokenData.hash = '0xb578aeb4b58e39423c9ff40fde67c2d416082d6fc09aedd5c5a5ecf5db25e1a6' // антенка заберает шаги и пипке не достаётся
 // tokenData.hash = '0x5f38546190c55b50d86e95c8652a2d5a42bb0241f6d4fb54fd90ab82f930d81e'
 // 0xab19d56b9b3b8d9ce69981b78f771458a258aa2000179624e6a0f2c20edb9cdd // текстура глаз проглядывает
-tokenData.hash = '0x104913f78ee1ea3142baa285b1e18add645f794165bd498f51b28b17b52a43fd'
+// tokenData.hash = '0x104913f78ee1ea3142baa285b1e18add645f794165bd498f51b28b17b52a43fd'
 
 // 
 
@@ -46,7 +46,7 @@ function calculateFeatures(tokenData) {
         // let tex3dArray = [...Array(300)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
         // let tex3dArray = [...Array(1000.)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
         let tex3dArray = [...Array(1000.)].map(()=>[...Array(10)].map(_=>[0,0,0]))
-        console.log(tex3dArray)
+        // console.log(tex3dArray)
 
         // new
         let size, ts;
@@ -144,7 +144,7 @@ function calculateFeatures(tokenData) {
             // features[4] = 1; // FIXME remove
           
             ([ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra ] = presets[features[4]])
-            console.log('presets[features[4]',presets[features[4]])
+            // console.log('presets[features[4]',presets[features[4]])
             numberOfBlockTypes = 2 + R() * 2 | 0
         
             blocks = [];
@@ -418,7 +418,7 @@ function calculateFeatures(tokenData) {
                             tex3dArray[zzz + 10 * yyy + 10][xxx][1] = 
                             255 * (blocks.length+1) / 64
                         }
-                        console.log(tex3dArray)
+                        // console.log(tex3dArray)
                         // for(let xx = 0; xx<2; xx++)
                         // for(let zz = 0; zz<2; zz++)
                         // for(let yy = 0; yy<2; yy++)
