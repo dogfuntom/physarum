@@ -668,6 +668,9 @@ function calculateFeatures(tokenData) {
                 }
                 
                 F dist(V p) {
+                    // return max(length(p.xz)-.4,abs(p.y)-.9);
+                    // return length(p)-.6;
+
                     // →length(fract(p)-.5)-.5;
                     p.x = abs(p.x);
                     // F res = 1e5;
@@ -788,24 +791,60 @@ function calculateFeatures(tokenData) {
                     if(gl_z_render == 1.){
                         gl_FragData[0] = texture2D(gl_z_texCol, gl_FragCoord.xy/gl_z_rs);
                         V norm = texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs).rgb;
+                        norm.z = -norm.z;
+                        // norm.xz *= rot(${u_camAngXZ});
+                        // norm.yz *= rot(${u_camAngYZ});
+                        // gl_FragData[0].rgb=norm;
+                        // gl_FragData[0].a=1.;
+                        // return;
                         F dist = texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs).a;
                         if(dist>camDist*2.) return;
                         // gl_FragData[0] *= smoothstep(35.,15.,texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs).a);
-                        vec3 f = normalize(norm);
-                        vec3 r = cross(vec3(0,1,0), f);
+                        vec3 f = -V(norm.x,-norm.y,norm.z);
+                        vec3 r = cross(vec3(1,0,0), f);
                         vec3 u = cross(f, r);
-                        for(float i=0.; i<100.; i++){
-                            // V sample = V(0,0,dist);
-                            // sample += (rnd(i+dist)-.5) * 100. * r;
-                            // sample += (rnd(i+dist+.1)-.5) * 100. * u;
-                            // sample += (rnd(i+dist+.2)) * 50. * f;
-                            if(dist > texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs + .1 * (vec2(rnd(i),rnd(i+.1))-.5)).a)
-                                gl_FragData[0]*=.99;
+                        for(float i=0.; i<10.; i++){
+                            V kernel = V(0,0,0);
+                            kernel += (rnd(i+length(gl_FragCoord/1000.+1.)+dist)*2.-1.) * r;
+                            kernel += (rnd(i+length(gl_FragCoord/1000.+1.)+dist+.1)*2.-1.) * u;
+                            kernel += (rnd(i+length(gl_FragCoord/1000.+1.)+dist+.2)) * f;
+                            // kernel *= rnd(i+dist+.3);
+                            vec3 offset = V(dot(kernel,vec3(1,0,0)), dot(kernel,vec3(0,1,0)), dot(kernel,V(0,0,-1)));
+
+                            // if(dist > texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs + .1 * (vec2(rnd(i),rnd(i+.1))-.5)).a)
+                            F rad = .4;
+                            if(dist + offset.z * rad > texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs + rad * offset.xy).a)
+                                gl_FragData[0]*=.9;
                         }
                         gl_FragData[0].a = 1.;
                         return;
                     }
                     // gl_FragData[0] = vec4(1);
+                    
+                    // // DEBUG
+                    // vec2 uv = (gl_FragCoord.xy * 2. - gl_z_rs) / gl_z_rs;
+                    // V ro = V(uv * F(${viewBox[6]}) +
+                    //     v(${viewBox[7]},
+                    //     ${viewBox[8]}), -camDist),
+                    //    rd = V(0, 0, 1);
+                    //    ro.yz *= rot(${u_camAngYZ});
+                    //    rd.yz *= rot(${u_camAngYZ});
+                    //    ro.xz *= rot(${u_camAngXZ});
+                    //    rd.xz *= rot(${u_camAngXZ});                float d,e=1.,j;
+                    // vec3 p;
+                    // for(float i=0.;i<99.;i++){
+                    //     j=i;
+                    //     p=ro+rd*d;
+                    //     p.z-=1.;
+                    //     p.xz = fract(p.xz)-.5;
+                    //     d+=e=dist(p);
+                    //     if(e<1e-3)break;
+                    // }
+                    // gl_FragData[0] = vec4(step(-40.,-d));
+                    // gl_FragData[1] = vec4(normalize(norm(p)),d);
+                    // return;
+                    // // END OF DEBUG
+
 
                     ${uniforms}
                     V o = V(0), nnn;
@@ -987,7 +1026,7 @@ function calculateFeatures(tokenData) {
                     gl_FragData[0] = vec4(o/gl_z_aa,1);
                     gl_FragData[1] = vec4(nnn/gl_z_aa,d);
                     // gl_FragData[1] = vec4(0,0,1,1);
-                    return;
+                    // return;
                 }`/*glsl*/.replace(/@/g,'\n#define ').replace(/→/g,'return '),
               
                 vert: `attribute vec2 g;void main(){gl_Position=vec4(g,0,1);}`,
