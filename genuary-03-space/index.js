@@ -22,37 +22,23 @@ let passes
 
 
 
-let texVoxelsArray = [...Array(128)].map(()=>[...Array(128)].map(()=>[...Array(128)].map(_=>[0,0,0,0])))
-for(let xx = 0; xx<128; xx++){
-  for(let zz = 0; zz<128; zz++){
-    // for(let yy = 0; yy<128; yy++)
-      // r — type (0 is empty, 1 is ground, 2 is stand, 3 is wall, 4 is roof)
-      // g — color 0…1
-      let yy = 64 + Math.random() * 10 + 1 | 0
-      let isRoof = true
-      let color = 256*Math.random()
-      for(;yy>=64;yy--){
-        let [x, y, z] = [xx,yy,zz].map(d=>d-64)
-        if(isRoof) {
-          texVoxelsArray[zz][yy][xx] = [4,color,0,0]
-          isRoof = false
-        }
-        else if(y==0) {
-          texVoxelsArray[zz][yy][xx] = [1,0,0,0]
-        }
-        else {
-          texVoxelsArray[zz][yy][xx] = [3,color,0,0]
-        }
-      }
-      // if (y < 0) {
-      //   texVoxelsArray[zz][yy][xx] = [255*.25,0,0,0]
-      //   continue
-      // }
-      // if (Math.hypot(x, y, z) < 3) texVoxelsArray[zz][yy][xx] = [255,255,255,255]
-
+let texVoxelsArray = [...Array(128)].map(() => [...Array(128)].map(() => [...Array(128)].map(_ => [0, 0, 0, 0])))
+for (let color = 0; color < 1; color += .1) {
+  let pos = [64, 64, 64]
+  for (let step = 0; step < 10; step++) {
+    let dir = Math.random() * 3 | 0
+    let move = (Math.random() * 2 | 0) * 2 - 1
+    let repeat = 1
+    if (dir == 0) repeat = 4
+    for(let r=0;r<repeat;r++){
+      pos[dir] += move
+      texVoxelsArray[pos[0]][pos[1]][pos[2]] = [1, color*255, 0, 0]
+      texVoxelsArray[pos[0]][pos[1]][128-pos[2]] = [1, color*255, 0, 0]
     }
+    // if(Math.abs(pos[1]-64) > 3) pos[dir] -= move
   }
-      
+}
+
 // texVoxelsArray[zz][yy][xx] = [xx*2,yy*2,zz*2,1]
 console.log(texVoxelsArray)
 
@@ -136,7 +122,7 @@ let texVoxels = twgl.createTexture(gl, {
   width: texVoxelsArray[0].length,
   mag: gl.NEAREST,
   min: gl.NEAREST,
-}, (err, tex, img)=>{});
+}, (err, tex, img) => { });
 
 twgl.resizeCanvasToDisplaySize(gl.canvas);
 passes = {
@@ -191,15 +177,20 @@ function animate() {
   draw();
   // setTimeout(requestAnimationFrame, 50, animate);
   // if (isRendering == false)
-  // if (tick < 4)
-    requestAnimationFrame(animate);
+  if (tick < 800)
+  requestAnimationFrame(animate);
+  console.log(tick)
 }
 
 window.addEventListener('resize', (e) => {
+  resize()
+})
+
+function resize(){
   let w = window.innerWidth * window.devicePixelRatio
   let h = window.innerHeight * window.devicePixelRatio
   twgl.resizeFramebufferInfo(gl, passes.gi.buffer, passes.gi.attachments, w, h)
   twgl.resizeFramebufferInfo(gl, passes.gi.backbuffer, passes.gi.attachments, w, h)
   passes.gi.resolution = [w, h]
-})
-
+}
+resize()

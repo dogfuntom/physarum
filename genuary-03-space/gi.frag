@@ -9,11 +9,12 @@ uniform sampler2D backbuffer;
 uniform sampler2D u_tex_voxels;
 #define rnd(x) fract(54321.987 * sin(987.12345 * x + .1))
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
+#define PI 3.141519265
 
 out vec4 o;
 
 #define color(c) (c-cos((c + off) * 2. * 3.1415) * mul + add)
-vec3 off = vec3(.0, .7, .55);
+vec3 off = vec3(.0, .1, .2);
 vec3 mul = vec3(.5, .5, .5);
 vec3 add = vec3(.5, .5, .5);
 
@@ -31,13 +32,14 @@ mat3 rotate3D(float angle, vec3 axis) {
 }
 
 float sdfVoxel(vec3 p) {
+    // p.z = abs(p.z);
     id = 0.;
     // float texture = step(.5, fract(p.y * 8.) - .25);
     p = floor(p);
     // vec3 pI = p;
 
-    vec3 pTex = p + 128./2.;
-    vec2 uvTex = vec2(pTex.x, pTex.y + 128. * pTex.z)/vec2(128., 128.*128.);
+    vec3 pTex = p + 128. / 2.;
+    vec2 uvTex = vec2(pTex.x, pTex.y + 128. * pTex.z) / vec2(128., 128. * 128.);
     vec4 tx = texture(u_tex_voxels, uvTex);
     type = int(tx.r * 255.);
     tex = tx.g;
@@ -59,11 +61,7 @@ float sdfVoxel(vec3 p) {
 }
 
 float sdf(vec3 p) {
-
-    // пытался крыши присобачить, но не заработали https://bit.ly/3eGwpsn
-
-    // int sw = int(floor(rnd(id + u_params[0]) * 3.));
-    // int sw = 0;
+    // p.z = abs(p.z);
     float res;
     // switch(type) {
     //     case 4:
@@ -80,18 +78,9 @@ float sdf(vec3 p) {
 
     //     case 3:
     // }
-    vec3 s = vec3(.45);
-    res = length(p - clamp(p, -s, s))-.001;
+    vec3 s = vec3(.5);
+    res = length(p - clamp(p, -s, s)) - .001;
     return res;
-    // float r = floor(rnd(id + 3.) * 8.) / 8. / 4. + .0001;
-    // p = abs(p);
-    // p -= .5 - r;
-    // if(p.z < p.x)
-    //     p.xz = p.zx;
-    // if(p.y > p.x)
-    //     p.xy = p.yx;
-    // // p.xy -= .5-r;
-    // return length(p.xz) - r;
 }
 
 vec3 norm(vec3 p) {
@@ -100,44 +89,64 @@ vec3 norm(vec3 p) {
     return normalize(vec3(d - sdf(p - e.xyy), d - sdf(p - e.yxy), d - sdf(p - e.yyx)));
 }
 
+vec3 getLight(vec3 p) {
+    if(length(p.zy) < 50.) {
+        if(p.x > 20.)
+            return vec3(6, 2, 2);
+        if(p.x < -20.)
+            return vec3(1, 1, 2);
+    }
+    return vec3(0);
+}
+
 void main() {
     float i, d, e, s, l;
 
-    vec2 uv = (gl_FragCoord.xy + rnd(length(mod(vec3(gl_FragCoord.xy,u_time),3.141592)))-.5 - u_resolution * .5) / u_resolution.y + .001;
+    vec2 uv = (gl_FragCoord.xy + rnd(length(mod(vec3(gl_FragCoord.xy, u_time), 3.141592))) - .5 - u_resolution * .5) / u_resolution.y + .001;
     // vec2 uv = (gl_FragCoord.xy - u_resolution * .5) / u_resolution.y + .001;
-    vec3 rd = (vec3(0, 0, 1)), ro, p, pf;
-    ro.xz = uv * 64.;
-    ro.y = 20.;
-    // vec3 rd = (vec3(uv, 1)), ro, p, pf;
-    // ro = vec3(0,0,-20);
-    rd.yz *= rot(atan(1. / sqrt(2.)));
-    // ro.yz *= rot(atan(1. / sqrt(2.)));
-    rd.xz *= rot(3.1415 / 4.);
-    ro.xz *= rot(3.1415 / 4.);
+    // vec3 rd = (vec3(0, 0, 1)), ro, p;
+    // ro.xz = uv * 32.;
+    // // vec3 rd = (vec3(uv, 1)), ro, p;
+    // // ro = vec3(0,0,-20);
+    // rd.yz *= rot(atan(1. / sqrt(2.)));
+    // // ro.yz *= rot(atan(1. / sqrt(2.)));
+    // rd.xz *= rot(3.1415 / 4.);
+    // ro.xz *= rot(3.1415 / 4.);
+    // // ro.y = 20.;
+    // // ro.y *= .5;
+
+    vec3 rd = (vec3(0, 0, 1)), ro = vec3(uv * 16. * rot(PI / 4.), -20.), p;
+    mat3 rt = rotate3D(-atan(1. / sqrt(2.)), vec3(-1, 1, 0));
+    vec3 light;
+    rd *= rt;
+    ro *= rt;
+    // rd.xy*=rot(t);
+    // ro.xy*=rot(t);
 
     vec3 n;
-    for(; s++ < 4.;) {
+    for(; s++ < 6.;) {
         d = 0.;
-        for(i = 0.; i++ < 200.;) {
+        for(i = 0.; i++ < 100.;) {
             p = ro + rd * d;
             vec3 dp = (step(0., rd) - fract(p)) / rd;
             float dpmin;
 
-            dpmin = min(min(dp.x,dp.y),dp.z) + 1e-4;
+            dpmin = min(min(dp.x, dp.y), dp.z) + 1e-4;
 
             bool breaker = false;
             if(sdfVoxel(p) < 0.) {
                 float ddd = 0.;
-                for(float backupI; backupI++ < 200.;) {
+                for(float backupI; backupI++ < 100.;) {
                     p = ro + rd * (d + ddd);
                     ddd += e = sdf(fract(p) - .5);
-                    if(e < .001 || ++i > 200.) { // налетели на сферу
+                    if(e < .001 || ++i > 100.) { // налетели на сферу
                         n = norm(fract(p) - .5);
                         col *= color(tex);
                         // if(id > 0.)
                             // col *= n+.5;
                         // if(s > 1.)
                         //     col *= .6;
+                        dpmin = ddd;
                         breaker = true;
                         break;
                     }
@@ -146,26 +155,29 @@ void main() {
                     }
                 }
             }
-            if(breaker == true)
-                break;
 
             d += dpmin;
 
+            if(breaker == true)
+                break;
+
         }
-        if(p.y > 30.) {
+        if(d > 60.) {
+            break;
+        }
+        light = getLight(p);
+        if(length(light) > 0.) {
             break;
         } else {
             rd = reflect(rd, n);
-            rd.x += (rnd(length(uv) + u_frame + .0) * 2. - 1.) * .7;
-            rd.y += (rnd(length(uv) + u_frame + .1) * 2. - 1.) * .7;
-            rd.z += (rnd(length(uv) + u_frame + .2) * 2. - 1.) * .7;
+            rd.x += (rnd(length(uv) + u_frame + .0) * 2. - 1.) * .8;
+            rd.y += (rnd(length(uv) + u_frame + .1) * 2. - 1.) * .8;
+            rd.z += (rnd(length(uv) + u_frame + .2) * 2. - 1.) * .8;
             rd = normalize(rd);
             ro = p + n * .001;
         }
     }
-    if(p.y > 30.) {} else {
-        col *= 0.;
-    }
+    col *= light;
     o += mix(texture(backbuffer, gl_FragCoord.xy / u_resolution), col.rgbb, 1. / (u_frame + 0.));
     // o += texture
 }
