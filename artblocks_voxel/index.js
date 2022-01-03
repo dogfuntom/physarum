@@ -6,7 +6,7 @@
 // tokenData.hash = '0xb578aeb4b58e39423c9ff40fde67c2d416082d6fc09aedd5c5a5ecf5db25e1a6' // антенка заберает шаги и пипке не достаётся
 // tokenData.hash = '0x5f38546190c55b50d86e95c8652a2d5a42bb0241f6d4fb54fd90ab82f930d81e'
 // 0xab19d56b9b3b8d9ce69981b78f771458a258aa2000179624e6a0f2c20edb9cdd // текстура глаз проглядывает
-// tokenData.hash = '0xe46ceed2826863941e4360eeba100668517684ed380fe5b9d1beb5b5fa38a3dc'
+// tokenData.hash = '0xa8c927f52195b881560726381b1cfb8660be009a46f631e7f5f9a28f9a759d28'
 
 // 
 
@@ -787,6 +787,32 @@ function calculateFeatures(tokenData) {
                     return vec2(blockId); // is full
                 }
 
+                // vec3 rgb2hsb( in vec3 c ){
+                //     vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+                //     vec4 p = mix(vec4(c.bg, K.wz),
+                //                  vec4(c.gb, K.xy),
+                //                  step(c.b, c.g));
+                //     vec4 q = mix(vec4(p.xyw, c.r),
+                //                  vec4(c.r, p.yzx),
+                //                  step(p.x, c.r));
+                //     float d = q.x - min(q.w, q.y);
+                //     float e = 1.0e-10;
+                //     return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)),
+                //                 d / (q.x + e),
+                //                 q.x);
+                // }
+                
+                // //  Function from Iñigo Quiles
+                // //  https://www.shadertoy.com/view/MsS3Wc
+                // vec3 hsb2rgb( in vec3 c ){
+                //     vec3 rgb = clamp(abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),
+                //                              6.0)-3.0)-1.0,
+                //                      0.0,
+                //                      1.0 );
+                //     rgb = rgb*rgb*(3.0-2.0*rgb);
+                //     return c.z * mix(vec3(1.0), rgb, c.y);
+                // }
+
                 void main() {
                     if(gl_z_render == 1.){
                         gl_FragData[0] = texture2D(gl_z_texCol, gl_FragCoord.xy/gl_z_rs);
@@ -801,6 +827,7 @@ function calculateFeatures(tokenData) {
                         // gl_FragData[0].a=1.;
                         // return;
                         if(dist>camDist*2.) return;
+                        // gl_FragData[0].rgb = rgb2hsb(gl_FragData[0].rgb);
                         // gl_FragData[0] *= smoothstep(35.,15.,texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs).a);
                         // vec3 f = V(norm.x,norm.y,norm.z);
                         // gl_FragData[0].rgb =fract(norm)*.1+.9;
@@ -816,6 +843,7 @@ function calculateFeatures(tokenData) {
                             kernel += (rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137))+.1)*2.-1.) * u;
                             kernel += (rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137))+.2)) * f;
                             kernel *= kernel*kernel;
+                            // kernel /= length(kernel);
                             // kernel *= (rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137))+.2));
                             // kernel += f;
                             // kernel = V(0,1,0);
@@ -824,11 +852,15 @@ function calculateFeatures(tokenData) {
                             // kernel = V(0.,-0.1,0.);
                             
                             vec3 offset = V(dot(kernel,vec3(1,0,0)), dot(kernel,vec3(0,1,0)), dot(kernel,V(0,0,1)));
-                            if(dist - offset.z * .05 > texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs + .04 * offset.xy).a)
-                                gl_FragData[0]*=.993;
+                            if(dist - offset.z * 1.1 > texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs + .04 * offset.xy).a){
+                                // gl_FragData[0].b*=.995;
+                                // gl_FragData[0].s*=1.001;
+                                gl_FragData[0].rgb*=.995;
+                            }
                         }
                         // gl_FragData[0]/=100.;
                             // return;
+                        // gl_FragData[0].rgb = hsb2rgb(gl_FragData[0].rgb);
                         gl_FragData[0].a = 1.;
                         return;
                     }
