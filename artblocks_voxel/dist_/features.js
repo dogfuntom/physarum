@@ -6,7 +6,7 @@
 // tokenData.hash = '0xb578aeb4b58e39423c9ff40fde67c2d416082d6fc09aedd5c5a5ecf5db25e1a6' // антенка заберает шаги и пипке не достаётся
 // tokenData.hash = '0x5f38546190c55b50d86e95c8652a2d5a42bb0241f6d4fb54fd90ab82f930d81e'
 // 0xab19d56b9b3b8d9ce69981b78f771458a258aa2000179624e6a0f2c20edb9cdd // текстура глаз проглядывает
-// tokenData.hash = '0x104913f78ee1ea3142baa285b1e18add645f794165bd498f51b28b17b52a43fd'
+// tokenData.hash = '0xe46ceed2826863941e4360eeba100668517684ed380fe5b9d1beb5b5fa38a3dc'
 
 // 
 

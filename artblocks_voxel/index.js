@@ -6,7 +6,7 @@
 // tokenData.hash = '0xb578aeb4b58e39423c9ff40fde67c2d416082d6fc09aedd5c5a5ecf5db25e1a6' // антенка заберает шаги и пипке не достаётся
 // tokenData.hash = '0x5f38546190c55b50d86e95c8652a2d5a42bb0241f6d4fb54fd90ab82f930d81e'
 // 0xab19d56b9b3b8d9ce69981b78f771458a258aa2000179624e6a0f2c20edb9cdd // текстура глаз проглядывает
-// tokenData.hash = '0x104913f78ee1ea3142baa285b1e18add645f794165bd498f51b28b17b52a43fd'
+// tokenData.hash = '0xe46ceed2826863941e4360eeba100668517684ed380fe5b9d1beb5b5fa38a3dc'
 
 // 
 
@@ -790,32 +790,45 @@ function calculateFeatures(tokenData) {
                 void main() {
                     if(gl_z_render == 1.){
                         gl_FragData[0] = texture2D(gl_z_texCol, gl_FragCoord.xy/gl_z_rs);
-                        V norm = texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs).rgb;
-                        norm.z = -norm.z;
-                        // norm.xz *= rot(${u_camAngXZ});
-                        // norm.yz *= rot(${u_camAngYZ});
-                        // gl_FragData[0].rgb=norm;
+                        // return;
+                        V norm = (texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs).rgb);
+                        // norm.y = -norm.y;
+                        // norm.z = -norm.z;
+                        // norm.x = -norm.x;
+                        F dist = texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs).a;
+                        // gl_FragData[0].rgb =normalize(norm);
+                        // gl_FragData[0].rgb =vec3(10./dist);
                         // gl_FragData[0].a=1.;
                         // return;
-                        F dist = texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs).a;
                         if(dist>camDist*2.) return;
                         // gl_FragData[0] *= smoothstep(35.,15.,texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs).a);
-                        vec3 f = -V(norm.x,-norm.y,norm.z);
-                        vec3 r = cross(vec3(1,0,0), f);
+                        // vec3 f = V(norm.x,norm.y,norm.z);
+                        // gl_FragData[0].rgb =fract(norm)*.1+.9;
+                        // gl_FragData[0].a=1.;
+                        vec3 f = norm;
+                        // gl_FragData[0].rgb = norm;
+                        // return;
+                        vec3 r = normalize(cross(vec3(1,2,3), f));
                         vec3 u = cross(f, r);
-                        for(float i=0.; i<10.; i++){
+                        for(float i=0.; i<100.; i++){
                             V kernel = V(0,0,0);
-                            kernel += (rnd(i+length(gl_FragCoord/1000.+1.)+dist)*2.-1.) * r;
-                            kernel += (rnd(i+length(gl_FragCoord/1000.+1.)+dist+.1)*2.-1.) * u;
-                            kernel += (rnd(i+length(gl_FragCoord/1000.+1.)+dist+.2)) * f;
-                            // kernel *= rnd(i+dist+.3);
-                            vec3 offset = V(dot(kernel,vec3(1,0,0)), dot(kernel,vec3(0,1,0)), dot(kernel,V(0,0,-1)));
-
-                            // if(dist > texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs + .1 * (vec2(rnd(i),rnd(i+.1))-.5)).a)
-                            F rad = .4;
-                            if(dist + offset.z * rad > texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs + rad * offset.xy).a)
-                                gl_FragData[0]*=.9;
+                            kernel += (rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137)))*2.-1.) * r;
+                            kernel += (rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137))+.1)*2.-1.) * u;
+                            kernel += (rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137))+.2)) * f;
+                            kernel *= kernel*kernel;
+                            // kernel *= (rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137))+.2));
+                            // kernel += f;
+                            // kernel = V(0,1,0);
+                            // return;
+                            // kernel *=  rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137))+.3);
+                            // kernel = V(0.,-0.1,0.);
+                            
+                            vec3 offset = V(dot(kernel,vec3(1,0,0)), dot(kernel,vec3(0,1,0)), dot(kernel,V(0,0,1)));
+                            if(dist - offset.z * .05 > texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs + .04 * offset.xy).a)
+                                gl_FragData[0]*=.993;
                         }
+                        // gl_FragData[0]/=100.;
+                            // return;
                         gl_FragData[0].a = 1.;
                         return;
                     }
@@ -830,7 +843,8 @@ function calculateFeatures(tokenData) {
                     //    ro.yz *= rot(${u_camAngYZ});
                     //    rd.yz *= rot(${u_camAngYZ});
                     //    ro.xz *= rot(${u_camAngXZ});
-                    //    rd.xz *= rot(${u_camAngXZ});                float d,e=1.,j;
+                    //    rd.xz *= rot(${u_camAngXZ});
+                    // float d,e=1.,j;
                     // vec3 p;
                     // for(float i=0.;i<99.;i++){
                     //     j=i;
@@ -841,7 +855,19 @@ function calculateFeatures(tokenData) {
                     //     if(e<1e-3)break;
                     // }
                     // gl_FragData[0] = vec4(step(-40.,-d));
-                    // gl_FragData[1] = vec4(normalize(norm(p)),d);
+                    // vec3 n = norm(p);
+                    // // n.xz *= -rot(${u_camAngXZ});
+                    // // n.xz *= -rot(${u_camAngXZ});
+                    // // n.xz *= -rot(${u_camAngXZ});
+                    // // n.yz *= rot(${u_camAngYZ});
+                    // // n.xy *= rot(.95);
+                    // n.xz *= rot(PI/2. + PI/4.);
+                    // n.xy *= rot(atan(sqrt(2.)));
+                    // n = n.zyx;
+                    // n.x *= -1.;
+                    // n.z *= -1.;
+
+                    // gl_FragData[1] = vec4((n),d);
                     // return;
                     // // END OF DEBUG
 
@@ -922,6 +948,8 @@ function calculateFeatures(tokenData) {
                                     // if(e < .001 || ++i > 200.) { // FIXME restore this i++ condition
                                     if(ep < e && e < outlineWidth) {
                                         outline = true;
+                                        breaker = true;
+                                        dpmin = ddd;
                                         break;
                                     }
                                     ep = e;
@@ -1024,7 +1052,12 @@ function calculateFeatures(tokenData) {
                         o += c;
                     }
                     gl_FragData[0] = vec4(o/gl_z_aa,1);
-                    gl_FragData[1] = vec4(nnn/gl_z_aa,d);
+                    nnn.xz *= rot(PI/2. + PI/4.);
+                    nnn.xy *= rot(atan(sqrt(2.)));
+                    nnn = nnn.zyx;
+                    nnn.x *= -1.;
+                    nnn.z *= -1.;
+                    gl_FragData[1] = vec4(nnn,d);
                     // gl_FragData[1] = vec4(0,0,1,1);
                     // return;
                 }`/*glsl*/.replace(/@/g,'\n#define ').replace(/→/g,'return '),
