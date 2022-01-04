@@ -996,7 +996,7 @@ function calculateFeatures(tokenData) {
                             vec3 offset = V(dot(kernel,vec3(1,0,0)), dot(kernel,vec3(0,1,0)), dot(kernel,V(0,0,1)));
                             if(dist - offset.z * 1.1 > texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs + .15 * offset.xy).a){
                                 // gl_FragData[0] *= .99;
-                                c*=.95;
+                                c*=.97;
                             }
                         }
                     }
@@ -1107,7 +1107,7 @@ function calculateFeatures(tokenData) {
                 commandNormals({r: size_})
                 commandRender({r: size_})
                 // console.log(size_)
-                if(tick > 8) {fr.cancel()}
+                if(tick > 8) {document.title='👾',fr.cancel()}
             })
     
     /*end render*/
