@@ -6,7 +6,7 @@
 // tokenData.hash = '0xb578aeb4b58e39423c9ff40fde67c2d416082d6fc09aedd5c5a5ecf5db25e1a6' // антенка заберает шаги и пипке не достаётся
 // tokenData.hash = '0x5f38546190c55b50d86e95c8652a2d5a42bb0241f6d4fb54fd90ab82f930d81e'
 // 0xab19d56b9b3b8d9ce69981b78f771458a258aa2000179624e6a0f2c20edb9cdd // текстура глаз проглядывает
-// tokenData.hash = '0xa8c927f52195b881560726381b1cfb8660be009a46f631e7f5f9a28f9a759d28'
+tokenData.hash = '0x5637b39f91278a85df462164100e0ee8b24bb786d39edd02ea005133e092feb1'
 
 // 
 
@@ -68,7 +68,7 @@ function calculateFeatures(tokenData) {
             //1     Studs: R() ** 8 * 2 | 0,
             //2     Palette: 0,
             //     // 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
-            //3     ColorScheme: (1 - R() ** .3) * 5 | 0,
+            //3     ColorScheme: (1 - R() ** .3) * 4 | 0,
             //4     Layout: 0,
             //5     BackgroundType: RL([2, 1], .5),
             //6     BackgroundLight: (R() * 3 | 0) - 1,
@@ -110,8 +110,7 @@ function calculateFeatures(tokenData) {
                 // RL([
                 [ // cutie
                     4,
-                    3 + R() * 4 | 0, // FIXME restore
-                    // 6 + R() * 0,
+                    3 + R() * 4 | 0,
                     0,
                     1,
                     1,
@@ -141,7 +140,6 @@ function calculateFeatures(tokenData) {
         
             // features[4] = R() ** .4 * presets.length | 0;
             features[4] = M.sqrt(1-(R()-1)**2) * presets.length | 0;
-            // features[4] = 1; // FIXME remove
           
             ([ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra ] = presets[features[4]])
             // console.log('presets[features[4]',presets[features[4]])
@@ -258,7 +256,7 @@ function calculateFeatures(tokenData) {
                 let bvt
                 let isExtra = 0
                 let bvtInitial = RL(blocksVariants)
-                if (n >= blocksNumber - extra && features[3] != 4)
+                if (n >= blocksNumber - extra)
                     bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6, maxTry = 6, isExtra = 1
                 // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
                 // тот, что лучше подходит под критерий.
@@ -488,16 +486,16 @@ function calculateFeatures(tokenData) {
             console.log(features)
                 
             features[6] = { '1': 'Left', '0': 'Center', '-1': 'Right' }[features[6]]
-            if (features[3] == 4/*gaz*/ || features[3] == 3/*ranibow*/) features[6] = 0
+            // if (features[3] == 4/*gaz*/ || features[3] == 3/*ranibow*/) features[6] = 0
             features[5] = { '1': 'Circle', '2': 'Squircle' }[features[5]]
             features[1] = { '0': 'Convex', '1': 'Concave' }[features[1]]
-            if (features[3] == 4/*gaz*/) features[5] = 'Empty'
+            // if (features[3] == 4/*gaz*/) features[5] = 'Empty'
             features[2] = { '0': 'Black and white', '1': 'Summer', '2': 'Colorful', '3': 'Magenta blue', '4': 'Plastic', '5': 'Winter', '6': 'Spring', '7': 'Vivid', '8': 'Eighth' }[features[2]]
-            if (features[3] == 4/*gaz*/) features[2] = 'Gaz'
+            // if (features[3] == 4/*gaz*/) features[2] = 'Gaz'
             if (features[3] == 3/*rainbow*/) features[2] = 'Rainbow'
             features[4] = { '0': 'Cage', '1': 'Tiny', '2': 'Mushroom', '3': 'Compact', '4': 'Random' }[features[4]]
             features[0] = { '0': 'Z', '1': 'X' }[features[0]]
-            features[3] = { '0': 'Textured', '1': 'Not textured', '2': 'Monochrome', '3': 'Rainbow', '4': 'Gaz' }[features[3]]
+            features[3] = { '0': 'Textured', '1': 'Not textured', '2': 'Monochrome', '3': 'Rainbow'}[features[3]]
             let names = ['Symmetry','Studs','Palette','Color scheme','Layout','Background type','Background light','Blocks number','Height','Eyes','Aerials',]
             let f = {}
             for(let i=0; i<names.length; i++){

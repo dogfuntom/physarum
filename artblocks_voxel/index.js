@@ -6,7 +6,7 @@
 // tokenData.hash = '0xb578aeb4b58e39423c9ff40fde67c2d416082d6fc09aedd5c5a5ecf5db25e1a6' // антенка заберает шаги и пипке не достаётся
 // tokenData.hash = '0x5f38546190c55b50d86e95c8652a2d5a42bb0241f6d4fb54fd90ab82f930d81e'
 // 0xab19d56b9b3b8d9ce69981b78f771458a258aa2000179624e6a0f2c20edb9cdd // текстура глаз проглядывает
-// tokenData.hash = '0xa8c927f52195b881560726381b1cfb8660be009a46f631e7f5f9a28f9a759d28'
+tokenData.hash = '0x5637b39f91278a85df462164100e0ee8b24bb786d39edd02ea005133e092feb1'
 
 // 
 
@@ -74,7 +74,7 @@ function calculateFeatures(tokenData) {
             //1     Studs: R() ** 8 * 2 | 0,
             //2     Palette: 0,
             //     // 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
-            //3     ColorScheme: (1 - R() ** .3) * 5 | 0,
+            //3     ColorScheme: (1 - R() ** .3) * 4 | 0,
             //4     Layout: 0,
             //5     BackgroundType: RL([2, 1], .5),
             //6     BackgroundLight: (R() * 3 | 0) - 1,
@@ -116,8 +116,7 @@ function calculateFeatures(tokenData) {
                 // RL([
                 [ // cutie
                     4,
-                    3 + R() * 4 | 0, // FIXME restore
-                    // 6 + R() * 0,
+                    3 + R() * 4 | 0,
                     0,
                     1,
                     1,
@@ -147,7 +146,6 @@ function calculateFeatures(tokenData) {
         
             // features[4] = R() ** .4 * presets.length | 0;
             features[4] = M.sqrt(1-(R()-1)**2) * presets.length | 0;
-            // features[4] = 1; // FIXME remove
           
             ([ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra ] = presets[features[4]])
             // console.log('presets[features[4]',presets[features[4]])
@@ -264,7 +262,7 @@ function calculateFeatures(tokenData) {
                 let bvt
                 let isExtra = 0
                 let bvtInitial = RL(blocksVariants)
-                if (n >= blocksNumber - extra && features[3] != 4)
+                if (n >= blocksNumber - extra)
                     bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6, maxTry = 6, isExtra = 1
                 // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
                 // тот, что лучше подходит под критерий.
@@ -534,16 +532,16 @@ function calculateFeatures(tokenData) {
             console.log(features)
                 
             features[6] = { '1': 'Left', '0': 'Center', '-1': 'Right' }[features[6]]
-            if (features[3] == 4/*gaz*/ || features[3] == 3/*ranibow*/) features[6] = 0
+            // if (features[3] == 4/*gaz*/ || features[3] == 3/*ranibow*/) features[6] = 0
             features[5] = { '1': 'Circle', '2': 'Squircle' }[features[5]]
             features[1] = { '0': 'Convex', '1': 'Concave' }[features[1]]
-            if (features[3] == 4/*gaz*/) features[5] = 'Empty'
+            // if (features[3] == 4/*gaz*/) features[5] = 'Empty'
             features[2] = { '0': 'Black and white', '1': 'Summer', '2': 'Colorful', '3': 'Magenta blue', '4': 'Plastic', '5': 'Winter', '6': 'Spring', '7': 'Vivid', '8': 'Eighth' }[features[2]]
-            if (features[3] == 4/*gaz*/) features[2] = 'Gaz'
+            // if (features[3] == 4/*gaz*/) features[2] = 'Gaz'
             if (features[3] == 3/*rainbow*/) features[2] = 'Rainbow'
             features[4] = { '0': 'Cage', '1': 'Tiny', '2': 'Mushroom', '3': 'Compact', '4': 'Random' }[features[4]]
             features[0] = { '0': 'Z', '1': 'X' }[features[0]]
-            features[3] = { '0': 'Textured', '1': 'Not textured', '2': 'Monochrome', '3': 'Rainbow', '4': 'Gaz' }[features[3]]
+            features[3] = { '0': 'Textured', '1': 'Not textured', '2': 'Monochrome', '3': 'Rainbow'}[features[3]]
             let names = ['Symmetry','Studs','Palette','Color scheme','Layout','Background type','Background light','Blocks number','Height','Eyes','Aerials',]
             let f = {}
             for(let i=0; i<names.length; i++){
@@ -569,7 +567,7 @@ function calculateFeatures(tokenData) {
 
             document.body.appendChild(canvas)
             let bg = u_palette.slice(3*palette_bg,3+3*palette_bg)//.map(v=>v*255)
-            canvas.style.background=(features[3] == 4 || features[3] == 3)? '#333':`rgb(${bg})`
+            canvas.style.background=(features[3] == 3)? '#333':`rgb(${bg})`
             
             canvas.width = size_
             canvas.height = size_
@@ -581,27 +579,6 @@ function calculateFeatures(tokenData) {
                 extensions: ['webgl_draw_buffers', 'oes_texture_float'],
               })
             let tex3d = regl.texture(tex3dArray)
-            
-            // console.log('regl.limits.maxViewportDims',regl.limits.maxViewportDims)
-            // console.log('regl.limits.maxRenderbufferSize',regl.limits.maxRenderbufferSize)
-            // console.log('u_palette.map(v=>v/255)',u_palette.map(v=>v/255))
-    
-            // FIXME
-            let light1 = [M.random(),M.random(),M.random()]
-            let light2 = [M.random(),M.random(),M.random()]
-            console.log('light1, light2', light1, light2)
-
-            // light1, light2 (3) [0.992003076007242, 0.7092260590879944, 0.38469805290430803] (3) [0.9041283356507044, 0.8380552919223743, 0.5778508941006015]
-            // light1, light2 (3) [0.924254643441605, 0.7079949946913848, 0.0493938126635769] (3) [0.20541698348156623, 0.37254540967860383, 0.8433268946490056]
-            // light1, light2 (3) [0.6158531508882272, 0.6139008579420566, 0.17786659907275837] (3) [0.9813180321794011, 0.9982992602452041, 0.7668910925091919]
-            // light1, light2 (3) [0.932442501868983, 0.9082303618338488, 0.009844186105287589] (3) [0.7006932913286141, 0.9490704848787237, 0.09868423307048912] 4 
-            // ight1, light2 (3) [0.8248451361057292, 0.06409106245324048, 0.5490512027458267] (3) [0.07415444316095177, 0.08629829081972429, 0.43827276903683243] 4
-            // light1, light2 (3) [0.7467026486517054, 0.5708240254317805, 0.5800314813287009] (3) [0.3369273320379955, 0.1340341420950686, 0.1433960574894524] 4
-
-            // light1 = [0.9647469871703527, 0.8489233290981129, 0.24612093748053598]
-            // light2 = [0.6555195159791192, 0.905291854899702, 0.41970827215701045]
-            light1 = [0,1,.5]
-            // light2 = [.5,2,1]
 
             let fbo = regl.framebuffer({
                 color: [
@@ -629,7 +606,7 @@ function calculateFeatures(tokenData) {
                 #define N normalize
                 #define L length
                 #define v vec2
-                mat2 rot(F a) {→mat2(cos(a),-sin(a),sin(a),cos(a));} // FIXME
+                mat2 rot(F a) {→mat2(cos(a),-sin(a),sin(a),cos(a));} // FIXME make define
                 #define rnd(x) fract(54321.987 * sin(987.12345 * x + .1))
                 // #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
                 #define EPS .0001
@@ -780,7 +757,7 @@ function calculateFeatures(tokenData) {
                     if(fract(p/boundingBox) != p/boundingBox) return -v(1.);
                     vec2 vox, texSize = vec2(boundingBox.x, boundingBox.y*boundingBox.z);
                     vox.x = p.x;
-                    vox.y = p.z + p.y * 10.; // FIXME
+                    vox.y = p.z + p.y * 10.;
                     vec2 voxN = (vox+.5) / texSize;
                     blockId = ivec2(texture2D(tex3d, voxN).rg * 64.);
                     // if(blockId == 2) discard;
@@ -822,7 +799,10 @@ function calculateFeatures(tokenData) {
                         // norm.z = -norm.z;
                         // norm.x = -norm.x;
                         F dist = texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs).a;
-                        // gl_FragData[0].rgb =normalize(norm);
+                        // gl_FragData[0].rgb = vec3(smoothstep(30.,20.,dist));
+                        // gl_FragData[0].a = 1.;
+                        // return;
+                        // gl_FragData[0].rgb =norm;
                         // gl_FragData[0].rgb =vec3(10./dist);
                         // gl_FragData[0].a=1.;
                         // return;
@@ -905,7 +885,7 @@ function calculateFeatures(tokenData) {
 
 
                     ${uniforms}
-                    V o = V(0), nnn;
+                    V o = V(0), n, nnn;
                     v uv, uvI = (gl_FragCoord.xy * 2. - gl_z_rs)/gl_z_rs;
                     F d;
         
@@ -925,34 +905,10 @@ function calculateFeatures(tokenData) {
                         uv += pos * 2. / gl_z_rs;
         
                         V n, p, ro = V(uv * F(${viewBox[6]}) +
-                        // V n, p, ro = V(uv * 4. * F(${viewBox[6]}) + // FIXME remore * 4.
                             v(${viewBox[7]},
                             ${viewBox[8]}), -camDist),
-                        //    rd = V(0, 0, .9 + .1 * fract(1e3 * sin(1e3 * fract(L(uv)))));
                            rd = V(0, 0, 1);
                         bool outline = false;
-
-                        // RAYMARCH
-
-                        // TODO ro, rd
-
-                        // MY LEGO VERSION
-                        // for(F i = 0.; i < 1e2; i++) {
-                        //     j = i;
-                        //     p = d * rd + ro;
-                        //     p.z -= camDist;
-                        //     p.yz *= rot(${u_camAngYZ});
-                        //     p.xz *= rot(${u_camAngXZ}); // FIXME не каждый шаг реймарша вычислять этот угол, предварительно RD повернуть и всё
-
-                        //     d += e = dist(p);
-                        //     if(ep < e && e < .01) {
-                        //         outline = true;
-                        //         break;
-                        //     }
-                        //     ep = e;
-                        //     if(e < EPS || e > camDist*2.)
-                        //         break;
-                        // }
 
                         // vec3 ro = vec3(0,0,-10);
                         // vec3 rd = vec3(0,0,-10);
@@ -977,7 +933,6 @@ function calculateFeatures(tokenData) {
                                     jj++;
                                     p = ro + rd * (d + ddd);
                                     ddd += e = dist(p);
-                                    // if(e < .001 || ++i > 200.) { // FIXME restore this i++ condition
                                     if(ep < e && e < outlineWidth) {
                                         outline = true;
                                         breaker = true;
@@ -1034,7 +989,7 @@ function calculateFeatures(tokenData) {
                             if(${features[3]} == 3)
                             col = sin((L(p) / max(F(${gs}), F(${features[8]})) * 2. - V(0, .3, .6)) * 6.28) * .5 + .5;
 
-                            nnn = norm(p); // надо тут вычислять, видимо, где-то выше я сбиваю colIds выполняя дист
+                            n = norm(p); // надо тут вычислять, видимо, где-то выше я сбиваю colIds выполняя дист
                             // иначе colIds.z равен 0 с чего-то. Но почему тогда dist(p); не помогает?
                             if(colIds.z == 9) {
                                 col = V(0);
@@ -1063,15 +1018,15 @@ function calculateFeatures(tokenData) {
                                 // shading
                                 c = col;
                                 c *= min(1.5, 55. / jj) * .2 + .8;
-                                c *= dot(nnn, N(V(-.5,.5,0))) * .2 + 1.;
+                                c *= dot(n, N(V(-.5,.5,0))) * .2 + 1.;
 
                                 // glare
                                 if(colIds.z!=9)
-                                    c += pow(abs(dot(nnn, N(V(0, 1.5, .5)))), 40.);
+                                    c += pow(abs(dot(n, N(V(0, 1.5, .5)))), 40.);
                             }
                             // gazya
-                            if(${features[3]} == 4) // FIXME газю выпилиииить :-(
-                                c = (V(20. / jj));
+                            // if(${features[3]} == 4)
+                            //     c = (V(20. / jj));
                         }
                         // n = norm(p);
                         // c = n;
@@ -1082,8 +1037,10 @@ function calculateFeatures(tokenData) {
                         // c *= 30./jj;
 
                         o += c;
+                        nnn+=n;
                     }
                     gl_FragData[0] = vec4(o/gl_z_aa,1);
+                    nnn/=gl_z_aa;
                     nnn.xz *= rot(PI/2. + PI/4.);
                     nnn.xy *= rot(atan(sqrt(2.)));
                     nnn = nnn.zyx;
