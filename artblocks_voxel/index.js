@@ -1004,7 +1004,7 @@ function calculateFeatures(tokenData) {
 
                     gl_FragData[0] = mix(texture2D(gl_z_texCol, gl_FragCoord.xy/gl_z_rs), c.rgbb, 1. / gl_z_tk);
                     // n.xz *= rot(PI/2. + PI/4.);
-                    n.xz *= sign(${.5-features[0]})*rot(${u_camAngXZ});
+                    n.xz *= -sign(${features[0]-.5})*rot(${u_camAngXZ});
                     n.xy *= rot(atan(sqrt(2.)));
                     n = n.zyx;
                     n.xz *= -1.;
