@@ -6,7 +6,7 @@
 // tokenData.hash = '0xb578aeb4b58e39423c9ff40fde67c2d416082d6fc09aedd5c5a5ecf5db25e1a6' // антенка заберает шаги и пипке не достаётся
 // tokenData.hash = '0x5f38546190c55b50d86e95c8652a2d5a42bb0241f6d4fb54fd90ab82f930d81e'
 // 0xab19d56b9b3b8d9ce69981b78f771458a258aa2000179624e6a0f2c20edb9cdd // текстура глаз проглядывает
-tokenData.hash = '0x5637b39f91278a85df462164100e0ee8b24bb786d39edd02ea005133e092feb1'
+// tokenData.hash = '0x5637b39f91278a85df462164100e0ee8b24bb786d39edd02ea005133e092feb1'
 
 // 
 
@@ -596,7 +596,13 @@ function calculateFeatures(tokenData) {
               })
 
               let commandParams = {
-                frag: /*glsl*/`#extension GL_EXT_draw_buffers : require
+                frag: /*glsl*/`
+                
+                
+                
+                
+                
+                #extension GL_EXT_draw_buffers : require
                 precision highp float;
                 #define BLOCKS_NUMBER_MAX 60
                 #define PI 3.1415
@@ -607,7 +613,7 @@ function calculateFeatures(tokenData) {
                 #define L length
                 #define v vec2
                 mat2 rot(F a) {→mat2(cos(a),-sin(a),sin(a),cos(a));} // FIXME make define
-                #define rnd(x) fract(54321.987 * sin(987.12345 * x + .1))
+                #define gl_z_rnd(x) fract(54321.987 * sin(987.12345 * x + .1))
                 // #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
                 #define EPS .0001
                 F sabs(F p) {→sqrt(abs(p)*abs(p)+5e-5);}
@@ -749,7 +755,7 @@ function calculateFeatures(tokenData) {
                     // p.z += ${gs}.;
                     p.x += 5.;
                     p.z += 5.;
-                    p = floor(p+vec3(0,0,.0));
+                    p = floor(p+vec3(0,0,0));
                     if(p.y < 0.) return v(0);
                     // p.x -= .5;
                     // p.z -= .5;
@@ -759,7 +765,7 @@ function calculateFeatures(tokenData) {
                     vox.x = p.x;
                     vox.y = p.z + p.y * 10.;
                     vec2 voxN = (vox+.5) / texSize;
-                    blockId = ivec2(texture2D(tex3d, voxN).rg * 64.);
+                    blockId = ivec2(texture2D(gl_z_tex3d, voxN).rg * 64.);
                     // if(blockId == 2) discard;
                     return vec2(blockId); // is full
                 }
@@ -819,20 +825,20 @@ function calculateFeatures(tokenData) {
                         vec3 u = cross(f, r);
                         for(float i=0.; i<100.; i++){
                             V kernel = V(0,0,0);
-                            kernel += (rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137)))*2.-1.) * r;
-                            kernel += (rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137))+.1)*2.-1.) * u;
-                            kernel += (rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137))+.2)) * f;
-                            kernel *= kernel*kernel;
+                            kernel += (gl_z_rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137)))*2.-1.) * r;
+                            kernel += (gl_z_rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137))+.1)*2.-1.) * u;
+                            kernel += (gl_z_rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137))+.2)) * f;
+                            // kernel *= kernel * kernel;
+                            kernel = N(kernel) * pow(gl_z_rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137))),2.);
                             // kernel /= length(kernel);
-                            // kernel *= (rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137))+.2));
                             // kernel += f;
                             // kernel = V(0,1,0);
                             // return;
-                            // kernel *=  rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137))+.3);
+                            // kernel *=  gl_z_rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137))+.3);
                             // kernel = V(0.,-0.1,0.);
                             
                             vec3 offset = V(dot(kernel,vec3(1,0,0)), dot(kernel,vec3(0,1,0)), dot(kernel,V(0,0,1)));
-                            if(dist - offset.z * 1.1 > texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs + .04 * offset.xy).a){
+                            if(dist - offset.z * 1.1 > texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs + .2 * offset.xy).a){
                                 // gl_FragData[0].b*=.995;
                                 // gl_FragData[0].s*=1.001;
                                 gl_FragData[0].rgb*=.995;
@@ -1001,7 +1007,7 @@ function calculateFeatures(tokenData) {
                         
                             if(colIds.z == -1) {
                                 // // фончик
-                                // c = texture2D(tex3d,gl_FragCoord.xy / gl_z_rs).rgb;
+                                // c = texture2D(gl_z_tex3d,gl_FragCoord.xy / gl_z_rs).rgb;
                                 
                                 c = V(${bg})/255.;
                                 if(L(c) > .4){
@@ -1033,7 +1039,7 @@ function calculateFeatures(tokenData) {
                         // // texture debug
                         // c.g = fract(gl_FragCoord.y / gl_z_rs * 11.);
                         // c.g *= pow(fract(gl_FragCoord.y / gl_z_rs * 1000.),8.);// * fract(gl_FragCoord.x / gl_z_rs * 10.);
-                        // c.g += step(0.001,texture2D(tex3d, gl_FragCoord.xy / gl_z_rs).r) * 8.;
+                        // c.g += step(0.001,texture2D(gl_z_tex3d, gl_FragCoord.xy / gl_z_rs).r) * 8.;
                         // c *= 30./jj;
 
                         o += c;
@@ -1049,7 +1055,14 @@ function calculateFeatures(tokenData) {
                     gl_FragData[1] = vec4(nnn,d);
                     // gl_FragData[1] = vec4(0,0,1,1);
                     // return;
-                }`/*glsl*/.replace(/@/g,'\n#define ').replace(/→/g,'return '),
+                }
+                
+                
+                
+                
+                
+                
+                `/*glsl*/.replace(/@/g,'\n#define ').replace(/→/g,'return '),
               
                 vert: `attribute vec2 g;void main(){gl_Position=vec4(g,0,1);}`,
               
