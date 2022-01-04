@@ -812,7 +812,8 @@ function calculateFeatures(tokenData) {
                         // gl_FragData[0].rgb =vec3(10./dist);
                         // gl_FragData[0].a=1.;
                         // return;
-                        if(dist>camDist*2.) return;
+                        // if(dist>camDist*2.) return;
+                        dist = min(dist,camDist*2.);
                         // gl_FragData[0].rgb = rgb2hsb(gl_FragData[0].rgb);
                         // gl_FragData[0] *= smoothstep(35.,15.,texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs).a);
                         // vec3 f = V(norm.x,norm.y,norm.z);
