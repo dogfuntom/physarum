@@ -11,6 +11,10 @@
 
 // 
 
+if (window.location.hash) {
+    tokenData.hash = window.location.hash.slice(1)
+} // FIXME
+
 /*begin features*/
 function calculateFeatures(tokenData) {
     /*end features*/ 
@@ -643,7 +647,8 @@ function calculateFeatures(tokenData) {
                 
                 F dist(V p) {
                     // return max(length(p.xz)-.4,abs(p.y)-.9);
-                    // return length(p)-.6;
+                    // colIds = ivec3(1,1,1);
+                    // return length(fract(p)-.5)-.45;
 
                     // →length(fract(p)-.5)-.5;
                     p.x = abs(p.x);
@@ -653,8 +658,8 @@ function calculateFeatures(tokenData) {
                     for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
                         if(i >= ${blocks.length})
                             break;
+                            // if(i != blockId.y - 1)
                         if(i != blockId.x - 1 && i != blockId.y - 1)
-                        // if(i != blockId.y - 1)
                             continue;
                         V pb = p;
                         pb -= gl_z_ps[i];
@@ -738,6 +743,21 @@ function calculateFeatures(tokenData) {
                 }
 
                 vec2 sdfVoxel(vec3 p){
+                    // blockId *= 0;
+                    // p.xz += fract(float(${gs/2}));  // ODD
+                    // p.x = abs(p.x);
+                    // p.zx -= fract(float(${gs/2})); // ODD
+                    // p.x += 5.;
+                    // p.z += 5.;
+                    // p = floor(p+vec3(0,0,0));
+                    // if(p.y < 0.) return v(0);
+                    // vec3 boundingBox = vec3(10,1000 / 10,10);
+                    // if(fract(p/boundingBox) != p/boundingBox) return v(0);
+                    // blockId = ivec2(max(0., 3.-length(p)));
+                    // return vec2(blockId);
+
+
+                    blockId *= 0;
                     p.xz += fract(float(${gs/2}));  // ODD
                     // p.xz = p.zx;
                     p.x = abs(p.x);
@@ -751,7 +771,7 @@ function calculateFeatures(tokenData) {
                     // p.x -= .5;
                     // p.z -= .5;
                     vec3 boundingBox = vec3(10,1000 / 10,10);
-                    if(fract(p/boundingBox) != p/boundingBox) return -v(1.);
+                    if(fract(p/boundingBox) != p/boundingBox) return v(0);
                     vec2 vox, texSize = vec2(boundingBox.x, boundingBox.y*boundingBox.z);
                     vox.x = p.x;
                     vox.y = p.z + p.y * 10.;
@@ -881,6 +901,7 @@ function calculateFeatures(tokenData) {
                                 }
                                 ep = e;
                                 if(e < .001 || jj > 200. || d > camDist*2.) { // налетели на сферу
+                                    // discard;
                                     // if(id > 0.)
                                     //     col *= color(id);
                                         // col *= n+.5;

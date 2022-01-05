@@ -11,6 +11,10 @@
 
 // 
 
+if (window.location.hash) {
+    tokenData.hash = window.location.hash.slice(1)
+} // FIXME
+
 /*begin features*/
 function calculateFeatures(tokenData) {
     /*end features*/ 
