@@ -9,9 +9,7 @@
 // tokenData.hash = '0x2c141bd75924077b9359e2f3c64277193a39a16f3f8cd52ecc867432e58bf140' // wrong
 // tokenData.hash = '0xe195d59b945583b6ba7e9d7b883297f1f1d1f2c830e8a0be2e33d1473ca5b4f9' // good
 
-if (window.location.hash) {
-    tokenData.hash = window.location.hash.slice(1)
-} // FIXME
+// 
 
 /*begin features*/
 function calculateFeatures(tokenData) {
@@ -423,8 +421,7 @@ function calculateFeatures(tokenData) {
                             // console.log('xxx, yyy, zzz', xxx, yyy, zzz)
                             tex3dArray[zzz + 10 * yyy][xxx][0] = 
                             tex3dArray[zzz + 10 * yyy + 10][xxx][1] = 
-                            // 255 * (blocks.length+1) / 64
-                            (blocks.length+1)*255/256
+                            255 * (blocks.length+1) / 64
                         }
                         // console.log(tex3dArray)
                         // for(let xx = 0; xx<2; xx++)
@@ -598,7 +595,7 @@ function calculateFeatures(tokenData) {
 
               let commandParams = {
                 frag: /*glsl*/`#extension GL_EXT_draw_buffers : require
-                precision mediump float;
+                precision highp float;
                 #define BLOCKS_NUMBER_MAX 60
                 #define PI 3.1415
                 #define S smoothstep
@@ -630,7 +627,7 @@ function calculateFeatures(tokenData) {
                 ivec3 colIds = ivec3(0);
                 F gl;
                 F camDist = 30.;
-                ivec2 blockId = ivec2(0);
+                ivec2 blockId;
                 F cornerR = .01, gap = .015, block;
                 F outlineWidth = .015;//((cornerR+gap)*sqrt(2.) - cornerR);
                 
@@ -656,8 +653,8 @@ function calculateFeatures(tokenData) {
                     for(int i = 0; i < BLOCKS_NUMBER_MAX; i++) {
                         if(i >= ${blocks.length})
                             break;
-                        // if(i>0) // FIXME restore
-                        if(i != blockId.x - 1 && i != blockId.y - 1) // FIXME restore
+                        if(i != blockId.x - 1 && i != blockId.y - 1)
+                        // if(i != blockId.y - 1)
                             continue;
                         V pb = p;
                         pb -= gl_z_ps[i];
@@ -706,6 +703,8 @@ function calculateFeatures(tokenData) {
                             block = smax(block,dot(pb,V(0,.78*(7.-2.*gl_z_rt[i].y),-.624))-.39);
                         }
                 
+                
+                
                         if(gl_z_rt[i].y == 7.) { // eye
                             // F eye_ = cyl(pb, V(.2, .25, .2), cornerR);
                             F eye_ = tube(pb+V(0,.25-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
@@ -739,37 +738,27 @@ function calculateFeatures(tokenData) {
                 }
 
                 vec2 sdfVoxel(vec3 p){
+                    p.xz += fract(float(${gs/2}));  // ODD
+                    // p.xz = p.zx;
                     p.x = abs(p.x);
-                    p = floor(p);
+                    p.zx -= fract(float(${gs/2})); // ODD
+                    // p.x += ${gs}.-1.;
+                    // p.z += ${gs}.;
+                    p.x += 5.;
+                    p.z += 5.;
+                    p = floor(p+vec3(0,0,0));
+                    if(p.y < 0.) return v(0);
+                    // p.x -= .5;
+                    // p.z -= .5;
                     vec3 boundingBox = vec3(10,1000 / 10,10);
                     if(fract(p/boundingBox) != p/boundingBox) return -v(1.);
-                    blockId = -ivec2(1);
-                    if(length(p-vec3(2))<4.) blockId = ivec2(1,1);
-                    return vec2(blockId);
-
-
-                    // p.xz += fract(float(${gs/2}));  // ODD
-                    // // p.xz = p.zx;
-                    // p.x = abs(p.x);
-                    // p.zx -= fract(float(${gs/2})); // ODD
-                    // // p.x += ${gs}.-1.;
-                    // // p.z += ${gs}.;
-                    // p.x += 5.;
-                    // p.z += 5.;
-                    // p = floor(p+vec3(0,0,0));
-                    // if(p.y < 0.) return v(0);
-                    // // p.x -= .5;
-                    // // p.z -= .5;
-                    // vec3 boundingBox = vec3(10,1000 / 10,10);
-                    // if(fract(p/boundingBox) != p/boundingBox) return -v(1.);
-                    // vec2 vox, texSize = vec2(boundingBox.x, boundingBox.y*boundingBox.z);
-                    // vox.x = p.x;
-                    // vox.y = p.z + p.y * 10.;
-                    // vec2 voxN = (vox+.5) / texSize;
-                    // blockId = ivec2(floor(.5+texture2D(gl_z_tex3d, voxN).rg * 255.));
-                    // // blockId = ivec2(floor(.5+texture2D(gl_z_tex3d, voxN).rg * 255.));
-                    // // if(blockId == 2) discard;
-                    // return vec2(blockId);
+                    vec2 vox, texSize = vec2(boundingBox.x, boundingBox.y*boundingBox.z);
+                    vox.x = p.x;
+                    vox.y = p.z + p.y * 10.;
+                    vec2 voxN = (vox+.5) / texSize;
+                    blockId = ivec2(texture2D(gl_z_tex3d, voxN).rg * 64.);
+                    // if(blockId == 2) discard;
+                    return vec2(blockId); // is full
                 }
 
                 // vec3 rgb2hsb( in vec3 c ){
@@ -878,53 +867,38 @@ function calculateFeatures(tokenData) {
                         dpmin = min(min(dp.x,dp.y),dp.z) + 1e-4;
             
                         bool breaker = false;
-                        sdfVoxel(p);
-                        if(length(floor(p))-.5 < 0.) {
-                            colIds = ivec3(1,3,4);
-                            // discard;
-                            // break;
-                            // // if(length(sdfVoxel(p)) > 0.) {
+                        if(length(sdfVoxel(p)) > 0.) {
                             float ddd = 0.;
-                            // // for(int yo = 0; yo < 1; yo++) { // FIXME get rid of backupI
-                            // //     // discard;
-                            // // }
-                            // bool br = false;
-                            for(int yo = 0; yo < 100; yo++) { // FIXME get rid of backupI
-                                // if(!br){
-                                    jj++;
-                                    p = ro + rd * (d + ddd);
-                                    ddd += e = length(fract(p)-.5)-.4;//dist(p);
-                                    if(ep < e && e < outlineWidth) {
-                                        outline = true;
-                                        breaker = true;
-                                        dpmin = ddd;
-                                        // br = true;
-                                        break;
-                                    }
-                                    ep = e;
-                                    if(e < .001 || jj > 200. || d > camDist*2. ) { // налетели на объект
-                                        // if(id > 0.)
-                                        //     col *= color(id);
-                                            // col *= n+.5;
-                                        // if(s > 1.)
-                                            // col *= .6;
-                                        breaker = true;
-                                        dpmin = ddd;
-                                        // discard;
-                                        // br = true;
-                                        break;
-                                    }
-                                    if(ddd > dpmin) { // улетели в соседнюю клетку
-                                        // br = true;
-                                        break;
-                                    }
-                                // }
+                            for(float backupI = 0.; backupI < 200.; backupI++) { // FIXME get rid of backupI
+                                jj++;
+                                p = ro + rd * (d + ddd);
+                                ddd += e = dist(p);
+                                if(ep < e && e < outlineWidth) {
+                                    outline = true;
+                                    breaker = true;
+                                    dpmin = ddd;
+                                    break;
+                                }
+                                ep = e;
+                                if(e < .001 || jj > 200. || d > camDist*2.) { // налетели на сферу
+                                    // if(id > 0.)
+                                    //     col *= color(id);
+                                        // col *= n+.5;
+                                    // if(s > 1.)
+                                        // col *= .6;
+                                    breaker = true;
+                                    dpmin = ddd;
+                                    break;
+                                }
+                                if(ddd > dpmin) { // улетели в соседнюю клетку
+                                    break;
+                                }
                             }
                         }
                         else
                             colIds = ivec3(0, 0, -1);
-                        d += dpmin;
-                        if(breaker == true || jj > 200.)
+                            d += dpmin;
+                            if(breaker == true || jj > 200.)
                             break;
                             
                     }
@@ -1133,7 +1107,7 @@ function calculateFeatures(tokenData) {
                 commandNormals({r: size_})
                 commandRender({r: size_})
                 // console.log(size_)
-                if(tick > 1) {document.title='👾',fr.cancel()}
+                if(tick > 8) {document.title='👾',fr.cancel()}
             })
     
     /*end render*/

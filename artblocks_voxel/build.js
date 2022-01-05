@@ -49,7 +49,7 @@ try {
     dataGlsl = dataGlsl.slice(1, -1)
     dataGlsl = dataGlsl.replaceAll('${', '${gl_z_')
     new GlslMinify().execute(dataGlsl).then(result => {
-      // dataGlsl = result.sourceCode // comment to avoid GLSL minification
+      dataGlsl = result.sourceCode // comment to avoid GLSL minification
       dataGlsl = dataGlsl.replaceAll('gl_z_', '')
       dataGlsl = dataGlsl.replace(/\n#define /g, '@')
       data = dataJs1 + '`' + dataGlsl + '`' + dataJs2
