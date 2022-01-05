@@ -9,7 +9,9 @@
 // tokenData.hash = '0x2c141bd75924077b9359e2f3c64277193a39a16f3f8cd52ecc867432e58bf140' // wrong
 // tokenData.hash = '0xe195d59b945583b6ba7e9d7b883297f1f1d1f2c830e8a0be2e33d1473ca5b4f9' // good
 
-// 
+if (window.location.hash) {
+    tokenData.hash = window.location.hash.slice(1)
+} // FIXME
 
 /*begin features*/
 function calculateFeatures(tokenData) {
@@ -415,7 +417,8 @@ function calculateFeatures(tokenData) {
                             // console.log('xxx, yyy, zzz', xxx, yyy, zzz)
                             tex3dArray[zzz + 10 * yyy][xxx][0] = 
                             tex3dArray[zzz + 10 * yyy + 10][xxx][1] = 
-                            255 * (blocks.length+1) / 64
+                            // 255 * (blocks.length+1) / 64
+                            (blocks.length+1)*255/256
                         }
                         // console.log(tex3dArray)
                         // for(let xx = 0; xx<2; xx++)
