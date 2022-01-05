@@ -508,16 +508,25 @@ function calculateFeatures(tokenData) {
             uniforms += blocks.map((b, i) =>
                 `ss[${i}]=vec3(${b[0][0]},${b[0][1]},${b[0][2]});`).join('')
             uniforms += blocks.map((b, i) =>
-                `cs[${i}]=ivec3(${b[4]},${b[5]},${b[6]});`).join('')
+                `rt[${i}]=vec2(${b[8]},${b[3]});`).join('') // FIXME shorted with [x,y,z]
             uniforms += blocks.map((b, i) =>
-                `rt[${i}]=vec2(${b[8]},${b[3]});`).join('')
+                `cs[${i}]=ivec3(${b[4]},${b[5]},${b[6]});`).join('')
     
             // console.log(uniforms)
             /*end render*/
         
         
-        
-        
+
+            let sampler_psArray = Array(64).fill([[0,0,0]])
+            let sampler_ssArray = Array(64).fill([[0,0,0]])
+            let sampler_rtArray = Array(64).fill([[0,0,0]])
+            let sampler_csArray = Array(64).fill([[0,0,0]])
+            blocks.forEach((b,i) => {
+                sampler_psArray[i] = [b[10]           .map(d=>d)]
+                sampler_ssArray[i] = [b[0]            .map(d=>d)]
+                sampler_rtArray[i] = [[b[8],b[3],0]   .map(d=>d)]
+                sampler_csArray[i] = [[b[4],b[5],b[6]].map(d=>d)]
+            })
         
         
         
@@ -583,8 +592,14 @@ function calculateFeatures(tokenData) {
             let regl = createREGL({
                 gl: gl,
                 extensions: ['webgl_draw_buffers', 'oes_texture_float'],
-              })
+            })
+
             let tex3d = regl.texture(tex3dArray)
+            
+            let sampler_ps = regl.texture({data: sampler_psArray, type: 'float'})
+            let sampler_ss = regl.texture({data: sampler_ssArray, type: 'float'})
+            let sampler_rt = regl.texture({data: sampler_rtArray, type: 'float'})
+            let sampler_cs = regl.texture({data: sampler_csArray, type: 'float'})
 
             let fbo = [1,1].map(() =>
                 regl.framebuffer({
@@ -619,7 +634,13 @@ function calculateFeatures(tokenData) {
                 V gl_z_ss[BLOCKS_NUMBER_MAX];
                 v gl_z_rt[BLOCKS_NUMBER_MAX];
                 ivec3 gl_z_cs[BLOCKS_NUMBER_MAX];
-                
+
+                uniform sampler2D gl_z_sampler_ps;
+                uniform sampler2D gl_z_sampler_ss;
+                uniform sampler2D gl_z_sampler_rt;
+                uniform sampler2D gl_z_sampler_cs;
+            
+
                 uniform V gl_z_pt[5];
                 uniform F gl_z_tk;
                 uniform F gl_z_rs;
@@ -645,9 +666,17 @@ function calculateFeatures(tokenData) {
                     →L(po)-EPS;
                 }
                 
-                F dist(V p) {
+
+                F dist(V p, F id) {
+
+                    V val_from_sampler_ps = (texture2D(gl_z_sampler_ps, vec2(.5,(id)/64.)).rgb);
+                    V val_from_sampler_rt = floor((texture2D(gl_z_sampler_rt, vec2(.5,(id)/64.)).rgb));
+                    V val_from_sampler_ss = (texture2D(gl_z_sampler_ss, vec2(.5,(id)/64.)).rgb);
+                    V val_from_sampler_cs = (texture2D(gl_z_sampler_cs, vec2(.5,(id)/64.)).rgb);
+
+                    // бфыва
                     // return max(length(p.xz)-.4,abs(p.y)-.9);
-                    // colIds = ivec3(1,1,1);
+                    // colIds = ivec3(1,1,1); 
                     // return length(fract(p)-.5)-.45;
 
                     // →length(fract(p)-.5)-.5;
@@ -656,31 +685,30 @@ function calculateFeatures(tokenData) {
                     F res = p.y + 1.; // floor plane
                     // F res = length(p)-.5; // floor plane
                     // for(int i = 0; i < 3; i++) {
-                        int i = 0;
                         // if(i >= ${blocks.length})
                         //     break;
                             // if(i != blockId.y - 1)
-                        if(i != blockId.x - 1 && i != blockId.y - 1) return res;
+                        // if(i != blockId.x - 1 && i != blockId.y - 1) return res;
                         //     continue;
                         V pb = p;
-                        pb -= gl_z_ps[0];
-                        pb.xz *= rot(gl_z_rt[0].x * PI / 2.);
+                        pb -= val_from_sampler_ps;
+                        pb.xz *= rot(val_from_sampler_rt.x * PI / 2.);
                         
                         // box
                         // F cornerR = .01, gap = .008, block;
                         
-                        V s = gl_z_ss[0] - 2. * (cornerR + gap);
+                        V s = val_from_sampler_ss - 2. * (cornerR + gap);
                         block = L(pb - clamp(pb, -s/2., s/2.)) - cornerR * 1.4;
                         // if(blockId==0) {colIds = ivec3(3, 2, 1); return length(fract(p)-.5)-.45;}
                             
-                        if(gl_z_rt[0].y == 5.) { // arc
+                        if(val_from_sampler_rt.y == 5.) { // arc
                             F cyl = L(pb.zy) - .5;
-                            F box = max(abs(pb.z) - .5, abs(pb.y + gl_z_ss[0].y / 2.) - 1.);
+                            F box = max(abs(pb.z) - .5, abs(pb.y + val_from_sampler_ss.y / 2.) - 1.);
                             F hole = min(cyl, box);
                             block = max(block, -hole);
                         }
     
-                        if(gl_z_rt[0].y == 6.) { // pillar
+                        if(val_from_sampler_rt.y == 6.) { // pillar
                             F narrow = tube(pb+V(0,1.6-cornerR*3.,0),V(3.55,.15,0));
                             F base = tube(pb+V(0,2.-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
                             block = min(narrow, base);
@@ -691,27 +719,27 @@ function calculateFeatures(tokenData) {
                         }
 
                         // studs
-                        if(gl_z_rt[0].y != 6.) { // not pillar
+                        if(val_from_sampler_rt.y != 6.) { // not pillar
                             V ps = pb;
                             // repetition
-                            v l = gl_z_ss[0].xz;
+                            v l = val_from_sampler_ss.xz;
                             ps.xz += (l - 1.) / 2.;
                             ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
                             
                             // position
-                            ps.y -= gl_z_ss[0].y / 2. + .02;
+                            ps.y -= val_from_sampler_ss.y / 2. + .02;
     
                             F stud = tube(ps, V(.24, .28, mix(EPS,.18,${features[1]}.)));
                             block = min(stud, block);
                         }
                 
-                        if(pb.z<.01 && (gl_z_rt[0].y == 3. || gl_z_rt[0].y == 4.)) { // beak
-                            block = smax(block,dot(pb,V(0,.78*(7.-2.*gl_z_rt[0].y),-.624))-.39);
+                        if(pb.z<.01 && (val_from_sampler_rt.y == 3. || val_from_sampler_rt.y == 4.)) { // beak
+                            block = smax(block,dot(pb,V(0,.78*(7.-2.*val_from_sampler_rt.y),-.624))-.39);
                         }
                 
                 
                 
-                        if(gl_z_rt[0].y == 7.) { // eye
+                        if(val_from_sampler_rt.y == 7.) { // eye
                             // F eye_ = cyl(pb, V(.2, .25, .2), cornerR);
                             F eye_ = tube(pb+V(0,.25-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
                             block = eye_;
@@ -725,9 +753,9 @@ function calculateFeatures(tokenData) {
                         // block = L(pb)-2.;
                         if(block < res) {
                             if(colIds.z == 9)// FIXME как-то эти ифы упростить, они нужны только чтобы глаза работали.
-                                colIds = ivec3(gl_z_cs[0].xy, 9);
+                                colIds = ivec3(val_from_sampler_cs.xy, 9);
                             else
-                                colIds = gl_z_cs[0];
+                                colIds = ivec3(val_from_sampler_cs);
                             res = block;
                         }
                         // if(res < EPS)
@@ -736,11 +764,11 @@ function calculateFeatures(tokenData) {
                     →res;
                 }
                 
-                V norm(V p) {
+                V norm(V p, F id) {
                     // p+=.5;
                     // →normalize(fract(p));
                     v e = v(.01, 0.);
-                    →N(V(dist(p + e.xyy) - dist(p - e.xyy), dist(p + e.yxy) - dist(p - e.yxy), dist(p + e.yyx) - dist(p - e.yyx)));
+                    →N(V(dist(p + e.xyy, id) - dist(p - e.xyy, id), dist(p + e.yxy, id) - dist(p - e.yxy, id), dist(p + e.yyx, id) - dist(p - e.yyx, id)));
                 }
 
                 void sdfVoxel(vec3 p){
@@ -900,7 +928,7 @@ function calculateFeatures(tokenData) {
                             for(float backupI = 0.; backupI < 200.; backupI++) { // FIXME get rid of backupI
                                 jj++;
                                 p = ro + rd * (d + ddd);
-                                ddd += e = dist(p);
+                                ddd += e = dist(p,float(blockId.x - 1));
                                 if(ep < e && e < outlineWidth) {
                                     outline = true;
                                     breaker = true;
@@ -942,9 +970,9 @@ function calculateFeatures(tokenData) {
                         V col1, col2;
                         for(int j = 0; j < 5; j++) {
                             if(colIds[0] == j)
-                            col1 = gl_z_pt[j];
+                            col1 = gl_z_pt[j]; //////////////////////
                             if(colIds[1] == j)
-                            col2 = gl_z_pt[j];
+                            col2 = gl_z_pt[j]; //////////////////////
                         }
                         
                         V col = col1;
@@ -956,14 +984,14 @@ function calculateFeatures(tokenData) {
                         if(sin(p.y * PI * 3.) > 0.)
                         col = col2;
                         if(colIds.z == 2)
-                        if(sin((p.x + fract(gl_z_ps[0].x - gl_z_ss[0].x / 2.)) * PI * 2. * 1.5) > 0.)
+                        if(sin((p.x + fract(gl_z_ps[0].x - gl_z_ss[0].x / 2.)) * PI * 2. * 1.5) > 0.) //////////////////////
                         col = col2;
                         
                         // pride
                         if(${features[3]} == 3)
                         col = sin((L(p) / max(F(${gs}), F(${features[8]})) * 2. - V(0, .3, .6)) * 6.28) * .5 + .5;
 
-                        n = norm(p); // надо тут вычислять, видимо, где-то выше я сбиваю colIds выполняя дист
+                        n = norm(p,float(blockId.x-1)); // надо тут вычислять, видимо, где-то выше я сбиваю colIds выполняя дист
                         // иначе colIds.z равен 0 с чего-то. Но почему тогда dist(p); не помогает?
                         if(colIds.z == 9) {
                             col = V(0);
@@ -974,8 +1002,8 @@ function calculateFeatures(tokenData) {
                         }
                     
                         if(colIds.z == -1) {
-                            // // фончик
-                            // c = texture2D(gl_z_tex3d,gl_FragCoord.xy / gl_z_rs).rgb;
+                            // фончик
+                            // c = texture2D(gl_z_sampler_ps,gl_FragCoord.xy / gl_z_rs).rgb; //gl_z_tex3d
                             
                             c = V(${bg})/255.;
                             if(L(c) > .4){
@@ -1071,6 +1099,10 @@ function calculateFeatures(tokenData) {
                     tk: ({ tick }) => tick,
                     texCol: ({ tick }) => fbo[tick % 2].color[0],
                     texNorm: ({ tick }) => fbo[tick % 2].color[1],
+                    sampler_ps: sampler_ps,
+                    sampler_ss: sampler_ss,
+                    sampler_rt: sampler_rt,
+                    sampler_cs: sampler_cs,
                     // tk: regl.prop('tk'),
                     // tk: () => tick,
                 },
@@ -1141,7 +1173,7 @@ function calculateFeatures(tokenData) {
                 commandNormals({r: size_})
                 commandRender({r: size_})
                 // console.log(size_)
-                if(tick > 1) {document.title='👾',fr.cancel()}
+                if(tick > 8) {document.title='👾',fr.cancel()}
                 // FIXME to 8
             })
     
