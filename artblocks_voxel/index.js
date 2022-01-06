@@ -522,10 +522,10 @@ function calculateFeatures(tokenData) {
             let sampler_rtArray = Array(64).fill([[0,0,0]])
             let sampler_csArray = Array(64).fill([[0,0,0]])
             blocks.forEach((b,i) => {
-                sampler_psArray[i] = [b[10]           .map(d=>d)]
-                sampler_ssArray[i] = [b[0]            .map(d=>d)]
-                sampler_rtArray[i] = [[b[8],b[3],0]   .map(d=>d)]
-                sampler_csArray[i] = [[b[4],b[5],b[6]].map(d=>d)]
+                sampler_psArray[i] = [b[10]           ]
+                sampler_ssArray[i] = [b[0]            ]
+                sampler_rtArray[i] = [[b[8],b[3],0   ]]
+                sampler_csArray[i] = [[b[4],b[5],b[6]]]
             })
         
         
@@ -659,6 +659,7 @@ function calculateFeatures(tokenData) {
                 // int eye = 0;
                 // V eye = V(0.);
                 // eye = 0;
+                int id;
     
                 F tube(V p, V s){
                     v po = v(L(p.xz), p.y - clamp(p.y, EPS, s.x));
@@ -670,98 +671,80 @@ function calculateFeatures(tokenData) {
                 F dist(V p, F id) {
 
                     V val_from_sampler_ps = (texture2D(gl_z_sampler_ps, vec2(.5,(id)/64.)).rgb);
-                    V val_from_sampler_rt = floor((texture2D(gl_z_sampler_rt, vec2(.5,(id)/64.)).rgb));
+                    V val_from_sampler_rt = (texture2D(gl_z_sampler_rt, vec2(.5,(id)/64.)).rgb);
                     V val_from_sampler_ss = (texture2D(gl_z_sampler_ss, vec2(.5,(id)/64.)).rgb);
-                    V val_from_sampler_cs = (texture2D(gl_z_sampler_cs, vec2(.5,(id)/64.)).rgb);
+                    ivec3 val_from_sampler_cs = ivec3(texture2D(gl_z_sampler_cs, vec2(.5,(id)/64.)).rgb);
+                    // ivec3 val_from_sampler_cs = ivec3(1,2,1);
 
-                    // бфыва
-                    // return max(length(p.xz)-.4,abs(p.y)-.9);
-                    // colIds = ivec3(1,1,1); 
-                    // return length(fract(p)-.5)-.45;
-
-                    // →length(fract(p)-.5)-.5;
                     p.x = abs(p.x);
-                    // F res = 1e5;
-                    F res = p.y + 1.; // floor plane
-                    // F res = length(p)-.5; // floor plane
-                    // for(int i = 0; i < 3; i++) {
-                        // if(i >= ${blocks.length})
-                        //     break;
-                            // if(i != blockId.y - 1)
-                        // if(i != blockId.x - 1 && i != blockId.y - 1) return res;
-                        //     continue;
-                        V pb = p;
-                        pb -= val_from_sampler_ps;
-                        pb.xz *= rot(val_from_sampler_rt.x * PI / 2.);
+                    V pb = p;
+                    pb -= val_from_sampler_ps;
+                    pb.xz *= rot(val_from_sampler_rt.x * PI / 2.);
+                    
+                    // box
+                    // F cornerR = .01, gap = .008, block;
+                    
+                    V s = val_from_sampler_ss - 2. * (cornerR + gap);
+                    block = L(pb - clamp(pb, -s/2., s/2.)) - cornerR * 1.4;
+                    // if(blockId==0) {colIds = ivec3(3, 2, 1); return length(fract(p)-.5)-.45;}
                         
-                        // box
-                        // F cornerR = .01, gap = .008, block;
-                        
-                        V s = val_from_sampler_ss - 2. * (cornerR + gap);
-                        block = L(pb - clamp(pb, -s/2., s/2.)) - cornerR * 1.4;
-                        // if(blockId==0) {colIds = ivec3(3, 2, 1); return length(fract(p)-.5)-.45;}
-                            
-                        if(val_from_sampler_rt.y == 5.) { // arc
-                            F cyl = L(pb.zy) - .5;
-                            F box = max(abs(pb.z) - .5, abs(pb.y + val_from_sampler_ss.y / 2.) - 1.);
-                            F hole = min(cyl, box);
-                            block = max(block, -hole);
-                        }
-    
-                        if(val_from_sampler_rt.y == 6.) { // pillar
-                            F narrow = tube(pb+V(0,1.6-cornerR*3.,0),V(3.55,.15,0));
-                            F base = tube(pb+V(0,2.-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
-                            block = min(narrow, base);
-                            // // F narrow = tube(pb+V(0,1.6-cornerR-gap,0),V(3.55,.15,0));
-                            // F narrow = tube(pb+V(0,4./2.-.4-cornerR*2.-gap,0),V(3.55,.15-cornerR,0));
-                            // F base = tube(pb+V(0,2.-cornerR*2.,0),V(.4-cornerR*2.-gap,.45,0));
-                            // block = min(narrow, base)-cornerR;
-                        }
+                    if(val_from_sampler_rt.y == 5.) { // arc
+                        F cyl = L(pb.zy) - .5;
+                        F box = max(abs(pb.z) - .5, abs(pb.y + val_from_sampler_ss.y / 2.) - 1.);
+                        F hole = min(cyl, box);
+                        block = max(block, -hole);
+                    }
 
-                        // studs
-                        if(val_from_sampler_rt.y != 6.) { // not pillar
-                            V ps = pb;
-                            // repetition
-                            v l = val_from_sampler_ss.xz;
-                            ps.xz += (l - 1.) / 2.;
-                            ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
-                            
-                            // position
-                            ps.y -= val_from_sampler_ss.y / 2. + .02;
-    
-                            F stud = tube(ps, V(.24, .28, mix(EPS,.18,${features[1]}.)));
-                            block = min(stud, block);
+                    if(val_from_sampler_rt.y == 6.) { // pillar
+                        F narrow = tube(pb+V(0,1.6-cornerR*3.,0),V(3.55,.15,0));
+                        F base = tube(pb+V(0,2.-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
+                        block = min(narrow, base);
+                        // // F narrow = tube(pb+V(0,1.6-cornerR-gap,0),V(3.55,.15,0));
+                        // F narrow = tube(pb+V(0,4./2.-.4-cornerR*2.-gap,0),V(3.55,.15-cornerR,0));
+                        // F base = tube(pb+V(0,2.-cornerR*2.,0),V(.4-cornerR*2.-gap,.45,0));
+                        // block = min(narrow, base)-cornerR;
+                    }
+
+                    // studs
+                    if(val_from_sampler_rt.y != 6.) { // not pillar
+                        V ps = pb;
+                        // repetition
+                        v l = val_from_sampler_ss.xz;
+                        ps.xz += (l - 1.) / 2.;
+                        ps.xz = ps.xz - clamp(floor(ps.xz + .5), v(0.), l - 1.);
+                        
+                        // position
+                        ps.y -= val_from_sampler_ss.y / 2. + .02;
+
+                        F stud = tube(ps, V(.24, .28, mix(EPS,.18,${features[1]}.)));
+                        block = min(stud, block);
+                    }
+            
+                    if(pb.z<.01 && (val_from_sampler_rt.y == 3. || val_from_sampler_rt.y == 4.)) { // beak
+                        block = smax(block,dot(pb,V(0,.78*(7.-2.*val_from_sampler_rt.y),-.624))-.39);
+                    }
+            
+            
+            
+                    if(val_from_sampler_rt.y == 7.) { // eye
+                        F eye_ = tube(pb+V(0,.25-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
+                        block = eye_;
+                        if(eye_ < EPS) {
+                            colIds.z = 9; // eye
+                            // discard;
+                            // return block;
                         }
-                
-                        if(pb.z<.01 && (val_from_sampler_rt.y == 3. || val_from_sampler_rt.y == 4.)) { // beak
-                            block = smax(block,dot(pb,V(0,.78*(7.-2.*val_from_sampler_rt.y),-.624))-.39);
-                        }
-                
-                
-                
-                        if(val_from_sampler_rt.y == 7.) { // eye
-                            // F eye_ = cyl(pb, V(.2, .25, .2), cornerR);
-                            F eye_ = tube(pb+V(0,.25-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
-                            block = eye_;
-                            if(eye_ < EPS) {
-                                colIds.z = 9; // eye
-                                // discard;
-                                // return block;
-                            }
-                        }
-                
-                        // block = L(pb)-2.;
-                        if(block < res) {
-                            if(colIds.z == 9)// FIXME как-то эти ифы упростить, они нужны только чтобы глаза работали.
-                                colIds = ivec3(val_from_sampler_cs.xy, 9);
-                            else
-                                colIds = ivec3(val_from_sampler_cs);
-                            res = block;
-                        }
-                        // if(res < EPS)
-                        //     break;
-                    // }
-                    →res;
+                    }
+            
+                    // block = L(pb)-2.;
+                    if(block < EPS) {
+                        // colIds = ivec3(1,2,1);
+                        if(colIds.z == 9)// FIXME как-то эти ифы упростить, они нужны только чтобы глаза работали. Может поднять над предыдущим абзацем?
+                            colIds = ivec3(val_from_sampler_cs.xy, 9);
+                        else
+                            colIds = val_from_sampler_cs;
+                    }
+                    →block;
                 }
                 
                 V norm(V p, F id) {
@@ -928,7 +911,19 @@ function calculateFeatures(tokenData) {
                             for(float backupI = 0.; backupI < 200.; backupI++) { // FIXME get rid of backupI
                                 jj++;
                                 p = ro + rd * (d + ddd);
-                                ddd += e = dist(p,float(blockId.x - 1));
+                                
+                                float e1 = dist(p,float(blockId.x - 1));
+                                float e2 = dist(p,float(blockId.y - 1));
+                                if(e1<e2){
+                                    e = e1;
+                                    id = blockId.x - 1;
+                                }
+                                else{
+                                    e = e2;
+                                    id = blockId.y - 1;
+                                }
+                                ddd += e;
+
                                 if(ep < e && e < outlineWidth) {
                                     outline = true;
                                     breaker = true;
@@ -936,7 +931,7 @@ function calculateFeatures(tokenData) {
                                     break;
                                 }
                                 ep = e;
-                                if(e < .001 || jj > 200. || d > camDist*2.) { // налетели на сферу
+                                if(e < EPS || jj > 200. || d > camDist*2.) { // налетели на сферу
                                     // discard;
                                     // if(id > 0.)
                                     //     col *= color(id);
@@ -967,11 +962,14 @@ function calculateFeatures(tokenData) {
 
                     V c;
                     if(!outline) {
+
                         V col1, col2;
                         for(int j = 0; j < 5; j++) {
                             if(colIds[0] == j)
                             col1 = gl_z_pt[j]; //////////////////////
+                                // col1 = vec3(1,0,0); //////////////////////
                             if(colIds[1] == j)
+                                // col2 = vec3(1,0,1); //////////////////////
                             col2 = gl_z_pt[j]; //////////////////////
                         }
                         
@@ -981,17 +979,17 @@ function calculateFeatures(tokenData) {
                         //
                         // layers
                         if(colIds.z == 1)
-                        if(sin(p.y * PI * 3.) > 0.)
-                        col = col2;
+                            if(sin(p.y * PI * 3.) > 0.)
+                                col = col2;
                         if(colIds.z == 2)
-                        if(sin((p.x + fract(gl_z_ps[0].x - gl_z_ss[0].x / 2.)) * PI * 2. * 1.5) > 0.) //////////////////////
-                        col = col2;
+                            if(sin((p.x + fract(gl_z_ps[0].x - gl_z_ss[0].x / 2.)) * PI * 2. * 1.5) > 0.) //////////////////////
+                                col = col2;
                         
                         // pride
                         if(${features[3]} == 3)
-                        col = sin((L(p) / max(F(${gs}), F(${features[8]})) * 2. - V(0, .3, .6)) * 6.28) * .5 + .5;
+                            col = sin((L(p) / max(F(${gs}), F(${features[8]})) * 2. - V(0, .3, .6)) * 6.28) * .5 + .5;
 
-                        n = norm(p,float(blockId.x-1)); // надо тут вычислять, видимо, где-то выше я сбиваю colIds выполняя дист
+                        n = norm(p,float(id)); // надо тут вычислять, видимо, где-то выше я сбиваю colIds выполняя дист
                         // иначе colIds.z равен 0 с чего-то. Но почему тогда dist(p); не помогает?
                         if(colIds.z == 9) {
                             col = V(0);

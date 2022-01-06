@@ -476,10 +476,10 @@ function calculateFeatures(tokenData) {
             let sampler_rtArray = Array(64).fill([[0,0,0]])
             let sampler_csArray = Array(64).fill([[0,0,0]])
             blocks.forEach((b,i) => {
-                sampler_psArray[i] = [b[10]           .map(d=>d)]
-                sampler_ssArray[i] = [b[0]            .map(d=>d)]
-                sampler_rtArray[i] = [[b[8],b[3],0]   .map(d=>d)]
-                sampler_csArray[i] = [[b[4],b[5],b[6]].map(d=>d)]
+                sampler_psArray[i] = [b[10]           ]
+                sampler_ssArray[i] = [b[0]            ]
+                sampler_rtArray[i] = [[b[8],b[3],0   ]]
+                sampler_csArray[i] = [[b[4],b[5],b[6]]]
             })
         
         
