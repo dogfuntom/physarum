@@ -1,52 +1,103 @@
 'use strict';
 
-// console.log('yo')
-let fileNamePrefix = "island"
-
-let FPS = 30
-let animDuration = 40 * FPS
-let animDelay = animDuration
-let isRendering = false
-
 let twgl = require('twgl.js')
 let chroma = require('chroma-js');
 const { random } = require('chroma-js');
 
-// midi = [0,0.05511811023622047,0.5354330708661418,0.1732283464566929,0.5511811023622047,1,0.6929133858267716,0.4015748031496063,1,0.023622047244094488,0,0.5039370078740157,0.7086614173228346,0.015748031496062992,0.5590551181102362,0.11023622047244094,1,0.9606299212598425,1,0,0,0.3228346456692913,0.6535433070866141,1,0.5196850393700787,0.49606299212598426,1,0.12598425196850394,1,0.49606299212598426,0.5039370078740157,0.33858267716535434,0.015748031496062992,0.8031496062992126,0.8503937007874016,0.36220472440944884,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.7795275590551181,0.2283464566929134,0.2755905511811024,0.3228346456692913,0.5,0.18110236220472442,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5]
-// midi = [0.031496062992125984,0.06299212598425197,1,0,0.7322834645669292,0.8818897637795275,0.48031496062992124,1,0,0,0,0,1,0,0,0.007874015748031496,1,1,0.6535433070866141,0.7559055118110236,0.047244094488188976,0.3228346456692913,0.4566929133858268,0.25196850393700787,0.5118110236220472,0.5511811023622047,0.5275590551181102,0.1732283464566929,0.5196850393700787,0.5118110236220472,0.5118110236220472,0.5826771653543307,1,0.9133858267716536,1,0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0,0,0,0.5511811023622047,0.15748031496062992,0,0.14960629921259844,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1]
+// Palette
 let palette = ['#230f2b', '#f21d41', '#ebebbc', '#bce3c5', '#82b3ae']
 palette = palette.map(c => chroma(c).gl())
 palette = palette.sort((a, b) => chroma(a).get('lch.l') - chroma(b).get('lch.l'))
+
+// WebGL
+const canvas = document.getElementById('canvasgl')
+const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true })
+gl.getExtension('EXT_color_buffer_float'); // prevents Buffer Incomplete error
+gl.getExtension('OES_texture_float_linear');
+
 let passes
 
-
-
-let N = 128
+// Scene
+let voxelsNum = 128
 let segments, relief
-let texVoxelsArray = [...Array(N)].map(() => [...Array(N)].map(() => [...Array(N)].map(_ => [0, 0, 0, 0])))
 
-prepare2dSegmentsMap()
+
+function prepare2dSegmentsMap() {
+  relief = [...Array(voxelsNum)].map((d) => [...Array(voxelsNum)].map((d) => Math.random()));
+  segments = [...Array(voxelsNum)].map((d) => [...Array(voxelsNum)].fill(0));
+
+  function getRelief(i, j) {
+    i = (i + voxelsNum) % voxelsNum;
+    j = (j + voxelsNum) % voxelsNum;
+    return relief[i][j];
+  }
+
+  for (let x = 0; x < voxelsNum; x++) {
+    for (let y = 0; y < voxelsNum; y++) {
+      let S = 3;
+      let minVal = Infinity;
+      let idx = x;
+      let idy = y;
+      for (let step = 0; step < 3; step++) {
+        let imin = 0
+        let jmin = 0
+        for (let i = -S; i <= S; i++) {
+          for (let j = -S; j <= S; j++) {
+            if (Math.hypot(i, j) > S) continue;
+            let r = getRelief(idx + i, idy + j);
+            if (r < minVal) {
+              minVal = r;
+              imin = i;
+              jmin = j;
+            }
+          }
+        }
+        idx += imin
+        idy += jmin
+      }
+
+      segments[x][y] = minVal * 1e3 - Math.floor(minVal * 1e3);
+    }
+  }
+  console.log("segments, relief", segments, relief);
+}
 
 let rnd = (x) => {
-  let s = Math.sin(x * 9e3) * 9e3
+  let s = x * 9e4
   return s - Math.floor(s)
 }
+function prepareTexVoxels() {
+  // fill 3d array N×N×N filled with rgba(0,0,0,0)
+  let texVoxelsArray = [...Array(voxelsNum)].map(() => [...Array(voxelsNum)].map(() => [...Array(voxelsNum)].map(_ => [0, 0, 0, 0])))
+  
+  prepare2dSegmentsMap()
 
-for (let x = 1; x < N; x++) {
-  for (let z = 1; z < N; z++) {
-    let id = segments[x][z]
-    let height = -63;
-    if (id == segments[x - 1][z] && id == segments[x][z-1] && id == segments[x-1][z-1])
-      height = 4 + 8 * rnd(id);
+  for (let x = 1; x < voxelsNum; x++) {
+    for (let z = 1; z < voxelsNum; z++) {
+      let id = segments[x][z]
+      let height = -63;
+      if (id == segments[x - 1][z] && id == segments[x][z - 1] && id == segments[x - 1][z - 1])
+        height = 4 + 8 * rnd(id);
       for (let y = 0; y < 64 + height; y++) {
-        texVoxelsArray[x][y][z] = [id * 255, 0, 0, 0]
+        texVoxelsArray[x][y][z] = [id, 0, 0, 0].map(d=>d*255)
       }
+    }
   }
+
+  // texVoxelsArray[zz][yy][xx] = [xx*2,yy*2,zz*2,1]
+  console.log('texVoxelsArray', texVoxelsArray)
+
+  let texVoxels = twgl.createTexture(gl, {
+    src: texVoxelsArray.flat(3),
+    width: texVoxelsArray[0].length,
+    mag: gl.NEAREST,
+    min: gl.NEAREST,
+  });
+
+  return texVoxels
 }
 
-// texVoxelsArray[zz][yy][xx] = [xx*2,yy*2,zz*2,1]
-console.log('texVoxelsArray', texVoxelsArray)
-
+let texVoxels = prepareTexVoxels()
 
 
 
@@ -112,21 +163,11 @@ function Pass({ frag, size = 8, texture }) {
 
 
 let tick = 0
-const canvas = document.getElementById('canvasgl')
-// const gl = (canvas, { antialias: false, depth: false })
-const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true })
-gl.getExtension('EXT_color_buffer_float');
-gl.getExtension('OES_texture_float_linear');
 
 let dt;
 let prevTime;
 
-let texVoxels = twgl.createTexture(gl, {
-  src: texVoxelsArray.flat(3),
-  width: texVoxelsArray[0].length,
-  mag: gl.NEAREST,
-  min: gl.NEAREST,
-}, (err, tex, img) => { });
+
 
 twgl.resizeCanvasToDisplaySize(gl.canvas);
 passes = {
@@ -156,6 +197,7 @@ function draw() {
       u_time: time - timeI,
       u_params: params,
       u_tex_voxels: texVoxels,
+      u_voxels_num: voxelsNum,
     },
     target: 'self',
   })
@@ -169,17 +211,12 @@ function draw() {
   })
 
   tick++
+  console.log(tick)
+  if (tick < 3)
+    requestAnimationFrame(draw)
 }
 
-animate()
-function animate() {
-  draw();
-  // setTimeout(requestAnimationFrame, 50, animate);
-  // if (isRendering == false)
-  if (tick < 300)
-    requestAnimationFrame(animate);
-  console.log(tick)
-}
+draw()
 
 window.addEventListener('resize', (e) => {
   resize()
@@ -206,134 +243,3 @@ resize()
 
 
 
-
-function prepare2dSegmentsMap() {
-  relief = [...Array(N)].map((d) => [...Array(N)].map((d) => Math.random()));
-  segments = [...Array(N)].map((d) => [...Array(N)].fill(0));
-
-  function getRelief(i, j) {
-    i = (i + N) % N;
-    j = (j + N) % N;
-    return relief[i][j];
-  }
-
-  for (let x = 0; x < N; x++) {
-    for (let y = 0; y < N; y++) {
-      let S = 2;
-      let minVal = Infinity;
-      let idx = x;
-      let idy = y;
-      for (let step = 0; step < 3; step++) {
-        let imin = 0
-        let jmin = 0
-        for (let i = -S; i <= S; i++) {
-          for (let j = -S; j <= S; j++) {
-            if (Math.hypot(i, j) > S) continue;
-            let r = getRelief(idx + i, idy + j);
-            if (r < minVal) {
-              minVal = r;
-              imin = i;
-              jmin = j;
-            }
-          }
-        }
-        idx += imin
-        idy += jmin
-      }
-
-      segments[x][y] = minVal * 1e3 - Math.floor(minVal * 1e3);
-    }
-  }
-  console.log("segments, relief", segments, relief);
-
-
-
-  // function getRelief(i, j) {
-  //   i = i % N;
-  //   if (i < 0) i = (i + N) % N;
-  //   j = j % N;
-  //   if (j < 0) j = (j + N) % N;
-  //   return relief[i][j];
-  // }
-
-  // function indexToIJ(index) {
-  //   let i, j;
-  //   if (index == 0) {
-  //     i = 0;
-  //     j = 0;
-  //   } else if (index == 1) {
-  //     i = 0;
-  //     j = 0 - 1;
-  //   } else if (index == 2) {
-  //     i = 0 + 1;
-  //     j = 0;
-  //   } else if (index == 3) {
-  //     i = 0;
-  //     j = 0 + 1;
-  //   } else if (index == 4) {
-  //     i = 0 - 1;
-  //     j = 0;
-  //   }
-  //   return [i, j];
-  // }
-
-  // for (let i = 0; i < N; i++) {
-  //   for (let j = 0; j < N; j++) {
-  //     if (segments[i][j] > 0) continue;
-  //     let n = [];
-  //     n[0] = getRelief(i, j);
-  //     n[1] = getRelief(i, j - 1);
-  //     n[2] = getRelief(i + 1, j);
-  //     n[3] = getRelief(i, j + 1);
-  //     n[4] = getRelief(i - 1, j);
-  //     let indexMin = 0;
-  //     for (let index = 1; index < 5; index++) {
-  //       if (n[index] < n[0]) indexMin = index;
-  //     }
-  //     if (indexMin == 0) {
-  //       segments[i][j] = Math.random();
-  //     } else {
-  //       segments[i][j] = -indexMin; // negative is for index
-  //     }
-  //   }
-  // }
-
-  // for (let i = 0; i < N; i++) {
-  //   for (let j = 0; j < N; j++) {
-  //     let si = i,
-  //       sj = j;
-  //     while (segments[si][sj] < 0) {
-  //       let index = -segments[si][sj];
-  //       let [di, dj] = indexToIJ(index);
-  //       si += di;
-  //       sj += dj;
-  //       si = si % N;
-  //       if (si < 0) si = (si + N) % N;
-  //       sj = sj % N;
-  //       if (sj < 0) sj = (sj + N) % N;
-  //     }
-  //     segments[i][j] = segments[si][sj]
-  //   }
-  // }
-  // console.log('segments, relief', segments, relief)
-}
-
-
-
-// План:
-// - убрать GI
-// - Сделать 3д текстуру из плоской, каждый дом поднять на определённую высоту.
-// - Передать её в шейдер, рисовать пока что тупо кубиками.
-// - засунуть в шейдер домик https://bit.ly/3fnKGu0
-// - в зависимости от горизонтальных соседей кубика выбирать правильный кусок дома,
-// - задавать дому айдишник его сегмента.
-// - вернуть ГИ
-// - Готово, в принципе.
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// 
