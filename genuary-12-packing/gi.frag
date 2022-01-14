@@ -14,8 +14,8 @@ uniform sampler2D u_tex_voxels;
 #define PI 3.141519265
 #define EPS .001
 #define REFLECTIONS 6.
-#define MAX_STEPS 200.
-#define MAX_DIST 60.
+#define MAX_STEPS 400.
+#define MAX_DIST 100.
 #define UV_SCALE 64.
 
 out vec4 o;
@@ -33,6 +33,7 @@ float kDepthMin; // # of the smallest rib
 float depthMin = 999.; // depth of the smalles rib
 float kHit = 0.; // # of the rib the ray hit
 float voxelId;
+bool isRoof;
 
 vec4 getRelativeVoxel(vec3 p) {
     p = floor(p / 2.);
@@ -42,7 +43,6 @@ vec4 getRelativeVoxel(vec3 p) {
 }
 
 float sdfVoxel(vec3 p) {
-    // return length(floor(p))-4.;
     objId = 0.;
     vec4 tx = getRelativeVoxel(p);
     objId = tx.r;
@@ -55,33 +55,35 @@ float sdfVoxel(vec3 p) {
         bool rf = getRelativeVoxel(p + vec3(1, 0, -1)).r > 0.;
         bool fl = getRelativeVoxel(p + vec3(-1, 0, -1)).r > 0.;
         bool lb = getRelativeVoxel(p + vec3(-1, 0, 1)).r > 0.;
+        isRoof = getRelativeVoxel(p + vec3(0, 1, 0)).r == 0.;
+
         if(false);
-        else if(!b && r && f && l)
-            side = 1;     // b    1
-        else if(b && !r && f && l)
-            side = 2;     // r    2
-        else if(b && r && !f && l)
-            side = 3;     // f    3
-        else if(b && r && f && !l)
-            side = 4;     // l    4
-        else if(!b && !r && f && l)
-            side = 5;     // br   5
-        else if(b && !r && !f && l)
-            side = 6;     // rf   6
-        else if(b && r && !f && !l)
-            side = 7;     // fl   7
-        else if(!b && r && f && !l)
-            side = 8;     // lb   8
-        else if(!br)
-            side = 9;     // bri  9
-        else if(!rf)
-            side = 10;     // rfi 10
-        else if(!fl)
-            side = 11;     // fli 11
-        else if(!lb)
-            side = 12;     // lbi 12
-        else
-            side = 0;     // c    0
+        else if(!b && r && f && l)     // b    1
+            side = 1;
+        else if(b && !r && f && l)     // r    2
+            side = 2;
+        else if(b && r && !f && l)     // f    3
+            side = 3;
+        else if(b && r && f && !l)     // l    4
+            side = 4;
+        else if(!b && !r && f && l)    // br   5
+            side = 5;
+        else if(b && !r && !f && l)    // rf   6
+            side = 6;
+        else if(b && r && !f && !l)    // fl   7
+            side = 7;
+        else if(!b && r && f && !l)    // lb   8
+            side = 8;
+        else if(!br)                   // bri  9
+            side = 9;
+        else if(!rf)                   // rfi 10
+            side = 10;
+        else if(!fl)                   // fli 11
+            side = 11;
+        else if(!lb)                   // lbi 12
+            side = 12;
+        else                           // c    0
+            side = 0;
     }
 
     float res = .5 - step(1e-4, tx.r);
@@ -97,7 +99,8 @@ float sdf(vec3 p) {
     switch(side) {
         case 0:
             kHit = -1.;
-            return boundingBox;
+            if(isRoof) return 999.;
+            else return boundingBox;
         case 1: // b
             p.xz *= rot(PI);
             break;
@@ -178,11 +181,15 @@ float sdf(vec3 p) {
             kHit = -1.;
         }
     }
+    if(isRoof && c < p.z+.1) {
+        c = p.z+.1;
+        kHit = -1.;
+    }
 
     if(c > boundingBox) {
         return c;
     } else {
-            kHit = -1.;
+        kHit = -1.;
         return boundingBox;
     }
 }
@@ -194,10 +201,12 @@ vec3 norm(vec3 p) {
 }
 
 vec3 getLight(vec3 p) {
-    if(p.y > 30. && p.z > 0. && p.x > 0.)
-        return vec3(15, 6, 5);
-    if(p.y > 26. && p.z < -0. && p.x < -0.)
-        return vec3(100, 15, 15);
+    // if(p.y > 30. && p.z > 0. && p.x > 0.)
+        // return vec3(15, 6, 5);
+    // if(p.y > 26. && p.z < -0. && p.x < -0.)
+        // return vec3(100, 15, 15);
+    // if(p.y > 16.)
+    //     return vec3(50, 15, 15);
     if(kHit == kDepthMin)
         return color(voxelId * .2 + objId) * rnd(voxelId) * rnd(voxelId) * 4.;
     return vec3(0);
@@ -259,7 +268,7 @@ void main() {
             break;
         } else {
             rd = reflect(rd, n);
-            rd += (rnd(length(uv) + u_frame + vec3(0,1,2)) * 2. - 1.) * 1.8;
+            rd += (rnd(length(uv) + u_frame + vec3(0, 1, 2)) * 2. - 1.) * .8;
             rd = normalize(rd);
             ro = p + n * .001;
             col *= .9;

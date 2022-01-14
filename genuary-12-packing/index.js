@@ -212,7 +212,7 @@ function draw() {
 
   tick++
   console.log(tick)
-  if (tick < 3)
+  if (tick < 300)
     requestAnimationFrame(draw)
 }
 
