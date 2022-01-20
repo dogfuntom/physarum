@@ -7,13 +7,15 @@
 // tokenData.hash = '0x5f38546190c55b50d86e95c8652a2d5a42bb0241f6d4fb54fd90ab82f930d81e'
 // 0xab19d56b9b3b8d9ce69981b78f771458a258aa2000179624e6a0f2c20edb9cdd // текстура глаз проглядывает
 // tokenData.hash = '0x2c141bd75924077b9359e2f3c64277193a39a16f3f8cd52ecc867432e58bf140' // wrong
-// tokenData.hash = '23a4ff2ffdf4fa2f3343434234234' // good
+// tokenData.hash = '0xe195db9558b6ba7e9d7b883297f1f1d1f2c830e8a0be2e33d1473ca5b4f9' // good
 
 // 
 
-// if (window.location.hash) {
-//     tokenData.hash = window.location.hash.slice(1)
-// } // FIXME
+if (window.location.hash) {
+    tokenData.hash = window.location.hash.slice(1)
+} // FIXME
+
+
 
 /*begin features*/
 function calculateFeatures(tokenData) {
@@ -78,14 +80,14 @@ function calculateFeatures(tokenData) {
             //0     Symmetry: R() ** 4. * 2 | 0,
             //1     Studs: R() ** 8 * 2 | 0,
             //2     Palette: 0,
-            //     // 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
+            //      // 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
             //3     ColorScheme: (1 - R() ** .3) * 4 | 0,
             //4     Layout: 0,
             //5     BackgroundType: RL([2, 1], .5),
             //6     BackgroundLight: (R() * 3 | 0) - 1,
             //7     BlocksNumber: 0,
             //8     Height: 0,
-            //9    Eyes: 0,
+            //9     Eyes: 0,
             //10    Aerials: 0,
             // }
             features = [
@@ -93,7 +95,7 @@ function calculateFeatures(tokenData) {
                 R() ** 8 * 2 | 0,
                 0,
                 // (1 - R() ** .3) * 5 | 0,
-                M.sqrt(1-(R()-1)**2) * presets.length | 0
+                (1-M.sqrt(1-(R()-1)**4)) * 4 | 0,
                 0,
                 RL([2, 1], .5),
                 (R() * 3 | 0) - 1,
@@ -112,6 +114,13 @@ function calculateFeatures(tokenData) {
             //4 extra: 0,
 
             let presets = [
+                [ // cutie
+                    4,
+                    3 + R() * 4 | 0,
+                    0,
+                    1,
+                    1,
+                ],
                 [
                     8 + R() * 2 | 0,
                     30,
@@ -120,13 +129,6 @@ function calculateFeatures(tokenData) {
                     0,
                 ],
                 // RL([
-                [ // cutie
-                    4,
-                    3 + R() * 4 | 0,
-                    0,
-                    1,
-                    1,
-                ],
                 [
                     8 + R() * 2 | 0,
                     30,
@@ -161,7 +163,7 @@ function calculateFeatures(tokenData) {
             features[2] = R() ** .5 * 8 | 0
             // palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
                 // .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features[2]]
-            u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
+            u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900C2A8fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368E4E4E42e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
                 .substr(30*features[2], 30).match(/(.{2})/g).map(v=>Number("0x"+v))
             palette_bg = R()*4|0
             // console.log('features[2]',features[2])
@@ -542,10 +544,11 @@ function calculateFeatures(tokenData) {
         
         
         
+            console.log(features)
             
             /*begin features*/
             console.log(features)
-                
+
             features[6] = { '1': 'Left', '0': 'Center', '-1': 'Right' }[features[6]]
             // if (features[3] == 4/*gaz*/ || features[3] == 3/*ranibow*/) features[6] = 0
             features[5] = { '1': 'Circle', '2': 'Squircle' }[features[5]]
@@ -988,7 +991,7 @@ function calculateFeatures(tokenData) {
                         
                         // pride
                         if(${features[3]} == 3)
-                            col = sin((L(p) / max(F(${gs}), F(${features[8]})) * 2. - V(0, .3, .6)) * 6.28) * .5 + .5;
+                            col = sin((L(p) / max(F(${gs}), F(${features[8]})) - V(0, .3, .6)) * 6.28) * .5 + .5;
 
                         n = norm(p,float(id)); // надо тут вычислять, видимо, где-то выше я сбиваю colIds выполняя дист
                         // иначе colIds.z равен 0 с чего-то. Но почему тогда dist(p); не помогает?
