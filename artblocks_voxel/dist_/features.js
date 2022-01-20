@@ -1,15 +1,4 @@
-// tokenData.hash = '0x343c93c4b2ea21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
-// tokenData.hash = '0x343c21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
-
-// tokenData.hash = '0x0c91417602b6e1469a56fc5ff264310cc6b57490079a3a164ecc723c79143a09' // не совпадают ножка арки и кубик под ней
-// tokenData.hash = '0xc961a81a3949a7b3ef6ab19a5882509a755c2606d895025389b2a41399d8c14a'
-// tokenData.hash = '0xb578aeb4b58e39423c9ff40fde67c2d416082d6fc09aedd5c5a5ecf5db25e1a6' // антенка заберает шаги и пипке не достаётся
-// tokenData.hash = '0x5f38546190c55b50d86e95c8652a2d5a42bb0241f6d4fb54fd90ab82f930d81e'
-// 0xab19d56b9b3b8d9ce69981b78f771458a258aa2000179624e6a0f2c20edb9cdd // текстура глаз проглядывает
-// tokenData.hash = '0x2c141bd75924077b9359e2f3c64277193a39a16f3f8cd52ecc867432e58bf140' // wrong
-// tokenData.hash = '0xe195db9558b6ba7e9d7b883297f1f1d1f2c830e8a0be2e33d1473ca5b4f9' // good
-
-// 
+// tokenData.hash = '0xe195db9558b6ba7e9d7b883297f1f1d1f2c830e8a0be2e33d1473ca5b4f9'
 
 if (window.location.hash) {
     tokenData.hash = window.location.hash.slice(1)
@@ -26,6 +15,7 @@ function calculateFeatures(tokenData) {
         let S, ss, R, t, RL, SH
         let M = Math
         let A = Array
+        let D = document
         let min = M.min
         let max = M.max
         let floor = M.floor
@@ -49,14 +39,14 @@ function calculateFeatures(tokenData) {
         let blocks
         let vertices
         let viewBox
-        let palette_bg
-        // let tex3dArray = [...Array(300)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
-        // let tex3dArray = [...Array(1000.)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
-        let tex3dArray = [...Array(1000.)].map(()=>[...Array(10)].map(_=>[0,0,0]))
-        // console.log(tex3dArray)
+        let paletteBg
+        // let texMpArray = [...A(300)].map(()=>[...A(10)].map(()=>[...A(1)].map(()=>M.random()*255)))
+        // let texMpArray = [...A(1000.)].map(()=>[...A(10)].map(()=>[...A(1)].map(()=>M.random()*255)))
+        let texMpArray = [...A(1000.)].map(()=>[...A(10)].map(_=>[0,0,0]))
+        // console.log(texMpArray)
 
         // new
-        let size, ts;
+        let ts;
             
         let init = () => {
             // console.log(tokenData.hash)
@@ -166,7 +156,7 @@ function calculateFeatures(tokenData) {
                 // .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features[2]]
             u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900C2A8fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368E4E4E42e294effd4001f20414b3f72119da419647effc857540d6eee4266d9d9d91f271bffd23fe4572e29335ca8c686669bbcf3a712'
                 .substr(30*features[2], 30).match(/(.{2})/g).map(v=>Number("0x"+v))
-            palette_bg = R()*4|0
+            paletteBg = R()*4|0
             // console.log('features[2]',features[2])
         }
         
@@ -290,7 +280,8 @@ function calculateFeatures(tokenData) {
                 //10 pos
 
                 for (let try_ = 0; try_ < maxTry; try_++) {
-                    bvt = JSON.parse(JSON.stringify(bvtInitial))
+                    // bvt = JSON.parse(JSON.stringify(bvtInitial))
+                    bvt = [...bvtInitial]
 
                     bvt[4] = R() * 4 + 1 | 0
                     bvt[5] = R() * 4 + 1 | 0
@@ -349,8 +340,9 @@ function calculateFeatures(tokenData) {
                     // тут можно циклы выкинуть
                     let studL = 0
                     let studR = 0
-                    let xx = [...A(bvt[9][0])].map((d, i) => bvt[10][0] + i - (bvt[9][0] - 1.) / 2)
-                    let zz = [...A(bvt[9][2])].map((d, i) => bvt[10][2] + i - (bvt[9][2] - 1.) / 2)
+                    // let xx = [...A(bvt[9][0])].map((d, i) => bvt[10][0] + i - (bvt[9][0] - 1.) / 2)
+                    // let zz = [...A(bvt[9][2])].map((d, i) => bvt[10][2] + i - (bvt[9][2] - 1.) / 2)
+                    let [xx,zz] = [0,0].map((_,j)=>[...A(bvt[9][j*2])].map((d, i) => bvt[10][j*2] + i - (bvt[9][j*2] - 1.) / 2))
                     for (let x of xx) {
                         for (let z of zz) {
                             if (x >= 0) studR++;
@@ -427,15 +419,10 @@ function calculateFeatures(tokenData) {
                             let yyy = (bv[10][1]-bv[9][1]/2) + yy | 0
                             let zzz = (bv[10][2]-bv[9][2]/2) + zz + 5 | 0
                             // console.log('xxx, yyy, zzz', xxx, yyy, zzz)
-                            tex3dArray[zzz + 10 * yyy][xxx][0] = 
-                            tex3dArray[zzz + 10 * yyy + 10][xxx][1] = 
+                            texMpArray[zzz + 10 * yyy][xxx][0] = 
+                            texMpArray[zzz + 10 * yyy + 10][xxx][1] = 
                             255 * (blocks.length+1) / 64
                         }
-                        // console.log(tex3dArray)
-                        // for(let xx = 0; xx<2; xx++)
-                        // for(let zz = 0; zz<2; zz++)
-                        // for(let yy = 0; yy<2; yy++)
-                        // tex3dArray[zz + 10 * yy][xx] = [255]
                         
         
                         // push vertices
@@ -481,17 +468,27 @@ function calculateFeatures(tokenData) {
         
         
 
-            let sampler_psArray = Array(64).fill([[0,0,0]])
-            let sampler_ssArray = Array(64).fill([[0,0,0]])
-            let sampler_rtArray = Array(64).fill([[0,0,0]])
-            let sampler_csArray = Array(64).fill([[0,0,0]])
+            let samplerArrays = [0,0,0,0].map(_=>A(64).fill([[]]))
             blocks.forEach((b,i) => {
-                sampler_psArray[i] = [b[10]           ]
-                sampler_ssArray[i] = [b[0]            ]
-                sampler_rtArray[i] = [[b[8],b[3],0   ]]
-                sampler_csArray[i] = [[b[4],b[5],b[6]]]
+                samplerArrays[0][i] = [b[10]           ]
+                samplerArrays[1][i] = [b[0]            ]
+                samplerArrays[2][i] = [[b[8],b[3],0   ]]
+                samplerArrays[3][i] = [[b[4],b[5],b[6]]]
             })
+            console.log(samplerArrays)
         
+            // let samplerArrays = []
+            // samplerArray[0]=blocks.map(b=>[b[10]])
+            // samplerArray[1]=blocks.map([b[0]            ])
+            // samplerArray[2]=blocks.map([[b[8],b[3],0   ]])
+            // samplerArray[3]=blocks.map([[b[4],b[5],b[6]]])
+            // // blocks.forEach((b,i) => {
+            //     // samplerArrays[0][i] = [b[10]           ]
+            //     // samplerArrays[1][i] = [b[0]            ]
+            //     // samplerArrays[2][i] = [[b[8],b[3],0   ]]
+            //     // samplerArrays[3][i] = [[b[4],b[5],b[6]]]
+            // // })
+            // console.log(samplerArrays)
         
         
         

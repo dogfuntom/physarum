@@ -1,15 +1,4 @@
-// tokenData.hash = '0x343c93c4b2ea21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
-// tokenData.hash = '0x343c21427bfd11a12d48183bc2879a5aad606b0a95dcfdaf07'
-
-// tokenData.hash = '0x0c91417602b6e1469a56fc5ff264310cc6b57490079a3a164ecc723c79143a09' // не совпадают ножка арки и кубик под ней
-// tokenData.hash = '0xc961a81a3949a7b3ef6ab19a5882509a755c2606d895025389b2a41399d8c14a'
-// tokenData.hash = '0xb578aeb4b58e39423c9ff40fde67c2d416082d6fc09aedd5c5a5ecf5db25e1a6' // антенка заберает шаги и пипке не достаётся
-// tokenData.hash = '0x5f38546190c55b50d86e95c8652a2d5a42bb0241f6d4fb54fd90ab82f930d81e'
-// 0xab19d56b9b3b8d9ce69981b78f771458a258aa2000179624e6a0f2c20edb9cdd // текстура глаз проглядывает
-// tokenData.hash = '0x2c141bd75924077b9359e2f3c64277193a39a16f3f8cd52ecc867432e58bf140' // wrong
-// tokenData.hash = '0xe195db9558b6ba7e9d7b883297f1f1d1f2c830e8a0be2e33d1473ca5b4f9' // good
-
-// 
+// tokenData.hash = '0xe195db9558b6ba7e9d7b883297f1f1d1f2c830e8a0be2e33d1473ca5b4f9'
 
 if (window.location.hash) {
     tokenData.hash = window.location.hash.slice(1)
@@ -26,6 +15,7 @@ function calculateFeatures(tokenData) {
         let S, ss, R, t, RL, SH
         let M = Math
         let A = Array
+        let D = document
         let min = M.min
         let max = M.max
         let floor = M.floor
@@ -35,11 +25,10 @@ function calculateFeatures(tokenData) {
         
         
         /*begin render*/
-        let D = devicePixelRatio
-        // let div = document.createElement('div') // FIXME
+        // let div = D.createElement('div') // FIXME
         // div.classList.add('debug'),div.style.width = '100%',div.style.height = '100px' // FIXME
-        // document.body.appendChild(div) //FIXME
-        let params_aa = location.href.split('#')[1];
+        // D.body.appendChild(div) //FIXME
+        let params_size = location.href.split('#')[1];
         /*end render*/
 
         let rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
@@ -55,14 +44,14 @@ function calculateFeatures(tokenData) {
         let blocks
         let vertices
         let viewBox
-        let palette_bg
-        // let tex3dArray = [...Array(300)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
-        // let tex3dArray = [...Array(1000.)].map(()=>[...Array(10)].map(()=>[...Array(1)].map(()=>Math.random()*255)))
-        let tex3dArray = [...Array(1000.)].map(()=>[...Array(10)].map(_=>[0,0,0]))
-        // console.log(tex3dArray)
+        let paletteBg
+        // let texMpArray = [...A(300)].map(()=>[...A(10)].map(()=>[...A(1)].map(()=>M.random()*255)))
+        // let texMpArray = [...A(1000.)].map(()=>[...A(10)].map(()=>[...A(1)].map(()=>M.random()*255)))
+        let texMpArray = [...A(1000.)].map(()=>[...A(10)].map(_=>[0,0,0]))
+        // console.log(texMpArray)
 
         // new
-        let size, ts;
+        let ts;
             
         let init = () => {
             // console.log(tokenData.hash)
@@ -172,7 +161,7 @@ function calculateFeatures(tokenData) {
                 // .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features[2]]
             u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900C2A8fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368E4E4E42e294effd4001f20414b3f72119da419647effc857540d6eee4266d9d9d91f271bffd23fe4572e29335ca8c686669bbcf3a712'
                 .substr(30*features[2], 30).match(/(.{2})/g).map(v=>Number("0x"+v))
-            palette_bg = R()*4|0
+            paletteBg = R()*4|0
             // console.log('features[2]',features[2])
         }
         
@@ -296,7 +285,8 @@ function calculateFeatures(tokenData) {
                 //10 pos
 
                 for (let try_ = 0; try_ < maxTry; try_++) {
-                    bvt = JSON.parse(JSON.stringify(bvtInitial))
+                    // bvt = JSON.parse(JSON.stringify(bvtInitial))
+                    bvt = [...bvtInitial]
 
                     bvt[4] = R() * 4 + 1 | 0
                     bvt[5] = R() * 4 + 1 | 0
@@ -355,8 +345,9 @@ function calculateFeatures(tokenData) {
                     // тут можно циклы выкинуть
                     let studL = 0
                     let studR = 0
-                    let xx = [...A(bvt[9][0])].map((d, i) => bvt[10][0] + i - (bvt[9][0] - 1.) / 2)
-                    let zz = [...A(bvt[9][2])].map((d, i) => bvt[10][2] + i - (bvt[9][2] - 1.) / 2)
+                    // let xx = [...A(bvt[9][0])].map((d, i) => bvt[10][0] + i - (bvt[9][0] - 1.) / 2)
+                    // let zz = [...A(bvt[9][2])].map((d, i) => bvt[10][2] + i - (bvt[9][2] - 1.) / 2)
+                    let [xx,zz] = [0,0].map((_,j)=>[...A(bvt[9][j*2])].map((d, i) => bvt[10][j*2] + i - (bvt[9][j*2] - 1.) / 2))
                     for (let x of xx) {
                         for (let z of zz) {
                             if (x >= 0) studR++;
@@ -433,15 +424,10 @@ function calculateFeatures(tokenData) {
                             let yyy = (bv[10][1]-bv[9][1]/2) + yy | 0
                             let zzz = (bv[10][2]-bv[9][2]/2) + zz + 5 | 0
                             // console.log('xxx, yyy, zzz', xxx, yyy, zzz)
-                            tex3dArray[zzz + 10 * yyy][xxx][0] = 
-                            tex3dArray[zzz + 10 * yyy + 10][xxx][1] = 
+                            texMpArray[zzz + 10 * yyy][xxx][0] = 
+                            texMpArray[zzz + 10 * yyy + 10][xxx][1] = 
                             255 * (blocks.length+1) / 64
                         }
-                        // console.log(tex3dArray)
-                        // for(let xx = 0; xx<2; xx++)
-                        // for(let zz = 0; zz<2; zz++)
-                        // for(let yy = 0; yy<2; yy++)
-                        // tex3dArray[zz + 10 * yy][xx] = [255]
                         
         
                         // push vertices
@@ -477,7 +463,7 @@ function calculateFeatures(tokenData) {
         }
         /*begin render*/
         let findViewBox = () => {
-            viewBox = [-99,99,99,-99]
+            viewBox = [-9,9,9,-9]
             // 0 → top
             // 1 → bottom
             // 2 → left
@@ -527,17 +513,27 @@ function calculateFeatures(tokenData) {
         
         
 
-            let sampler_psArray = Array(64).fill([[0,0,0]])
-            let sampler_ssArray = Array(64).fill([[0,0,0]])
-            let sampler_rtArray = Array(64).fill([[0,0,0]])
-            let sampler_csArray = Array(64).fill([[0,0,0]])
+            let samplerArrays = [0,0,0,0].map(_=>A(64).fill([[]]))
             blocks.forEach((b,i) => {
-                sampler_psArray[i] = [b[10]           ]
-                sampler_ssArray[i] = [b[0]            ]
-                sampler_rtArray[i] = [[b[8],b[3],0   ]]
-                sampler_csArray[i] = [[b[4],b[5],b[6]]]
+                samplerArrays[0][i] = [b[10]           ]
+                samplerArrays[1][i] = [b[0]            ]
+                samplerArrays[2][i] = [[b[8],b[3],0   ]]
+                samplerArrays[3][i] = [[b[4],b[5],b[6]]]
             })
+            console.log(samplerArrays)
         
+            // let samplerArrays = []
+            // samplerArray[0]=blocks.map(b=>[b[10]])
+            // samplerArray[1]=blocks.map([b[0]            ])
+            // samplerArray[2]=blocks.map([[b[8],b[3],0   ]])
+            // samplerArray[3]=blocks.map([[b[4],b[5],b[6]]])
+            // // blocks.forEach((b,i) => {
+            //     // samplerArrays[0][i] = [b[10]           ]
+            //     // samplerArrays[1][i] = [b[0]            ]
+            //     // samplerArrays[2][i] = [[b[8],b[3],0   ]]
+            //     // samplerArrays[3][i] = [[b[4],b[5],b[6]]]
+            // // })
+            // console.log(samplerArrays)
         
         
         
@@ -582,34 +578,36 @@ function calculateFeatures(tokenData) {
     
             // let tick = 0;
             
-            let size_ = M.min(innerWidth, innerHeight)*D
-            let canvas = document.createElement('canvas')
-            canvas.style.width = canvas.style.height = size_/D + 'px'
-            size_ = min(size_, 2048)
+            let ws = M.min(innerWidth, innerHeight)
+            let canvas = D.createElement('canvas')
+            let canvasStyle = canvas.style
+            canvasStyle.width = canvasStyle.height = ws + 'px'
+            let size_ = min(ws*devicePixelRatio, 2048)
+            // if(params_size) size_ = Number(params_size) // FIXME uncomment
+
             let gl = canvas.getContext('webgl', {
                 preserveDrawingBuffer: true,
             });
 
-            document.body.appendChild(canvas)
-            let bg = u_palette.slice(3*palette_bg,3+3*palette_bg)//.map(v=>v*255)
-            canvas.style.background=(features[3] == 3)? '#333':`rgb(${bg})`
+            D.body.appendChild(canvas)
+            let bg = u_palette.slice(3*paletteBg,3+3*paletteBg)//.map(v=>v*255)
+            canvasStyle.background=(features[3] == 3)? '#333':`rgb(${bg})`
             
-            canvas.width = size_
-            canvas.height = size_
+            canvas.width = canvas.height = size_
             
             
-            // var regl = createREGL(gl)
             let regl = createREGL({
                 gl: gl,
                 extensions: ['webgl_draw_buffers', 'oes_texture_float'],
             })
 
-            let tex3d = regl.texture(tex3dArray)
+            let tex3d = regl.texture(texMpArray)
             
-            let sampler_ps = regl.texture({data: sampler_psArray, type: 'float'})
-            let sampler_ss = regl.texture({data: sampler_ssArray, type: 'float'})
-            let sampler_rt = regl.texture({data: sampler_rtArray, type: 'float'})
-            let sampler_cs = regl.texture({data: sampler_csArray, type: 'float'})
+            // 0 pos
+            // 1 sizes
+            // 2 rot type
+            // 3 colors
+            let samplers = [...A(4)].map((_,i)=>regl.texture({data: samplerArrays[i], type: 'float'}))
 
             let fbo = [1,1].map(() =>
                 regl.framebuffer({
@@ -620,11 +618,19 @@ function calculateFeatures(tokenData) {
                     depth: false,
                   })
             )
-
+            let precision = `precision highp float;\n`
 
               let commandParams = {
-                frag: /*glsl*/`#extension GL_EXT_draw_buffers:require
-                precision highp float;
+                vert: `attribute vec2 g;void main(){gl_Position=vec4(g,0,1);}`,
+                attributes: {
+                  g: [[1, 1], [1, -4], [-4, 1]]
+                },
+                count: 3
+            }
+            
+            let commandNormals = regl({...commandParams,
+                frag: precision+/*glsl*/`
+                #extension GL_EXT_draw_buffers:require
                 #define BLOCKS_NUMBER_MAX 60
                 #define PI 3.1415
                 #define S smoothstep
@@ -632,32 +638,29 @@ function calculateFeatures(tokenData) {
                 #define F float
                 #define N normalize
                 #define L length
+                #define T texture2D
                 #define v vec2
                 // mat2 rot(F a) {→mat2(cos(a),-sin(a),sin(a),cos(a));} // FIXME make define
-                #define gl_z_rnd(x) fract(54321.987 * sin(987.12345 * x + .1))
+                #define gl_z_Q(x) fract(54321.987 * sin(987.12345 * x + .1))
                 #define gl_z_R(a) mat2(cos(a),-sin(a),sin(a),cos(a))
-                #define EPS .0001
+                #define EPS 1e-4
+                #define U uniform sampler2D
+                #define C gl_FragCoord
+                #define D gl_FragData
                 F sabs(F p) {→sqrt(abs(p)*abs(p)+5e-5);}
                 F smax(F a, F b) {→(a+b+sabs(a-b))*.5;}
                 
-                V gl_z_ps[BLOCKS_NUMBER_MAX];
-                V gl_z_ss[BLOCKS_NUMBER_MAX];
-                v gl_z_rt[BLOCKS_NUMBER_MAX];
-                ivec3 gl_z_cs[BLOCKS_NUMBER_MAX];
-
-                uniform sampler2D gl_z_sampler_ps;
-                uniform sampler2D gl_z_sampler_ss;
-                uniform sampler2D gl_z_sampler_rt;
-                uniform sampler2D gl_z_sampler_cs;
-            
+                U gl_z_ps;
+                U gl_z_ss;
+                U gl_z_rt;
+                U gl_z_cs;
+                U gl_z_mp;
+                U gl_z_cl;
+                U gl_z_nr;
 
                 uniform V gl_z_pt[5];
                 uniform F gl_z_tk;
-                F resolution = float(${size_});
-
-                uniform sampler2D gl_z_tex3d;
-                uniform sampler2D gl_z_texCol;
-                uniform sampler2D gl_z_texNorm;
+                F resolution = F(${size_});
         
                 ivec3 colIds = ivec3(0);
                 F gl;
@@ -666,9 +669,6 @@ function calculateFeatures(tokenData) {
                 F cornerR = .01, gap = .015, block;
                 F outlineWidth = .015;//((cornerR+gap)*sqrt(2.) - cornerR);
                 
-                // int eye = 0;
-                // V eye = V(0.);
-                // eye = 0;
                 int id;
     
                 F tube(V p, V s){
@@ -679,11 +679,10 @@ function calculateFeatures(tokenData) {
                 
 
                 F dist(V p, F id) {
-
-                    V val_from_sampler_ps = (texture2D(gl_z_sampler_ps, vec2(.5,(id)/64.)).rgb);
-                    V val_from_sampler_rt = (texture2D(gl_z_sampler_rt, vec2(.5,(id)/64.)).rgb);
-                    V val_from_sampler_ss = (texture2D(gl_z_sampler_ss, vec2(.5,(id)/64.)).rgb);
-                    ivec3 val_from_sampler_cs = ivec3(texture2D(gl_z_sampler_cs, vec2(.5,(id)/64.)).rgb);
+                    V val_from_sampler_ps = (T(gl_z_ps, vec2(.5,id/64.)).rgb);
+                    V val_from_sampler_rt = (T(gl_z_rt, vec2(.5,id/64.)).rgb);
+                    V val_from_sampler_ss = (T(gl_z_ss, vec2(.5,id/64.)).rgb);
+                    ivec3 val_from_sampler_cs = ivec3(T(gl_z_cs, vec2(.5,(id)/64.)).rgb);
                     // ivec3 val_from_sampler_cs = ivec3(1,2,1);
 
                     p.x = abs(p.x);
@@ -709,10 +708,6 @@ function calculateFeatures(tokenData) {
                         F narrow = tube(pb+V(0,1.6-cornerR*3.,0),V(3.55,.15,0));
                         F base = tube(pb+V(0,2.-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
                         block = min(narrow, base);
-                        // // F narrow = tube(pb+V(0,1.6-cornerR-gap,0),V(3.55,.15,0));
-                        // F narrow = tube(pb+V(0,4./2.-.4-cornerR*2.-gap,0),V(3.55,.15-cornerR,0));
-                        // F base = tube(pb+V(0,2.-cornerR*2.,0),V(.4-cornerR*2.-gap,.45,0));
-                        // block = min(narrow, base)-cornerR;
                     }
 
                     // studs
@@ -741,8 +736,6 @@ function calculateFeatures(tokenData) {
                         block = eye_;
                         if(eye_ < EPS) {
                             colIds.z = 9; // eye
-                            // discard;
-                            // return block;
                         }
                     }
             
@@ -765,114 +758,27 @@ function calculateFeatures(tokenData) {
                 }
 
                 void sdfVoxel(vec3 p){
-                    // blockId *= 0;
-                    // p.xz += fract(float(${gs/2}));  // ODD
-                    // p.x = abs(p.x);
-                    // p.zx -= fract(float(${gs/2})); // ODD
-                    // p.x += 5.;
-                    // p.z += 5.;
-                    // p = floor(p+vec3(0,0,0));
-                    // if(p.y < 0.) return v(0);
-                    // vec3 boundingBox = vec3(10,1000 / 10,10);
-                    // if(fract(p/boundingBox) != p/boundingBox) return v(0);
-                    // blockId = ivec2(max(0., 3.-length(p)));
-                    // return vec2(blockId);
-
-
                     blockId *= 0;
-                    p.xz += fract(float(${gs/2}));  // ODD
-                    // p.xz = p.zx;
+                    p.xz += fract(F(${gs/2}));  // ODD
                     p.x = abs(p.x);
-                    p.zx -= fract(float(${gs/2})); // ODD
-                    // p.x += ${gs}.-1.;
-                    // p.z += ${gs}.;
+                    p.zx -= fract(F(${gs/2})); // ODD
                     p.x += 5.;
                     p.z += 5.;
                     p = floor(p+vec3(0,0,0));
                     if(p.y < 0.) return; // ←←←←←←←←←←←←←←←←←←←←←←←←
-                    // p.x -= .5;
-                    // p.z -= .5;
                     vec3 boundingBox = vec3(10,1000 / 10,10);
                     if(fract(p/boundingBox) != p/boundingBox) return;  // ←←←←←←←←←←←←←←←←←←←←←←←←
                     vec2 vox, texSize = vec2(boundingBox.x, boundingBox.y*boundingBox.z);
                     vox.x = p.x;
                     vox.y = p.z + p.y * 10.;
                     vec2 voxN = (vox+.5) / texSize;
-                    blockId = ivec2(texture2D(gl_z_tex3d, voxN).rg * 64.);
-                    // if(blockId == 2) discard;
+                    blockId = ivec2(T(gl_z_mp, voxN).rg * 64.);
                     return;  // ←←←←←←←←←←←←←←←←←←←←←←←←
                 }
 
-                // vec3 rgb2hsb( in vec3 c ){
-                //     vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
-                //     vec4 p = mix(vec4(c.bg, K.wz),
-                //                  vec4(c.gb, K.xy),
-                //                  step(c.b, c.g));
-                //     vec4 q = mix(vec4(p.xyw, c.r),
-                //                  vec4(c.r, p.yzx),
-                //                  step(p.x, c.r));
-                //     float d = q.x - min(q.w, q.y);
-                //     float e = 1.0e-10;
-                //     return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)),
-                //                 d / (q.x + e),
-                //                 q.x);
-                // }
-                
-                // //  Function from Iñigo Quiles
-                // //  https://www.shadertoy.com/view/MsS3Wc
-                // vec3 hsb2rgb( in vec3 c ){
-                //     vec3 rgb = clamp(abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),
-                //                              6.0)-3.0)-1.0,
-                //                      0.0,
-                //                      1.0 );
-                //     rgb = rgb*rgb*(3.0-2.0*rgb);
-                //     return c.z * mix(vec3(1.0), rgb, c.y);
-                // }
-
                 void main() {
-                    // gl_FragData[0] = vec4(1);
-                    
-                    // // DEBUG
-                    // vec2 uv = (gl_FragCoord.xy * 2. - resolution) / resolution;
-                    // V ro = V(uv * F(${viewBox[6]}) +
-                    //     v(${viewBox[7]},
-                    //     ${viewBox[8]}), -camDist),
-                    //    rd = V(0, 0, 1);
-                    //    ro.yz *= gl_z_R(${u_camAngYZ});
-                    //    rd.yz *= gl_z_R(${u_camAngYZ});
-                    //    ro.xz *= gl_z_R(${u_camAngXZ});
-                    //    rd.xz *= gl_z_R(${u_camAngXZ});
-                    // float d,e=1.,j;
-                    // vec3 p;
-                    // for(float i=0.;i<99.;i++){
-                    //     j=i;
-                    //     p=ro+rd*d;
-                    //     p.z-=1.;
-                    //     p.xz = fract(p.xz)-.5;
-                    //     d+=e=dist(p);
-                    //     if(e<1e-3)break;
-                    // }
-                    // gl_FragData[0] = vec4(step(-40.,-d));
-                    // vec3 n = norm(p);
-                    // // n.xz *= -gl_z_R(${u_camAngXZ});
-                    // // n.xz *= -gl_z_R(${u_camAngXZ});
-                    // // n.xz *= -gl_z_R(${u_camAngXZ});
-                    // // n.yz *= gl_z_R(${u_camAngYZ});
-                    // // n.xy *= gl_z_R(.95);
-                    // n.xz *= gl_z_R(PI/2. + PI/4.);
-                    // n.xy *= gl_z_R(atan(sqrt(2.)));
-                    // n = n.zyx;
-                    // n.x *= -1.;
-                    // n.z *= -1.;
-
-                    // gl_FragData[1] = vec4((n),d);
-                    // return;
-                    // // END OF DEBUG
-
-
-                    // ${uniforms}
                     V o = V(0), n, nnn;
-                    v uv = (gl_FragCoord.xy * 2. - resolution)/resolution;
+                    v uv = (C.xy * 2. - resolution)/resolution;
                     F d;
         
                     gl = 0.;
@@ -892,38 +798,34 @@ function calculateFeatures(tokenData) {
                         rd = V(0, 0, 1);
                     bool outline = false;
 
-                    // vec3 ro = vec3(0,0,-10);
-                    // vec3 rd = vec3(0,0,-10);
                     ro.yz *= gl_z_R(${u_camAngYZ});
                     rd.yz *= gl_z_R(${u_camAngYZ});
                     ro.xz *= gl_z_R(${u_camAngXZ});
                     rd.xz *= gl_z_R(${u_camAngXZ});
-                    float jj = 0.;
+                    F jj = 0.;
 
 
 
-                    for(float i = 0.; i < 200.; i++) {
+                    for(F i = 0.; i < 200.; i++) {
                         jj++;
                         p = ro + rd * d;
-                        p.xz -= fract(float(${gs/2})); // ODD
+                        p.xz -= fract(F(${gs/2})); // ODD
                         vec3 dp = (step(0., rd) - fract(p)) / rd;
-                        float dpmin;
+                        F dpmin;
             
                         dpmin = min(min(dp.x,dp.y),dp.z) + 1e-4;
 
             
                         bool breaker = false;
                         sdfVoxel(p);
-                        // blockId = ivec2(2);
                         if(length(v(blockId)) > 0. && p.y >= 0.) {
-                        // if(length(p)-5. < 0.) {
-                            float ddd = 0.;
-                            for(float backupI = 0.; backupI < 200.; backupI++) { // FIXME get rid of backupI
+                            F ddd = 0.;
+                            for(F backupI = 0.; backupI < 200.; backupI++) { // FIXME get rid of backupI
                                 jj++;
                                 p = ro + rd * (d + ddd);
                                 
-                                float e1 = dist(p,float(blockId.x - 1));
-                                float e2 = dist(p,float(blockId.y - 1));
+                                F e1 = dist(p,F(blockId.x - 1));
+                                F e2 = dist(p,F(blockId.y - 1));
                                 if(e1<e2){
                                     e = e1;
                                     id = blockId.x - 1;
@@ -942,12 +844,6 @@ function calculateFeatures(tokenData) {
                                 }
                                 ep = e;
                                 if(e < EPS || jj > 200. || d > camDist*2.) { // налетели на сферу
-                                    // discard;
-                                    // if(id > 0.)
-                                    //     col *= color(id);
-                                        // col *= n+.5;
-                                    // if(s > 1.)
-                                        // col *= .6;
                                     breaker = true;
                                     dpmin = ddd;
                                     break;
@@ -956,10 +852,6 @@ function calculateFeatures(tokenData) {
                                     break;
                                 }
                             }
-
-                            // breaker = true;
-                            // colIds = ivec3(1,1,1);
-                            // break;
                         }
                         else{
                             colIds = ivec3(0, 0, -1);
@@ -992,14 +884,14 @@ function calculateFeatures(tokenData) {
                             if(sin(p.y * PI * 3.) > 0.)
                                 col = col2;
                         if(colIds.z == 2)
-                            if(sin((p.x + fract(gl_z_ps[0].x - gl_z_ss[0].x / 2.)) * PI * 2. * 1.5) > 0.) //////////////////////
+                            if(sin((p.x + fract(${gs}. / 2.)) * PI * 2. * 1.5) > 0.) //////////////////////
                                 col = col2;
                         
                         // pride
                         if(${features[3]} == 3)
-                            col = sin((L(p) / max(F(${gs}), F(${features[8]})) - V(0, .3, .6)) * 6.28) * .5 + .5;
+                            col = sin((L(p) / max(${gs}., F(${features[8]})) - V(0, .3, .6)) * 6.28) * .5 + .5;
 
-                        n = norm(p,float(id)); // надо тут вычислять, видимо, где-то выше я сбиваю colIds выполняя дист
+                        n = norm(p,F(id)); // надо тут вычислять, видимо, где-то выше я сбиваю colIds выполняя дист
                         // иначе colIds.z равен 0 с чего-то. Но почему тогда dist(p); не помогает?
                         if(colIds.z == 9) {
                             col = V(0);
@@ -1011,8 +903,6 @@ function calculateFeatures(tokenData) {
                     
                         if(colIds.z == -1) {
                             // фончик
-                            // c = texture2D(gl_z_sampler_ps,gl_FragCoord.xy / resolution).rgb; //gl_z_tex3d
-                            
                             c = V(${bg})/255.;
                             if(L(c) > .4){
                                 c *= S(5., 0., L(uv + v(${features[6]}, -1)));
@@ -1034,144 +924,75 @@ function calculateFeatures(tokenData) {
                             if(colIds.z!=9)
                                 c += pow(abs(dot(n, N(V(0, 1.5, .5)))), 40.);
                         }
-                        // gazya
-                        // if(${features[3]} == 4)
-                        //     c = (V(20. / jj));
                     }
-                    // n = norm(p);
-                    // c = n;
-                    // // texture debug
-                    // c.g = fract(gl_FragCoord.y / resolution * 11.);
-                    // c.g *= pow(fract(gl_FragCoord.y / resolution * 1000.),8.);// * fract(gl_FragCoord.x / resolution * 10.);
-                    // c.g += step(0.001,texture2D(gl_z_tex3d, gl_FragCoord.xy / resolution).r) * 8.;
-                    // c *= 30./jj;
-
-                    // o += c;
-                    // nnn+=n;
-
-
                     if(gl_z_tk > 1.){
-                        V norm = (texture2D(gl_z_texNorm, gl_FragCoord.xy/resolution).rgb);
-                        F dist = texture2D(gl_z_texNorm, gl_FragCoord.xy/resolution).a;
+                        V norm = (T(gl_z_nr, C.xy/resolution).rgb);
+                        F dist = T(gl_z_nr, C.xy/resolution).a;
                         dist = min(dist,camDist*2.);
                         vec3 f = norm;
                         vec3 r = normalize(cross(vec3(1,2,3), f));
                         vec3 u = cross(f, r);
-                        for(float i=0.; i<20.; i++){
+                        for(F i=0.; i<20.; i++){
                             V kernel = V(0,0,0);
-                            kernel += (gl_z_rnd(i+gl_z_tk+dot(uv*99.,vec2(.319,.137)))*2.-1.) * r;
-                            kernel += (gl_z_rnd(i+gl_z_tk+dot(uv*99.,vec2(.319,.137))+.1)*2.-1.) * u;
-                            kernel += (gl_z_rnd(i+gl_z_tk+dot(uv*99.,vec2(.319,.137))+.2)) * f;
-                            kernel = N(kernel) * pow(gl_z_rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137))),2.);
+                            kernel += (gl_z_Q(i+gl_z_tk+dot(uv*99.,vec2(.319,.137)))*2.-1.) * r; // FIXME rnd values
+                            kernel += (gl_z_Q(i+gl_z_tk+dot(uv*99.,vec2(.319,.137))+.1)*2.-1.) * u;
+                            kernel += (gl_z_Q(i+gl_z_tk+dot(uv*99.,vec2(.319,.137))+.2)) * f;
+                            kernel = N(kernel) * pow(gl_z_Q(i+dot(mod(C.xy,10.1*PI),vec2(.319,.137))),2.);
                             vec3 offset = V(dot(kernel,vec3(1,0,0)), dot(kernel,vec3(0,1,0)), dot(kernel,V(0,0,1)));
-                            if(dist - offset.z * 1.1 > texture2D(gl_z_texNorm, gl_FragCoord.xy/resolution + .15 * offset.xy).a){
-                                // gl_FragData[0] *= .99;
+                            if(dist - offset.z * 1.1 > T(gl_z_nr, C.xy/resolution + .15 * offset.xy).a){
                                 c*=.97;
                             }
                         }
                     }
 
 
-                    gl_FragData[0] = mix(texture2D(gl_z_texCol, gl_FragCoord.xy/resolution), c.rgbb, 1. / gl_z_tk);
-                    // n.xz *= gl_z_R(PI/2. + PI/4.);
+                    D[0] = mix(T(gl_z_cl, C.xy/resolution), c.rgbb, 1. / gl_z_tk);
                     n.xz *= -sign(${features[0]-.5})*gl_z_R(${u_camAngXZ});
                     n.xy *= gl_z_R(atan(sqrt(2.)));
                     n = n.zyx;
                     n.xz *= -1.;
-                    gl_FragData[1] = mix(texture2D(gl_z_texNorm, gl_FragCoord.xy/resolution), vec4(n.rgb,d), 1. / gl_z_tk);
-
-
-                    // gl_FragData[0] = vec4(gl_z_tk/8.);
-                    // gl_FragData[0].r = sin(length(gl_FragCoord.xy)/gl_z_tk);
-
+                    D[1] = mix(T(gl_z_nr, C.xy/resolution), vec4(n.rgb,d), 1. / gl_z_tk);
                 }
                 
-                
-                
-                
-                
-                
                 `/*glsl*/.replace(/@/g,'\n#define ').replace(/→/g,'return '),
-              
-                vert: `attribute vec2 g;void main(){gl_Position=vec4(g,0,1);}`,
-              
-                attributes: {
-                  g: [[1, 1], [1, -4], [-4, 1]]
-                },
-            
+                
                 uniforms: {
                     pt: u_palette.map(v=>v/255),
                     // aa: regl.prop('a'),
-                    tex3d: tex3d,
+                    mp: tex3d,
                     tk: ({ tick }) => tick,
-                    texCol: ({ tick }) => fbo[tick % 2].color[0],
-                    texNorm: ({ tick }) => fbo[tick % 2].color[1],
-                    sampler_ps: sampler_ps,
-                    sampler_ss: sampler_ss,
-                    sampler_rt: sampler_rt,
-                    sampler_cs: sampler_cs,
-                    // tk: regl.prop('tk'),
-                    // tk: () => tick,
+                    cl: ({ tick }) => fbo[tick % 2].color[0],
+                    nr: ({ tick }) => fbo[tick % 2].color[1],
+                    ps: samplers[0],
+                    ss: samplers[1],
+                    rt: samplers[2],
+                    cs: samplers[3],
                 },
-                // scissor: {
-                //     enable: true,
-                //     box: {
-                //       x: regl.prop('x'),
-                //       y: regl.prop('y'),
-                //       width: regl.prop('t'),
-                //       height: regl.prop('t')
-                //     }
-                // },
-                depth: {
-                    enable: false
-                },
+
                 framebuffer: ({ tick }) => fbo[(tick + 1) % 2],
-                count: 3
-            }
-            
-            
-            let commandRender = regl({
-                frag: `#extension GL_EXT_draw_buffers : require\nprecision highp float;uniform sampler2D texCol;void main(){gl_FragData[0]=vec4(texture2D(texCol,gl_FragCoord.xy/float(${size_})).rgb,1);}`,
-                vert: `attribute vec2 g;void main(){gl_Position=vec4(g,0,1);}`,
-                attributes: {
-                  g: [[1, 1], [1, -4], [-4, 1]]
-                },
-                uniforms: {
-                    texCol: ({ tick }) => fbo[(tick + 1) % 2].color[0],
-                },
-                depth: {
-                    enable: false
-                },
-                count: 3
+              
             })
 
-            let commandNormals = regl(commandParams)
+            let commandRender = regl({...commandParams,
+                    frag: precision+`uniform sampler2D c;void main(){gl_FragData[0]=vec4(texture2D(c,gl_FragCoord.xy/float(${size_})).rgb,1);}`, 
+                    uniforms: { c: ({ tick }) => fbo[(tick + 1) % 2].color[0], },
+                    depth: {enable: false}
+                })
 
             let rows = (size_ / ts | 0) + 1
             
             let tprev = new Date()
             let wCurr = 1
             let aa = 1
-            if(params_aa)aa = Number(params_aa)
             
             let steps = 1
             ts=256
-
-            
-            // commandParams.framebuffer = null
-            // commandParams.uniforms.render = 1
-            // commandParams.uniforms.texCol = fbo.color[0]
-            // commandParams.uniforms.texNorm = fbo.color[1]
-            // let commandRender = regl(commandParams)
-            
 
 
             let fr = regl.frame(({tick}) => {
                 commandNormals()
                 commandRender()
-                // console.log(size_)
-                if(tick > 8) {document.title='👾',fr.cancel()}
-                // FIXME to 8
+                if(tick > 8) {D.title='👾',fr.cancel()}
             })
     
     /*end render*/
