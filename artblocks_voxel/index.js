@@ -623,7 +623,7 @@ function calculateFeatures(tokenData) {
 
 
               let commandParams = {
-                frag: /*glsl*/`#extension GL_EXT_draw_buffers : require
+                frag: /*glsl*/`#extension GL_EXT_draw_buffers:require
                 precision highp float;
                 #define BLOCKS_NUMBER_MAX 60
                 #define PI 3.1415
@@ -653,7 +653,7 @@ function calculateFeatures(tokenData) {
 
                 uniform V gl_z_pt[5];
                 uniform F gl_z_tk;
-                uniform F gl_z_rs;
+                F resolution = float(${size_});
 
                 uniform sampler2D gl_z_tex3d;
                 uniform sampler2D gl_z_texCol;
@@ -833,7 +833,7 @@ function calculateFeatures(tokenData) {
                     // gl_FragData[0] = vec4(1);
                     
                     // // DEBUG
-                    // vec2 uv = (gl_FragCoord.xy * 2. - gl_z_rs) / gl_z_rs;
+                    // vec2 uv = (gl_FragCoord.xy * 2. - resolution) / resolution;
                     // V ro = V(uv * F(${viewBox[6]}) +
                     //     v(${viewBox[7]},
                     //     ${viewBox[8]}), -camDist),
@@ -872,7 +872,7 @@ function calculateFeatures(tokenData) {
 
                     // ${uniforms}
                     V o = V(0), n, nnn;
-                    v uv = (gl_FragCoord.xy * 2. - gl_z_rs)/gl_z_rs;
+                    v uv = (gl_FragCoord.xy * 2. - resolution)/resolution;
                     F d;
         
                     gl = 0.;
@@ -884,7 +884,7 @@ function calculateFeatures(tokenData) {
                     v pos = v(fr/2.,fl/4.)-.5;
                     if(mod(fl, 2.)==0.) pos.x += .25; //https://bit.ly/30g2DXs
     
-                    uv += pos * 2. / gl_z_rs;
+                    uv += pos * 2. / resolution;
     
                     V p, ro = V(uv * F(${viewBox[6]}) +
                         v(${viewBox[7]},
@@ -1011,7 +1011,7 @@ function calculateFeatures(tokenData) {
                     
                         if(colIds.z == -1) {
                             // фончик
-                            // c = texture2D(gl_z_sampler_ps,gl_FragCoord.xy / gl_z_rs).rgb; //gl_z_tex3d
+                            // c = texture2D(gl_z_sampler_ps,gl_FragCoord.xy / resolution).rgb; //gl_z_tex3d
                             
                             c = V(${bg})/255.;
                             if(L(c) > .4){
@@ -1041,9 +1041,9 @@ function calculateFeatures(tokenData) {
                     // n = norm(p);
                     // c = n;
                     // // texture debug
-                    // c.g = fract(gl_FragCoord.y / gl_z_rs * 11.);
-                    // c.g *= pow(fract(gl_FragCoord.y / gl_z_rs * 1000.),8.);// * fract(gl_FragCoord.x / gl_z_rs * 10.);
-                    // c.g += step(0.001,texture2D(gl_z_tex3d, gl_FragCoord.xy / gl_z_rs).r) * 8.;
+                    // c.g = fract(gl_FragCoord.y / resolution * 11.);
+                    // c.g *= pow(fract(gl_FragCoord.y / resolution * 1000.),8.);// * fract(gl_FragCoord.x / resolution * 10.);
+                    // c.g += step(0.001,texture2D(gl_z_tex3d, gl_FragCoord.xy / resolution).r) * 8.;
                     // c *= 30./jj;
 
                     // o += c;
@@ -1051,8 +1051,8 @@ function calculateFeatures(tokenData) {
 
 
                     if(gl_z_tk > 1.){
-                        V norm = (texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs).rgb);
-                        F dist = texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs).a;
+                        V norm = (texture2D(gl_z_texNorm, gl_FragCoord.xy/resolution).rgb);
+                        F dist = texture2D(gl_z_texNorm, gl_FragCoord.xy/resolution).a;
                         dist = min(dist,camDist*2.);
                         vec3 f = norm;
                         vec3 r = normalize(cross(vec3(1,2,3), f));
@@ -1064,7 +1064,7 @@ function calculateFeatures(tokenData) {
                             kernel += (gl_z_rnd(i+gl_z_tk+dot(uv*99.,vec2(.319,.137))+.2)) * f;
                             kernel = N(kernel) * pow(gl_z_rnd(i+dot(mod(gl_FragCoord.xy,10.1*PI),vec2(.319,.137))),2.);
                             vec3 offset = V(dot(kernel,vec3(1,0,0)), dot(kernel,vec3(0,1,0)), dot(kernel,V(0,0,1)));
-                            if(dist - offset.z * 1.1 > texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs + .15 * offset.xy).a){
+                            if(dist - offset.z * 1.1 > texture2D(gl_z_texNorm, gl_FragCoord.xy/resolution + .15 * offset.xy).a){
                                 // gl_FragData[0] *= .99;
                                 c*=.97;
                             }
@@ -1072,13 +1072,13 @@ function calculateFeatures(tokenData) {
                     }
 
 
-                    gl_FragData[0] = mix(texture2D(gl_z_texCol, gl_FragCoord.xy/gl_z_rs), c.rgbb, 1. / gl_z_tk);
+                    gl_FragData[0] = mix(texture2D(gl_z_texCol, gl_FragCoord.xy/resolution), c.rgbb, 1. / gl_z_tk);
                     // n.xz *= gl_z_R(PI/2. + PI/4.);
                     n.xz *= -sign(${features[0]-.5})*gl_z_R(${u_camAngXZ});
                     n.xy *= gl_z_R(atan(sqrt(2.)));
                     n = n.zyx;
                     n.xz *= -1.;
-                    gl_FragData[1] = mix(texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs), vec4(n.rgb,d), 1. / gl_z_tk);
+                    gl_FragData[1] = mix(texture2D(gl_z_texNorm, gl_FragCoord.xy/resolution), vec4(n.rgb,d), 1. / gl_z_tk);
 
 
                     // gl_FragData[0] = vec4(gl_z_tk/8.);
@@ -1100,7 +1100,6 @@ function calculateFeatures(tokenData) {
                 },
             
                 uniforms: {
-                    rs: regl.prop('r'),
                     pt: u_palette.map(v=>v/255),
                     // aa: regl.prop('a'),
                     tex3d: tex3d,
@@ -1132,23 +1131,13 @@ function calculateFeatures(tokenData) {
             
             
             let commandRender = regl({
-                frag: /*glsl_*/`#extension GL_EXT_draw_buffers : require
-                precision highp float;
-                uniform float rs;
-                uniform sampler2D texCol;
-                // uniform sampler2D texNorm;        
-                void main() {
-                    gl_FragData[0] = texture2D(texCol,gl_FragCoord.xy/rs);
-                    gl_FragData[0].a = 1.;
-                }`/*glsl_*/,
+                frag: `#extension GL_EXT_draw_buffers : require\nprecision highp float;uniform sampler2D texCol;void main(){gl_FragData[0]=vec4(texture2D(texCol,gl_FragCoord.xy/float(${size_})).rgb,1);}`,
                 vert: `attribute vec2 g;void main(){gl_Position=vec4(g,0,1);}`,
                 attributes: {
                   g: [[1, 1], [1, -4], [-4, 1]]
                 },
                 uniforms: {
-                    rs: regl.prop('r'),
                     texCol: ({ tick }) => fbo[(tick + 1) % 2].color[0],
-                    // texNorm: fbo.color[1],
                 },
                 depth: {
                     enable: false
@@ -1178,8 +1167,8 @@ function calculateFeatures(tokenData) {
 
 
             let fr = regl.frame(({tick}) => {
-                commandNormals({r: size_})
-                commandRender({r: size_})
+                commandNormals()
+                commandRender()
                 // console.log(size_)
                 if(tick > 8) {document.title='👾',fr.cancel()}
                 // FIXME to 8
