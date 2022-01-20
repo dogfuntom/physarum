@@ -13,10 +13,10 @@ uniform sampler2D u_tex_voxels;
 #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
 #define PI 3.141519265
 #define EPS .001
-#define REFLECTIONS 6.
-#define MAX_STEPS 400.
-#define MAX_DIST 100.
-#define UV_SCALE 64.
+#define REFLECTIONS 4.
+#define MAX_STEPS 200.
+#define MAX_DIST 50.
+#define UV_SCALE 16.
 
 out vec4 o;
 
@@ -267,9 +267,11 @@ void main() {
         if(length(light) > 0.) {
             break;
         } else {
-            rd = reflect(rd, n);
             rd += (rnd(length(uv) + u_frame + vec3(0, 1, 2)) * 2. - 1.) * .8;
+            rd = reflect(rd, n);
             rd = normalize(rd);
+            float g = dot(rd, n);
+            rd = rd - (g - abs(g))*n;
             ro = p + n * .001;
             col *= .9;
         }
