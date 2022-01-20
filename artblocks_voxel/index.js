@@ -114,27 +114,34 @@ function calculateFeatures(tokenData) {
             //4 extra: 0,
 
             let presets = [
-                [ // cutie
-                    4,
-                    3 + R() * 4 | 0,
-                    0,
-                    1,
-                    1,
-                ],
                 [
-                    8 + R() * 2 | 0,
-                    30,
-                    5, // cage
-                    8,
-                    0,
-                ],
-                // RL([
-                [
-                    8 + R() * 2 | 0,
-                    30,
+                    10,
+                    20+20*R(),
                     3, // shroom
                     8,
                     R() ** 4 * 8,
+                ],
+                [ // small
+                    4,
+                    4 + R() * 4 | 0,
+                    1, // high
+                    1,
+                    1,
+                ],
+                [
+                    8 + R() * 2 | 0,
+                    30,
+                    4, // cage
+                    8,
+                    R()+2,
+                ],
+                // cutie big
+                [
+                    4+2*R()|0,
+                    6 + R() * 4 | 0,
+                    0,
+                    1,
+                    1+2*R(),
                 ],
                 [
                     6 + R() * 4 | 0,
@@ -144,11 +151,11 @@ function calculateFeatures(tokenData) {
                     R() * 2,
                 ],
                 [
-                    6 + (R() | 0),
-                    10 + R() * 10 | 0,
+                    6 + (R() * 2 | 0),
+                    10 + R() * 6 | 0,
                     0, // random
                     4,
-                    R() ** 2 * 3,
+                    R() * 3,
                 ],
             ];
         
@@ -157,7 +164,7 @@ function calculateFeatures(tokenData) {
           
             ([ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra ] = presets[features[4]])
             // console.log('presets[features[4]',presets[features[4]])
-            numberOfBlockTypes = 2 + R() * 2 | 0
+            numberOfBlockTypes = 1 + R()**.5 * 3 | 0
         
             blocks = [];
             features[2] = R() ** .5 * 8 | 0
@@ -271,7 +278,7 @@ function calculateFeatures(tokenData) {
                 let isExtra = 0
                 let bvtInitial = RL(blocksVariants)
                 if (n >= blocksNumber - extra)
-                    bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6, maxTry = 6, isExtra = 1
+                    bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 5, maxTry = 6, isExtra = 1
                 // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
                 // тот, что лучше подходит под критерий.
                 // Открытый вопрос, что делать, если ничего не подошло. Варианты:
@@ -381,10 +388,10 @@ function calculateFeatures(tokenData) {
         
                     let fitnessFunctions = [
                         0, // any
-                        -M.hypot(bvt[10][0], bvt[10][2]), // high, bn 16 gs 10
+                        -M.hypot(bvt[10][0], bvt[10][2]),
                         -maxHeightTry, // low
                         -M.hypot(bvt[10][0], maxHeightTry - 10, bvt[10][2]), // mashroom
-                        -abs(M.hypot(bvt[10][0], maxHeightTry - 10, bvt[10][2]) - gs), // cage
+                        // -abs(M.hypot(bvt[10][0], maxHeightTry - 10, bvt[10][2]) - gs), // cage
                         -abs(M.hypot(bvt[10][0], maxHeightTry * 2, bvt[10][2]) - gs), // cage: blocksNum = 90, gs = 16
                         maxHeightTry * 2. + bvt[10][2], // eyes
                     ]
@@ -505,15 +512,15 @@ function calculateFeatures(tokenData) {
             console.log(u_palette)
             u_colors = blocks.map(b => [b[4], b[5], b[6]]).flat()
         
-            let uniforms = ``
-            uniforms += blocks.map((b, i) =>
-                `ps[${i}]=vec3(${b[10][0]},${b[10][1]},${b[10][2]});`).join('')
-            uniforms += blocks.map((b, i) =>
-                `ss[${i}]=vec3(${b[0][0]},${b[0][1]},${b[0][2]});`).join('')
-            uniforms += blocks.map((b, i) =>
-                `rt[${i}]=vec2(${b[8]},${b[3]});`).join('') // FIXME shorted with [x,y,z]
-            uniforms += blocks.map((b, i) =>
-                `cs[${i}]=ivec3(${b[4]},${b[5]},${b[6]});`).join('')
+            // let uniforms = ``
+            // uniforms += blocks.map((b, i) =>
+            //     `ps[${i}]=vec3(${b[10][0]},${b[10][1]},${b[10][2]});`).join('')
+            // uniforms += blocks.map((b, i) =>
+            //     `ss[${i}]=vec3(${b[0][0]},${b[0][1]},${b[0][2]});`).join('')
+            // uniforms += blocks.map((b, i) =>
+            //     `rt[${i}]=vec2(${b[8]},${b[3]});`).join('') // FIXME shorted with [x,y,z]
+            // uniforms += blocks.map((b, i) =>
+            //     `cs[${i}]=ivec3(${b[4]},${b[5]},${b[6]});`).join('')
     
             // console.log(uniforms)
             /*end render*/
@@ -577,8 +584,7 @@ function calculateFeatures(tokenData) {
             
             let size_ = M.min(innerWidth, innerHeight)*D
             let canvas = document.createElement('canvas')
-            canvas.style.width = size_/D + 'px' // FIXME, а без этого совсем никак?
-            canvas.style.height = size_/D + 'px'
+            canvas.style.width = canvas.style.height = size_/D + 'px'
             size_ = min(size_, 2048)
             let gl = canvas.getContext('webgl', {
                 preserveDrawingBuffer: true,
@@ -627,9 +633,9 @@ function calculateFeatures(tokenData) {
                 #define N normalize
                 #define L length
                 #define v vec2
-                mat2 rot(F a) {→mat2(cos(a),-sin(a),sin(a),cos(a));} // FIXME make define
+                // mat2 rot(F a) {→mat2(cos(a),-sin(a),sin(a),cos(a));} // FIXME make define
                 #define gl_z_rnd(x) fract(54321.987 * sin(987.12345 * x + .1))
-                // #define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
+                #define gl_z_R(a) mat2(cos(a),-sin(a),sin(a),cos(a))
                 #define EPS .0001
                 F sabs(F p) {→sqrt(abs(p)*abs(p)+5e-5);}
                 F smax(F a, F b) {→(a+b+sabs(a-b))*.5;}
@@ -683,7 +689,7 @@ function calculateFeatures(tokenData) {
                     p.x = abs(p.x);
                     V pb = p;
                     pb -= val_from_sampler_ps;
-                    pb.xz *= rot(val_from_sampler_rt.x * PI / 2.);
+                    pb.xz *= gl_z_R(val_from_sampler_rt.x * PI / 2.);
                     
                     // box
                     // F cornerR = .01, gap = .008, block;
@@ -832,10 +838,10 @@ function calculateFeatures(tokenData) {
                     //     v(${viewBox[7]},
                     //     ${viewBox[8]}), -camDist),
                     //    rd = V(0, 0, 1);
-                    //    ro.yz *= rot(${u_camAngYZ});
-                    //    rd.yz *= rot(${u_camAngYZ});
-                    //    ro.xz *= rot(${u_camAngXZ});
-                    //    rd.xz *= rot(${u_camAngXZ});
+                    //    ro.yz *= gl_z_R(${u_camAngYZ});
+                    //    rd.yz *= gl_z_R(${u_camAngYZ});
+                    //    ro.xz *= gl_z_R(${u_camAngXZ});
+                    //    rd.xz *= gl_z_R(${u_camAngXZ});
                     // float d,e=1.,j;
                     // vec3 p;
                     // for(float i=0.;i<99.;i++){
@@ -848,13 +854,13 @@ function calculateFeatures(tokenData) {
                     // }
                     // gl_FragData[0] = vec4(step(-40.,-d));
                     // vec3 n = norm(p);
-                    // // n.xz *= -rot(${u_camAngXZ});
-                    // // n.xz *= -rot(${u_camAngXZ});
-                    // // n.xz *= -rot(${u_camAngXZ});
-                    // // n.yz *= rot(${u_camAngYZ});
-                    // // n.xy *= rot(.95);
-                    // n.xz *= rot(PI/2. + PI/4.);
-                    // n.xy *= rot(atan(sqrt(2.)));
+                    // // n.xz *= -gl_z_R(${u_camAngXZ});
+                    // // n.xz *= -gl_z_R(${u_camAngXZ});
+                    // // n.xz *= -gl_z_R(${u_camAngXZ});
+                    // // n.yz *= gl_z_R(${u_camAngYZ});
+                    // // n.xy *= gl_z_R(.95);
+                    // n.xz *= gl_z_R(PI/2. + PI/4.);
+                    // n.xy *= gl_z_R(atan(sqrt(2.)));
                     // n = n.zyx;
                     // n.x *= -1.;
                     // n.z *= -1.;
@@ -864,7 +870,7 @@ function calculateFeatures(tokenData) {
                     // // END OF DEBUG
 
 
-                    ${uniforms}
+                    // ${uniforms}
                     V o = V(0), n, nnn;
                     v uv = (gl_FragCoord.xy * 2. - gl_z_rs)/gl_z_rs;
                     F d;
@@ -888,10 +894,10 @@ function calculateFeatures(tokenData) {
 
                     // vec3 ro = vec3(0,0,-10);
                     // vec3 rd = vec3(0,0,-10);
-                    ro.yz *= rot(${u_camAngYZ});
-                    rd.yz *= rot(${u_camAngYZ});
-                    ro.xz *= rot(${u_camAngXZ});
-                    rd.xz *= rot(${u_camAngXZ});
+                    ro.yz *= gl_z_R(${u_camAngYZ});
+                    rd.yz *= gl_z_R(${u_camAngYZ});
+                    ro.xz *= gl_z_R(${u_camAngXZ});
+                    rd.xz *= gl_z_R(${u_camAngXZ});
                     float jj = 0.;
 
 
@@ -1067,9 +1073,9 @@ function calculateFeatures(tokenData) {
 
 
                     gl_FragData[0] = mix(texture2D(gl_z_texCol, gl_FragCoord.xy/gl_z_rs), c.rgbb, 1. / gl_z_tk);
-                    // n.xz *= rot(PI/2. + PI/4.);
-                    n.xz *= -sign(${features[0]-.5})*rot(${u_camAngXZ});
-                    n.xy *= rot(atan(sqrt(2.)));
+                    // n.xz *= gl_z_R(PI/2. + PI/4.);
+                    n.xz *= -sign(${features[0]-.5})*gl_z_R(${u_camAngXZ});
+                    n.xy *= gl_z_R(atan(sqrt(2.)));
                     n = n.zyx;
                     n.xz *= -1.;
                     gl_FragData[1] = mix(texture2D(gl_z_texNorm, gl_FragCoord.xy/gl_z_rs), vec4(n.rgb,d), 1. / gl_z_tk);

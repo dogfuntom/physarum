@@ -108,27 +108,34 @@ function calculateFeatures(tokenData) {
             //4 extra: 0,
 
             let presets = [
-                [ // cutie
-                    4,
-                    3 + R() * 4 | 0,
-                    0,
-                    1,
-                    1,
-                ],
                 [
-                    8 + R() * 2 | 0,
-                    30,
-                    5, // cage
-                    8,
-                    0,
-                ],
-                // RL([
-                [
-                    8 + R() * 2 | 0,
-                    30,
+                    10,
+                    20+20*R(),
                     3, // shroom
                     8,
                     R() ** 4 * 8,
+                ],
+                [ // small
+                    4,
+                    4 + R() * 4 | 0,
+                    1, // high
+                    1,
+                    1,
+                ],
+                [
+                    8 + R() * 2 | 0,
+                    30,
+                    4, // cage
+                    8,
+                    R()+2,
+                ],
+                // cutie big
+                [
+                    4+2*R()|0,
+                    6 + R() * 4 | 0,
+                    0,
+                    1,
+                    1+2*R(),
                 ],
                 [
                     6 + R() * 4 | 0,
@@ -138,11 +145,11 @@ function calculateFeatures(tokenData) {
                     R() * 2,
                 ],
                 [
-                    6 + (R() | 0),
-                    10 + R() * 10 | 0,
+                    6 + (R() * 2 | 0),
+                    10 + R() * 6 | 0,
                     0, // random
                     4,
-                    R() ** 2 * 3,
+                    R() * 3,
                 ],
             ];
         
@@ -151,7 +158,7 @@ function calculateFeatures(tokenData) {
           
             ([ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra ] = presets[features[4]])
             // console.log('presets[features[4]',presets[features[4]])
-            numberOfBlockTypes = 2 + R() * 2 | 0
+            numberOfBlockTypes = 1 + R()**.5 * 3 | 0
         
             blocks = [];
             features[2] = R() ** .5 * 8 | 0
@@ -265,7 +272,7 @@ function calculateFeatures(tokenData) {
                 let isExtra = 0
                 let bvtInitial = RL(blocksVariants)
                 if (n >= blocksNumber - extra)
-                    bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 6, maxTry = 6, isExtra = 1
+                    bvtInitial = RL(blocksVariantsExtra, .7), fitnessFunctionNumber = 5, maxTry = 6, isExtra = 1
                 // Цикл обслуживает фитнес. Бросаем деталь М раз и выбираем оптимальный,
                 // тот, что лучше подходит под критерий.
                 // Открытый вопрос, что делать, если ничего не подошло. Варианты:
@@ -375,10 +382,10 @@ function calculateFeatures(tokenData) {
         
                     let fitnessFunctions = [
                         0, // any
-                        -M.hypot(bvt[10][0], bvt[10][2]), // high, bn 16 gs 10
+                        -M.hypot(bvt[10][0], bvt[10][2]),
                         -maxHeightTry, // low
                         -M.hypot(bvt[10][0], maxHeightTry - 10, bvt[10][2]), // mashroom
-                        -abs(M.hypot(bvt[10][0], maxHeightTry - 10, bvt[10][2]) - gs), // cage
+                        // -abs(M.hypot(bvt[10][0], maxHeightTry - 10, bvt[10][2]) - gs), // cage
                         -abs(M.hypot(bvt[10][0], maxHeightTry * 2, bvt[10][2]) - gs), // cage: blocksNum = 90, gs = 16
                         maxHeightTry * 2. + bvt[10][2], // eyes
                     ]
