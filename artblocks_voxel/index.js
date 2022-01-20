@@ -170,7 +170,7 @@ function calculateFeatures(tokenData) {
             features[2] = R() ** .5 * 8 | 0
             // palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
                 // .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features[2]]
-            u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900C2A8fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368E4E4E42e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
+            u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900C2A8fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368E4E4E42e294effd4001f20414b3f72119da419647effc857540d6eee4266d9d9d91f271bffd23fe4572e29335ca8c686669bbcf3a712'
                 .substr(30*features[2], 30).match(/(.{2})/g).map(v=>Number("0x"+v))
             palette_bg = R()*4|0
             // console.log('features[2]',features[2])
@@ -564,7 +564,7 @@ function calculateFeatures(tokenData) {
             features[2] = { '0': 'Black and white', '1': 'Summer', '2': 'Colorful', '3': 'Magenta blue', '4': 'Plastic', '5': 'Winter', '6': 'Spring', '7': 'Vivid', '8': 'Eighth' }[features[2]]
             // if (features[3] == 4/*gaz*/) features[2] = 'Gaz'
             if (features[3] == 3/*rainbow*/) features[2] = 'Rainbow'
-            features[4] = { '0': 'Cage', '1': 'Tiny', '2': 'Mushroom', '3': 'Compact', '4': 'Random' }[features[4]]
+            features[4] = { '0': 'Pererozhdoib', '1': 'Tiny', '2': 'Cage', '3': 'Small', '4': 'Compact', '5': 'Random' }[features[4]]
             features[0] = { '0': 'Z', '1': 'X' }[features[0]]
             features[3] = { '0': 'Textured', '1': 'Not textured', '2': 'Monochrome', '3': 'Rainbow'}[features[3]]
             let names = ['Symmetry','Studs','Palette','Color scheme','Layout','Background type','Background light','Blocks number','Height','Eyes','Aerials',]
