@@ -4,8 +4,9 @@
   "description": "",
   "scripts": {
     "build": "node build.js",
-    "watch": "npx chokidar \"./index.js\" -c \"npm run build\"",
-    "start": "npx concurrently --kill-others \"npm run watch\" \"npx reload --browser --dir ./dist_\""
+    "watch": "npx chokidar \"./*.js\" -c \"npm run build\"",
+    "start": "npx concurrently --kill-others \"npm run watch\" \"npx reload --browser --dir ./dist_\"",
+    "puppeteer": "node puppeteer.js"
   },
   "optimizers": {
     "*.js": [
@@ -17,6 +18,7 @@
   "devDependencies": {
     "chokidar-cli": "^3.0.0",
     "parcel": "*",
+    "puppeteer": "^13.1.1",
     "reload": "^3.2.0",
     "serve": "^12.0.1",
     "terser": "^5.9.0",
