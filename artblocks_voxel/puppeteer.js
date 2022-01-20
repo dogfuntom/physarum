@@ -1,37 +1,140 @@
 const puppeteer = require('puppeteer');
 
-let urls = Array(16).fill(0);
-urls = urls.map((_,i)=>'0xe195d'+i+'b945583b6ba7e9d7b883297f1f1d1f2c830e8a0be2e33d1473ca5b4f9');
+// function random_hash() {
+//     let x = "0123456789abcdef", hash = '0x'
+//     for (let i = 64; i > 0; --i) {
+//       hash += x[Math.floor(Math.random() * x.length)]
+//     }
+//     return hash
+//   }
+
+
+// let urls = Array(128).fill(0);
+// urls = urls.map(_=>random_hash());
+// console.log(urls)
+
+let urls = ['0x644aba998f6981000d7e49bfeb088232a57e1eb609c9d173427320ef45cef4ff',
+    '0xa44a6aaae54b1bff883955b7b0dc6d4700e36585404f1c5a4caa2a7ce2da97b8',
+    '0x730ca4b59793706be86daa397ac15ac92599f18ce6ed2a71a96ed04b7b609492',
+    '0x73a4fd9cc37e609cec00372310fc65581dd20416ebee3f8251a5168d7f19fc19',
+    '0x3617d31c68de9c6ba24906f455758636f44dec128b450303a663eddfd55b21f0',
+    '0xdd02f204af56a7e0d459b5dc197e4fb44a093694fe2cdfff584dd71823a95b2b',
+    '0xf2fdc94d0017d1e20f09e6dee6799af224668cb47eea4851a132756b115a99fd',
+    '0x4cda6a279bb7c9f0952f27f5c3fdab95c6080293270ddf569c7f79f615fcd48d',
+    '0xd69ac93ed513405787873ba377d6c965549c0ffe206e77654638e07f7c060c13',
+    '0x47511bf55fb34de603eb3cde6b5a4ec64954b85a33b8bf81c3290e20e70aabb2',
+    '0x2b750d733fd0a20df7746417ad1590d5ef2b5dbb24d78e8c16d6bd211a55352d',
+    '0x7f3132e0f5c8672396697a9aa73fa6b423b3d425cc7a0fb39462d79bb5fbb19c',
+    '0xf6227d3ac7b3e956499f6344961f052f68245c12015972796a964c9e4e5e1d01',
+    '0x3640bc06e979f5e045aaba965ba1327c0ec50ae3bd005fa3e84772a039a441c4',
+    '0x389f5d05d2168a00bdcf56c99e8940df8d9cd04d7c5b249011ac9fbe6757972a',
+    '0xb7be6cdf67a7196c7d3e6d4e0a223e1f639aab8787731f43fc9ecd3eb7bf5280',
+    '0x58874481e10b0ea483a57185d9aae6d3ef28082d5ea3d7acda255bc5a6f5c1e4',
+    '0xd9fa87a3e8a81ee4158ff908ac43dcd56adfaa181430b297739e638b88ebf7b5',
+    '0x5d60b3310963928afbd4866dd9f6e9a459a8563ba8ebd05a047248cc3db68112',
+    '0xcb3753070105c607e91c1ec16e73bd5e6b263b549f791966ec79f64d0406e62f',
+    '0x0ffe4e49d31105bb5683d5371357aaba48d0c272143afa368c435cf4e70b3a6e',
+    '0xaae6be7e4a2707be1518eb3f3a0b204b6265e84a4bbc01373e079ceb61b51870',
+    '0x292339764cb90f84f7cba7d284f1e46d905251d83ad1c24478c6ebc292fcbc6e',
+    '0x7743de9a00f3b2411a81bcbce56c5c34524d9f5f43599fe8aa9e89afa3828cc9',
+    '0x74fbfaf5c00770b98dc9669c54fbfff77554827048e05896cf5d027d0bbc6305',
+    '0x3c0726939a95db62e1bd41b336f534619dda657caef72e6a045444ae680c334b',
+    '0x567d92a847800e25042934e0fe615f75d751a4e445e7017818c16e52e764f9a5',
+    '0x3f7b91260ebdfdf7d300a2003f162401db0e62943c2bb984c16feee9ddf8f610',
+    '0x57bc824d0654e49dda7bb35d701ab0ed0e53afcedde0c8c53ccdeed86f11ee77',
+    '0xa690ab11230af437adf8470aca00874acfc60748e861126d1f6f3a9c6f5caa7b',
+    '0xd614cf43d88096dd22a384c6a1ebb423e3791c757e75bef3de857bfed8458b45',
+    '0xffe21e70074d8f337baddb86489fdd0294c9d4d2672a7d2c8248784efe3e4ea1',
+    '0xea320d9d0ba7dd101360087fa0db8ae4f2802e97d97b77fdfff29703a6de63c6',
+    '0x80205cb81bb489cd4f287d1061d0cbc1429f5220cfbfddafdf6905a295b91893',
+    '0xe9850cd2d729e1552849483ca55cc755d9e70a02bb318e852924bccb48cc2473',
+    '0xb53257f48a9e0bde347d0279b57e670d1b1e058319c70e4241680a0a49b3200b',
+    '0xa002896f2f7c8e31a314229c387b0feeac616ced9269b419cb78038898b2f23b',
+    '0x8757c404b999c07d6e5c9a425fdc270e4e9d582a08429399c3114d5a085b4402',
+    '0xb08c8267d128546e79934d55dd15d0891f13615de852cbd354ede2d21d8bbae8',
+    '0x70cc65f8177229d36bfd4734ade02ecda1e99cad07d1db835f4b9dcdab794afd',
+    '0x9d5098e3860d9c328e9ae83372e5c0f7196e09dd20e05b6ed958505775bb9c86',
+    '0x1d64e7ae9ef9874e00ec197820a5a7f2ddfb69bfa4f0263dec33c99abfa90be1',
+    '0xf377b4d7a544c4f8a710da67038390448da55734921063b0c3aae4b69688a574',
+    '0x259c852d28c22683b4c6058a968d4668daa7fd64b04beeaa44df0a1ae795d3be',
+    '0x27ffd5b920e939d02fe5faaf1cb9bd52bc80e0fa4c87c732bf17ba14598e7db3',
+    '0x40a2ba9cfeba46d8600196e6907bdd2daf5d06b1f6b4cc9a1084b35c24746e3d',
+    '0x5cc559b2168afd6200c88835383565d38e7dabb1153c4d442351103c64ae18c7',
+    '0x9a5f76fb0037b377d414a47d57e0d33bb297350bade14ec020f6513816241a3c',
+    '0x363d7310d40db1166c603aff09431ea0bc7b395ae48a994ceebe32cd0da93f5a',
+    '0xbfab300a4bcd874ce7717fc91c4148161668fad55cf8e4adf4f329ad1e0cb498',
+    '0xe0b9866747349ae1521157501aee255ca0f237f5455486a103a62b7267365191',
+    '0x924a47556555e4b7b397af0afcd3d88c6555a94d40da76b4b7face9833b546a3',
+    '0x628ff62d5753884bb427bfb09bf862ef329a1f205dcebc5185863d84a9a06f99',
+    '0x70103b6aad4d11529794e1bf0a00b0610b5113c0f51973b105442a35eb36caf2',
+    '0xb8a0f81fbd6e5ed29dccd21e66960b1f67d42c7780b88bd123ac832b6115d104',
+    '0x2cabbf8076bd313ae761be9efeeb8a16869e053f33752b42f03e9aef58acfac2',
+    '0xaed1427115f0a9fd97be44c1d955b4936c87b300c6eece7480026aa549b31115',
+    '0x76ebdd062b80e52ada89d1ecfb933240b0b45a835023cdbf35b4884978ad96d7',
+    '0x48a433ff7a085af5820a173842e4df2acf2db159c90933dd1c3e76b3573cb25e',
+    '0xa3964cd61770219ca714065549d1d96f9e727e8a36bcea5d2c50eeabab73997f',
+    '0x6bcd6a6de2ead5c12a934bef084e672310ca62ca7879ffde202c7874d5d8defb',
+    '0x187d3bd3165233e2ed685212e4e40b5c9a5ad38176da8040a71d7107a48694e9',
+    '0xc6c49286d317e0c794810547a3445653119ab13399560398f988b9021fe2a1d3',
+    '0xf755bea78a151c7b26aba35a4e0f337b2ab8cc6e0f5f95f7dd7cda672f9349c0',
+    '0xa4e5fe39cccf0a2573dddfdf26704e767950a8530cc3cd6a375a4ec0409a5763',
+    '0x39218c8c51afb8f7d4c0c057f53971e52b563ff6c71a299a60a72d5bac0a6272',
+    '0x82a6b65482aabbb13d293ef55607abb22bfb3480e124e76e6774df90b8e8f61e',
+    '0x2938aad710b4e35cde8cab449506098ac36253b117df7d447ef8e44ad6768653',
+    '0xc3ba920736614e25b84e57e48d6f7a3afc141c7fc2129694c72b0eb1e3c7577b',
+    '0xf98eaebb45da1b22702188ec25dd99bacbfab833d7bf3c42ada083abf64e75e5',
+    '0x7a58a0919cb8b7dd685b446fbc68871ad0239e3193465ce1b285905e33060846',
+    '0xe7c8a6e847447acb566e9ce097961edbf980542914714c08065b00bb27c50ace',
+    '0xe9fa2f862f1d4c3dda47d2aa4fcce5803b573bb251f7b704ccea574beb219413',
+    '0x5b8f79a66ce66f9e860b02a21adb598bc885e89cba41f98ce95f3b987091b6ff',
+    '0x85ed2965ba4cec3ce23bcbefd42b418e60b9f5e2e355dc75ac2e49d7cc154692',
+    '0x66cdf1b88411805f4b3f03e49a55eceef6e1dfaf72c517142ae0c6b8e202ab36',
+    '0x954b151a1affdb3bace6f1bd62c013137853f032eae7febfa2160954ec807903',
+    '0xaac10a6eef659beb756ffdaaa033b78e39d6e7e5f094a5f550ccc14f3202a551',
+    '0xc993128d40b37f1d7070b9da1a5be1de714e458f1770923cbc4285a0c72bf0a1',
+    '0x0b8c7e3fed3cf1bf5835b0bd8ecbf66d018742253d1e681346581500e05b89e3',
+    '0x40d80174a62075927a58a4c27adabf3b41a65a31ac729e943f076faffb364dfe',
+    '0x650a0896cd0c577bfdc505efa3655c2df5cc4c99faed481924999ff8860f3ecd',
+    '0xe19785371d8c278274b84bd7852236c6f8d0f9e5b3b94feda6df8fb4d1cc7a59',
+    '0x3528470f1cb6a3c5dec778d58941b96cec52639f881b060379fbbb5094a3f503',
+    '0x1cfd4a6446682b3af70fc25523977ccad2f0b8c3aa730d9ac8655aa5628ae0af',
+    '0xaac465ae0fd1ed795842de81a2b627ca6048b9200011c8e52f38686a40bbc6d7',
+    '0x0dcbf5e615594d27213ad62e81b95584c924384b25b82cc877db9aef834308d8',
+    '0x1d8b728540ff5f5673524f6ec750707cd5d861a1a340daecf9913f4a5acd71c8',
+    '0xdf60630fadb9fc8e0de730503b2f149c0dfd84f3f83aa9e1d5b95b1172acdae7',
+    '0xcd8c6b131a70408303270783cfeb7868e107f287ba38f89d9b9a2685e4829611',
+    '0x7c0c17de32e2ecc69e06d52479c3ba10869e8af9efa03c4ac7e4ade2fbed0387',
+    '0xa03ac4901f90d286b46677f84cb1d35c6f50120338ff04f212198fd6c7e40268'];
+
+// urls = urls.map((_,i)=>'0xe195db9558b6ba7e9d7b883297f1f1d1f2c830e8a0be2e33d1473ca5b4f9');
 
 (async function () {
-    for (let i = 0; i < 1 && urls.length>0; i++) {
-        console.log('launch…')
+    const browser = await puppeteer.launch({
+        headless: false,
+        args: [
+            '--headless',
+            '--disable-gpu',
+            '--hide-scrollbars',
+            '--mute-audio'
+        ]
+    });
+    console.log('launch…')
+    const page = await browser.newPage();
+    for (let i = 0; i < 100 && urls.length>0; i++) {
         // const browser = await puppeteer.launch({});
         
-        const browser = await puppeteer.launch({
-            headless: false,
-            args: [
-                '--headless',
-                  '--disable-gpu',
-                '--hide-scrollbars',
-                '--mute-audio'
-            ]
-        });
-        
-        const page = await browser.newPage();
-        await page.setViewport({ width: 256, height: 256 });
+        await page.setViewport({ width: 512, height: 512 });
         console.log('goto…')
-        await page.goto('http://localhost:8080/#'+urls.pop())
-        // ,
-        //     {
-            //         waitUntil: "Load",
-            //         timeout: 0
-            //     }
-            // )
+        let hash = urls.pop()
+        console.log(hash)
+        await page.goto('http://localhost:8080/#'+hash)
+        await page.goto('http://localhost:8080/#'+hash)
+        // await page.goto('https://shaders.dianov.org/artblocks_regl/dist_/#'+hash)
+        // await page.goto('https://shaders.dianov.org/artblocks_regl/dist_/#'+hash)
             
         console.log('save!')
-        await page.screenshot({ path: `gallery/${i}_black.png` })
-        await browser.close();
-        // console.log(i)
+        await page.waitForTimeout(1000);
+        await page.screenshot({ path: `gallery/${i}_${hash}_vox.png` })
     }
+    await browser.close();
 })()
