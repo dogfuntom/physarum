@@ -7,7 +7,7 @@
 // tokenData.hash = '0x5f38546190c55b50d86e95c8652a2d5a42bb0241f6d4fb54fd90ab82f930d81e'
 // 0xab19d56b9b3b8d9ce69981b78f771458a258aa2000179624e6a0f2c20edb9cdd // текстура глаз проглядывает
 // tokenData.hash = '0x2c141bd75924077b9359e2f3c64277193a39a16f3f8cd52ecc867432e58bf140' // wrong
-// tokenData.hash = '0xe195d59b945583b6ba7e9d7b883297f1f1d1f2c830e8a0be2e33d1473ca5b4f9' // good
+// tokenData.hash = '23a4ff2ffdf4fa2f3343434234234' // good
 
 // 
 
@@ -92,7 +92,8 @@ function calculateFeatures(tokenData) {
                 R() ** 4. * 2 | 0,
                 R() ** 8 * 2 | 0,
                 0,
-                (1 - R() ** .3) * 5 | 0,
+                // (1 - R() ** .3) * 5 | 0,
+                M.sqrt(1-(R()-1)**2) * presets.length | 0
                 0,
                 RL([2, 1], .5),
                 (R() * 3 | 0) - 1,
