@@ -1,8 +1,8 @@
-// tokenData.hash = '0xe195db9558b6ba7e9d7b883297f1f1d1f2c830e8a0be2e33d1473ca5b4f9'
+// tokenData.hash = '0x430d86fe994eea4da8ba3b4ba30b94b73430aacf5fa59e384392c1024eecbff0'
 
-// if (window.location.hash) {
-//     tokenData.hash = window.location.hash.slice(1)
-// } // FIXME
+if (window.location.hash) {
+    tokenData.hash = window.location.hash.slice(1)
+} // FIXME
 
 
 
@@ -82,7 +82,8 @@ function calculateFeatures(tokenData) {
                 R() ** 8 * 2 | 0,
                 0,
                 // (1 - R() ** .3) * 5 | 0,
-                (1-M.sqrt(1-(R()-1)**4)) * 4 | 0,
+                // (R()<.01)?3:(1-M.sqrt(1-(R()-1)**4)) * 3 | 0,
+                (1-M.sqrt(1-(R()-1)**4)) * 3 | 0, // FIXME use upper
                 0,
                 RL([2, 1], .5),
                 (R() * 3 | 0) - 1,
@@ -345,29 +346,34 @@ function calculateFeatures(tokenData) {
                     // let xx = [...A(bvt[9][0])].map((d, i) => bvt[10][0] + i - (bvt[9][0] - 1.) / 2)
                     // let zz = [...A(bvt[9][2])].map((d, i) => bvt[10][2] + i - (bvt[9][2] - 1.) / 2)
                     let [xx,zz] = [0,0].map((_,j)=>[...A(bvt[9][j*2])].map((d, i) => bvt[10][j*2] + i - (bvt[9][j*2] - 1.) / 2))
-                    for (let x of xx) {
-                        for (let z of zz) {
-                            if (x >= 0) studR++;
-                            else studL++;
-                        }
-                    }
+
+                    // for (let x of xx) {
+                    //     for (let z of zz) {
+                    //         if (x >= 0) studR++;
+                    //         else studL++;
+                    //     }
+                    // }
         
                     let maxHeightTry = 0;
                     let maxHeightTryLikeWithoutBottomHoles = 0;
                     let maxDisallowedHeightTry = 0;
                     let bi = 0
-                    for (let z of zz) {
-                        for (let x of xx) {
-                            let bx = bi % bvt[9][0]
-                            let bz = floor(bi / bvt[9][0])
-                            bi++
-                            maxHeightTryLikeWithoutBottomHoles = max(maxHeightTryLikeWithoutBottomHoles, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
-                            maxDisallowedHeightTry = max(maxDisallowedHeightTry, disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
-                            if (bvt[2][bx][bz] == 1) { // если посчитать только те, что с 1 внизу, высота не должна отличаться от той, что считается для всех клеток
-                                maxHeightTry = max(maxHeightTry, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
-                            }
+                    // for (let z of zz) {
+                    //     for (let x of xx) {
+                    //     }
+                    // }
+                    zz.map(z=>xx.map(x=>{
+                        if (x >= 0) studR++; else studL++;
+                        let bx = bi % bvt[9][0]
+                        let bz = floor(bi / bvt[9][0])
+                        bi++
+                        maxHeightTryLikeWithoutBottomHoles = max(maxHeightTryLikeWithoutBottomHoles, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
+                        maxDisallowedHeightTry = max(maxDisallowedHeightTry, disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
+                        if (bvt[2][bx][bz] == 1) { // если посчитать только те, что с 1 внизу, высота не должна отличаться от той, что считается для всех клеток
+                            maxHeightTry = max(maxHeightTry, blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5]);
                         }
-                    }
+                    }))
+                
                     if (maxHeightTry < maxDisallowedHeightTry || maxHeightTry > maxHeightTryLikeWithoutBottomHoles) {
                         if (maxTry < maxMaxTry) maxTry++; continue;
                     }
@@ -397,28 +403,36 @@ function calculateFeatures(tokenData) {
                             // console.log('extra on the floor!'); 
                             continue
                         } // eyes on the froor are prohibited
-                        let xx = A(bv[9][0]).fill().map((d, i) => bv[10][0] + i - (bv[9][0] - 1.) / 2)
-                        let zz = A(bv[9][2]).fill().map((d, i) => bv[10][2] + i - (bv[9][2] - 1.) / 2)
+                        // let xx = [...A(bv[9][0])].map((d, i) => bv[10][0] + i - (bv[9][0] - 1) / 2)
+                        // let zz = [...A(bv[9][2])].map((d, i) => bv[10][2] + i - (bv[9][2] - 1) / 2)
+                        let [xx,zz] = [0,2].map(j=>[...A(bv[9][j])].map((_,i) => bv[10][j] + i - (bv[9][j] - 1) / 2))
                         let bi = 0
-                        for (let z of zz) {
-                            for (let x of xx) {
-                                let bx = bi % bv[9][0]
-                                let bz = floor(bi / bv[9][0])
-                                bi++
-                                blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv[0][1]
-                                if (bv[1][bx][bz] == 0) blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = -99
-                                disallowedHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv[0][1]
-                            }
-                        }
+                        xx.map(x=>zz.map(z=>{
+                            let bx = bi % bv[9][0]
+                            let bz = floor(bi / bv[9][0])
+                            let shift = gs / 2 - .5
+                            bi++
+                            // blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = maxHeight + bv[0][1]
+                            // if (bv[1][bx][bz] == 0)
+                            // blocksHeightMap[x + gs / 2 - .5][z + gs / 2 - .5] = -99
+                            blocksHeightMap[x + shift][z + shift] = (bv[1][bx][bz])?maxHeight + bv[0][1]:-9
+                            disallowedHeightMap[x + shift][z + shift] = maxHeight + bv[0][1]
+                    }))
                         blocks.push(bv)
                         // console.log(bv)
 
-                        for(let xx=0; xx<bv[9][0]; xx++)
-                        for(let yy=0; yy<bv[9][1]; yy++)
-                        for(let zz=0; zz<bv[9][2]; zz++){
-                            let xxx = (bv[10][0]-bv[9][0]/2) + xx  + 5 | 0
-                            let yyy = (bv[10][1]-bv[9][1]/2) + yy | 0
-                            let zzz = (bv[10][2]-bv[9][2]/2) + zz + 5 | 0
+                        // let indexes = [0,0,0]
+                        for(let xx=0;xx<bv[9][0];xx++)
+                        for(let yy=0;yy<bv[9][1];yy++)
+                        for(let zz=0;zz<bv[9][2];zz++){
+                        // for(let i=0;i<bv[9][0]*bv[9][1]*bv[9][2];i++)
+                            // let xx = floor(i/bv[9][1]/bv[9][2])
+                            // let yy = floor(i / bv[9][1]) % bv[9][2]
+                            // let zz = i % bv[9][2]
+                            // let xxx = (bv[10][0]-bv[9][0]/2) + xx + 5 | 0
+                            // let yyy = (bv[10][1]-bv[9][1]/2) + yy | 0
+                            // let zzz = (bv[10][2]-bv[9][2]/2) + zz + 5 | 0
+                            let [xxx,yyy,zzz] = [5,0,5].map((d,i)=>(bv[10][i]-bv[9][i]/2) + [xx,yy,zz][i] + d | 0)
                             texMpArray[zzz + 10 * yyy][xxx][0] = 
                             texMpArray[zzz + 10 * yyy + 10][xxx][1] = 
                             255 * (blocks.length+1) / 64

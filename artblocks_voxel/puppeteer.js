@@ -103,8 +103,8 @@ let urls = [
         // await page.goto('https://shaders.dianov.org/artblocks_regl/dist_/#'+hash)
             
         console.log('save!')
-        // await page.waitForTimeout(100);
-        await page.screenshot({ path: `/Users/ivandianov/Downloads/ab/check/${i}_${hash}.png` })
+        await page.waitForTimeout(100);
+        await page.screenshot({ path: `/Users/ivandianov/Downloads/ab/check2/${i}_${hash}.png` })
     }
     await browser.close();
 })()
