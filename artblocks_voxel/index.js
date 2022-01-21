@@ -19,9 +19,7 @@ function calculateFeatures(tokenData) {
         let min = M.min
         let max = M.max
         let floor = M.floor
-        let abs = M.abs
-        let cos = M.cos
-        let sin = M.sin
+        let hypot = M.hypot
         
         
         /*begin render*/
@@ -254,6 +252,7 @@ function calculateFeatures(tokenData) {
             // обратим внимание, что икс снаружи, потом зет. Обычно наоборот, если что.
             blocksHeightMap = [...A(gs)]
                 .map(() => A(gs).fill(0))
+                // .map(() => [...A(gs)])
             // запретная карта высот. Ну, как запретная. Просто нельзя ставить деталь ножкой на
             // на клетку, если карта высот в этой клетке меньше карты запрета.
             disallowedHeightMap = [...A(gs)]
@@ -298,7 +297,7 @@ function calculateFeatures(tokenData) {
         
                     // есть ли смысл тут сделать глубокую копию? Есть. И всё в ней хранить.
                     bvt[7] = 1
-                    bvt[8] = R() * 4 | 0 // (blockSizeTry.x%2==0 && blockSizeTry.z%2==0)?floor(R(4)):floor(R(2))*2
+                    bvt[8] = R() * 4 | 0
                     if (bvt[3] == typeEye) bvt[8] = 0
                     let makeMask = () => A(9).fill(A(9).fill(1))
                     bvt[2] = bvt[2] || makeMask()
@@ -325,20 +324,18 @@ function calculateFeatures(tokenData) {
                     ///////////////////////////////////////////////////////////////////////////////////////////
                     ///////////////////////////////////////////////////////////////////////////////////////////
                     ///////////////////////////////////////////////////////////////////////////////////////////
-                    if (gs % 2 == 0)
-                        bvt[10] = [
-                            bvt[9][0] / 2 + (R() * (gs / 2 + 1 - bvt[9][0]) | 0),
-                            0,
-                            - gs / 2 + bvt[9][2] / 2 + (R() * (gs + 1 - bvt[9][2]) | 0),
-                        ]
-                    else {
+                    if (gs % 2) {
                         bvt[10] = [
                             bvt[9][0] / 2 + (R() * ((gs - 1) / 2 + 1 - bvt[9][0]) | 0) + .5,
                             0,
-                            // - (gs - 1) / 2 + bvt[9][2] / 2 + (R() * (gs - 1 + 1 + 1 - bvt[9][2]) | 0) + .5-1,
                             - gs / 2 + bvt[9][2] / 2 + (R() * (gs + 1 - bvt[9][2]) | 0),
                         ]
                     }
+                    else bvt[10] = [
+                        bvt[9][0] / 2 + (R() * (gs / 2 + 1 - bvt[9][0]) | 0),
+                        0,
+                        - gs / 2 + bvt[9][2] / 2 + (R() * (gs + 1 - bvt[9][2]) | 0),
+                    ]
                     if (bvt[9][0] % 2 == gs % 2 && R() < 1 / (gs - bvt[9][0]))
                         if (bvt[9][0] % 2 || bvt[7]) // если чётное число пупырок, надо чтобы ось симетрии совпадала
                             bvt[10][0] = 0
@@ -379,11 +376,10 @@ function calculateFeatures(tokenData) {
         
                     let fitnessFunctions = [
                         0, // any
-                        -M.hypot(bvt[10][0], bvt[10][2]),
+                        -hypot(bvt[10][0], bvt[10][2]),
                         -maxHeightTry, // low
-                        -M.hypot(bvt[10][0], maxHeightTry - 10, bvt[10][2]), // mashroom
-                        // -abs(M.hypot(bvt[10][0], maxHeightTry - 10, bvt[10][2]) - gs), // cage
-                        -abs(M.hypot(bvt[10][0], maxHeightTry * 2, bvt[10][2]) - gs), // cage: blocksNum = 90, gs = 16
+                        -hypot(bvt[10][0], maxHeightTry - 10, bvt[10][2]), // mashroom
+                        -M.abs(hypot(bvt[10][0], maxHeightTry * 2, bvt[10][2]) - gs), // cage: blocksNum = 90, gs = 16
                         maxHeightTry * 2. + bvt[10][2], // eyes
                     ]
                     fitness = fitnessFunctions[fitnessFunctionNumber]
@@ -423,7 +419,6 @@ function calculateFeatures(tokenData) {
                             let xxx = (bv[10][0]-bv[9][0]/2) + xx  + 5 | 0
                             let yyy = (bv[10][1]-bv[9][1]/2) + yy | 0
                             let zzz = (bv[10][2]-bv[9][2]/2) + zz + 5 | 0
-                            // console.log('xxx, yyy, zzz', xxx, yyy, zzz)
                             texMpArray[zzz + 10 * yyy][xxx][0] = 
                             texMpArray[zzz + 10 * yyy + 10][xxx][1] = 
                             255 * (blocks.length+1) / 64
@@ -457,7 +452,7 @@ function calculateFeatures(tokenData) {
             }
         
             /*begin features*/
-            features[8] = M.max(...disallowedHeightMap.flat())
+            features[8] = max(...disallowedHeightMap.flat())
             /*end features*/
         
         }
@@ -468,7 +463,7 @@ function calculateFeatures(tokenData) {
             // 1 → bottom
             // 2 → left
             // 3 → right
-            let rot = (x, y, a) => [x * cos(a) - y * sin(a), x * sin(a) + y * cos(a)]
+            let rot = (x, y, a) => [x * M.cos(a) - y * M.sin(a), x * M.sin(a) + y * M.cos(a)]
             vertices.forEach(v => {
                 let [x, y, z] = v;
                 [x, z] = rot(x, z, -u_camAngXZ);
@@ -578,7 +573,7 @@ function calculateFeatures(tokenData) {
     
             // let tick = 0;
             
-            let ws = M.min(innerWidth, innerHeight)
+            let ws = min(innerWidth, innerHeight)
             let canvas = D.createElement('canvas')
             let canvasStyle = canvas.style
             canvasStyle.width = canvasStyle.height = ws + 'px'
