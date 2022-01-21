@@ -1,8 +1,8 @@
 // tokenData.hash = '0xe195db9558b6ba7e9d7b883297f1f1d1f2c830e8a0be2e33d1473ca5b4f9'
 
-if (window.location.hash) {
-    tokenData.hash = window.location.hash.slice(1)
-} // FIXME
+// if (window.location.hash) {
+//     tokenData.hash = window.location.hash.slice(1)
+// } // FIXME
 
 
 
