@@ -69,7 +69,7 @@ function calculateFeatures(tokenData) {
             //0     Symmetry
             //1     Studs
             //2     Palette
-            //3     ColorScheme 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow
+            //3     ColorScheme: 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow
             //4     Layout
             //5     BackgroundType
             //6     BackgroundLight
@@ -344,15 +344,15 @@ function calculateFeatures(tokenData) {
                     ///////////////////////////////////////////////////////////////////////////////////////////
                     if (gs % 2) {
                         bvt[10] = [
-                            bvt[9][0] / 2 + RInt((gs - 1) / 2 + 1 - bvt[9][0]) + .5,
+                            bvt[9][0] / 2 + RInt(gs/2 - 1.5 - bvt[9][0]) + .5,
                             0,
                             - gs / 2 + bvt[9][2] / 2 + (RInt(gs + 1 - bvt[9][2])),
                         ]
                     }
                     else bvt[10] = [
-                        bvt[9][0] / 2 + (R() * (gs / 2 + 1 - bvt[9][0]) | 0),
+                        bvt[9][0] / 2 + RInt(gs / 2 + 1 - bvt[9][0]),
                         0,
-                        - gs / 2 + bvt[9][2] / 2 + (R() * (gs + 1 - bvt[9][2]) | 0),
+                        - gs / 2 + bvt[9][2] / 2 + RInt(gs + 1 - bvt[9][2]),
                     ]
                     if (bvt[9][0] % 2 == gs % 2 && R() < 1 / (gs - bvt[9][0]))
                         if (bvt[9][0] % 2 || bvt[7]) // если чётное число пупырок, надо чтобы ось симетрии совпадала
