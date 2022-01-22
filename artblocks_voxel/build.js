@@ -14,7 +14,7 @@ const minifyOptions = {
     keep_fargs: false,
     keep_fnames: false,
     keep_infinity: false,
-    passes: 5,
+    passes: 2,
     booleans_as_integers: false,
     ecma: 2015,
     // pure_getters: true,

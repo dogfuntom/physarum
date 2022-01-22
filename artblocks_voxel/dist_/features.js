@@ -1,4 +1,4 @@
-tokenData.hash = '0x94f2da61fa63fbded3e9a9a41e26683ab3f7cc8bc008747c38b042397221e698'
+// tokenData.hash = '0x94f2da61fa63fbded3e9a9a41e26683ab3f7cc8bc008747c38b042397221e698'
 
 if (window.location.hash) {
     tokenData.hash = window.location.hash.slice(1)
@@ -43,7 +43,7 @@ function calculateFeatures(tokenData) {
         // RL = (ar, p) => ar[ar.length * R() ** (p || 1) | 0]
         RL = (ar, p) => ar[RInt(ar.length, p)]
         SH = (ar) => ar.map(a=>[a,R()]).sort((a,b)=>a[1]-b[1]).map(a=>a[0])
-        many = (n,fn) => [...A(n|0)].map((_,i) => fn(i))
+        many = (n,fn) => [...A(n)].map((_,i) => fn(i))
         // let texMpArray = [...A(1000.)].map(()=>[...A(10)].map(_=>[0,0,0]))
         let texMpArray = many(1e3,_=>many(10,_=>[0,0,0]))
         // console.log(texMpArray)
