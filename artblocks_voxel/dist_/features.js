@@ -1,4 +1,4 @@
-tokenData.hash = '0xb89fa30e26468a5c42a8533e4becf76486896abd3bb8c9b6985e5d6e4f049b84'
+tokenData.hash = '0x94f2da61fa63fbded3e9a9a41e26683ab3f7cc8bc008747c38b042397221e698'
 
 if (window.location.hash) {
     tokenData.hash = window.location.hash.slice(1)
@@ -41,12 +41,13 @@ function calculateFeatures(tokenData) {
         // let texMpArray = [...A(1000.)].map(()=>[...A(10)].map(()=>[...A(1)].map(()=>M.random()*255)))
         let texMpArray = [...A(1000.)].map(()=>[...A(10)].map(_=>[0,0,0]))
         // console.log(texMpArray)
-        let S, ss, R, t, RL, SH, RInt
+        let S, ss, R, t, RL, SH, RInt, many
         S = new Uint32Array([4, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= t ^ t >>> 8 ^ ss >>> 19, S[0] / 2 ** 32);
         RInt = (x,power) => R()**(power || 1) * x | 0
         // RL = (ar, p) => ar[ar.length * R() ** (p || 1) | 0]
         RL = (ar, p) => ar[RInt(ar.length, p)]
         SH = (ar) => ar.map(a=>[a,R()]).sort((a,b)=>a[1]-b[1]).map(a=>a[0])
+        many = (n,fn) => [...A(n|0)].map((_,i) => fn(i))
 
         // new
         let ts;
@@ -318,7 +319,7 @@ function calculateFeatures(tokenData) {
                     // Поворачиваем весь blockVariantTry на 90° несколько раз.
                     // Далее ротейт будет использоваться только для передачи в юниформ.
                     bvt[9] = [...bvt[0]]
-                    for (let i = 0; i < bvt[8]; i++) {
+                    many(bvt[8],i=>{
                         // flipping sizes
                         // тут косяк. До этого мы деталь не крутили, только размеры подгоняли.
                         // теперь надо крутить, но размеры оставлять тут правильными. А вот координаты углов можно 
@@ -328,7 +329,7 @@ function calculateFeatures(tokenData) {
                         bvt[2] = rotArray(bvt[2])
                         bvt[1] = rotArray(bvt[1])
                         bvt[7] = !bvt[7]
-                    }
+                    })
                     // интерраптинг, иф не влезло
                     if (bvt[9][0] > gs / 2) {
                         // console.log(bvt[9][0], 'is longer than ', gs)
@@ -431,33 +432,27 @@ function calculateFeatures(tokenData) {
                         blocks.push(bv)
                         // console.log(bv)
 
-                        // let indexes = [0,0,0]
                         for(let xx=0;xx<bv[9][0];xx++)
                         for(let yy=0;yy<bv[9][1];yy++)
-                        for(let zz=0;zz<bv[9][2];zz++){
-                        // for(let i=0;i<bv[9][0]*bv[9][1]*bv[9][2];i++)
-                            // let xx = floor(i/bv[9][1]/bv[9][2])
-                            // let yy = floor(i / bv[9][1]) % bv[9][2]
-                            // let zz = i % bv[9][2]
-                            // let xxx = (bv[10][0]-bv[9][0]/2) + xx + 5 | 0
-                            // let yyy = (bv[10][1]-bv[9][1]/2) + yy | 0
-                            // let zzz = (bv[10][2]-bv[9][2]/2) + zz + 5 | 0
+                        many(bv[9][2],zz=>{
                             let [xxx,yyy,zzz] = [5,0,5].map((d,i)=>(bv[10][i]-bv[9][i]/2) + [xx,yy,zz][i] + d | 0)
                             texMpArray[zzz + 10 * yyy][xxx][0] = 
                             texMpArray[zzz + 10 * yyy + 10][xxx][1] = 
                             255 * (blocks.length+1) / 64
-                        }
+                        })
                         
         
                         // push vertices
-                        for (let i = 0; i++ < 8;) {
+                        many(8,i=>{
                             let s = [0, 0, 0].map((_, j) => ((i >> j) & 1) - .5) // permutations, 3 items of {.5, -.5} set
+                            // let s = many(3, j => ((i >> j) & 1) - .5) // permutations, 3 items of {.5, -.5} set
                             vertices.push([
                                 s[0] * (bv[9][0] + 2 * bv[10][0]), // pos shouldn't be divided by 2, compensating
                                 s[1] * bv[9][1] + bv[10][1],
                                 s[2] * bv[9][2] + bv[10][2]
                             ])
-                        }
+                        })
+
         
                         /*begin features*/
                         features[7]++
@@ -531,10 +526,10 @@ function calculateFeatures(tokenData) {
             features[3] = { '0': 'Textured', '1': 'Not textured', '2': 'Monochrome', '3': 'Rainbow'}[features[3]]
             let names = ['Symmetry','Studs','Palette','Color scheme','Layout','Background type','Background light','Blocks number','Height','Eyes','Aerials',]
             let f = {}
-            for(let i=0; i<names.length; i++){
+            many(names.length, i=>{
                 f[names[i]] = features[i]
                 console.log(names[i], features[i])
-            }
+            })
             return f
         }
         /*end features*/

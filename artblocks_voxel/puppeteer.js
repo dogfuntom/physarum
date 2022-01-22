@@ -104,7 +104,7 @@ let urls = [
             
         console.log('save!')
         await page.waitForTimeout(100);
-        await page.screenshot({ path: `/Users/ivandianov/Downloads/ab/control5/${i}_${hash}.png` })
+        await page.screenshot({ path: `/Users/ivandianov/Downloads/ab/test5/${i}_${hash}.png` })
     }
     await browser.close();
 })()
