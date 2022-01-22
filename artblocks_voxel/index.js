@@ -33,7 +33,7 @@ function calculateFeatures(tokenData) {
         let typeBlock = 0, typeBeak2x2 = 3, typeBeak2x2Flipped = 4,
             typeArc = 5, typePillar = 6, typeEye = 7
         let maxMaxTry = 30
-        let u_camAngYZ = .95532, u_camAngXZ, numberOfBlockTypes
+        let u_camAngYZ = .95, u_camAngXZ, numberOfBlockTypes
         // let gs, blocksNumber, fitnessFunctionNumber, maxTry, extra
         let u_palette
         let gs, blocksNumber, fitnessFunctionNumber, maxTry, extra
@@ -476,7 +476,7 @@ function calculateFeatures(tokenData) {
             // 2 → left
             // 3 → right
             let rot = (x, y, a) => [x * M.cos(a) - y * M.sin(a), x * M.sin(a) + y * M.cos(a)]
-            vertices.forEach(v => {
+            vertices.map(v => {
                 let [x, y, z] = v;
                 [x, z] = rot(x, z, -u_camAngXZ);
                 [y, z] = rot(y, z, -u_camAngYZ)
@@ -505,43 +505,19 @@ function calculateFeatures(tokenData) {
             console.log(u_palette)
             u_colors = blocks.map(b => [b[4], b[5], b[6]]).flat()
         
-            // let uniforms = ``
-            // uniforms += blocks.map((b, i) =>
-            //     `ps[${i}]=vec3(${b[10][0]},${b[10][1]},${b[10][2]});`).join('')
-            // uniforms += blocks.map((b, i) =>
-            //     `ss[${i}]=vec3(${b[0][0]},${b[0][1]},${b[0][2]});`).join('')
-            // uniforms += blocks.map((b, i) =>
-            //     `rt[${i}]=vec2(${b[8]},${b[3]});`).join('') // FIXME shorted with [x,y,z]
-            // uniforms += blocks.map((b, i) =>
-            //     `cs[${i}]=ivec3(${b[4]},${b[5]},${b[6]});`).join('')
-    
-            // console.log(uniforms)
             /*end render*/
         
         
 
             let samplerArrays = [0,0,0,0].map(_=>A(64).fill([[]]))
-            blocks.forEach((b,i) => {
+            blocks.map((b,i) => {
                 samplerArrays[0][i] = [b[10]           ]
                 samplerArrays[1][i] = [b[0]            ]
                 samplerArrays[2][i] = [[b[8],b[3],0   ]]
                 samplerArrays[3][i] = [[b[4],b[5],b[6]]]
             })
             console.log(samplerArrays)
-        
-            // let samplerArrays = []
-            // samplerArray[0]=blocks.map(b=>[b[10]])
-            // samplerArray[1]=blocks.map([b[0]            ])
-            // samplerArray[2]=blocks.map([[b[8],b[3],0   ]])
-            // samplerArray[3]=blocks.map([[b[4],b[5],b[6]]])
-            // // blocks.forEach((b,i) => {
-            //     // samplerArrays[0][i] = [b[10]           ]
-            //     // samplerArrays[1][i] = [b[0]            ]
-            //     // samplerArrays[2][i] = [[b[8],b[3],0   ]]
-            //     // samplerArrays[3][i] = [[b[4],b[5],b[6]]]
-            // // })
-            // console.log(samplerArrays)
-        
+                
         
         
         
@@ -617,10 +593,8 @@ function calculateFeatures(tokenData) {
 
             let fbo = [1,1].map(() =>
                 regl.framebuffer({
-                    color: [
-                        regl.texture({type: 'float', width: size_, height:size_}), // color
-                        regl.texture({type: 'float', width: size_, height:size_}), // normal + depth
-                    ],
+                    // color and normal+depth ↓
+                    color: [0,0].map(_=>regl.texture({type: 'float', width: size_, height:size_})),
                     depth: false,
                   })
             )
@@ -637,8 +611,7 @@ function calculateFeatures(tokenData) {
             let commandNormals = regl({...commandParams,
                 frag: precision+/*glsl*/`
                 #extension GL_EXT_draw_buffers:require
-                #define BLOCKS_NUMBER_MAX 60
-                #define PI 3.1415
+                #define gl_z_PI 3.1415
                 #define S smoothstep
                 #define V vec3
                 #define F float
@@ -646,8 +619,7 @@ function calculateFeatures(tokenData) {
                 #define L length
                 #define T texture2D
                 #define v vec2
-                // mat2 rot(F a) {→mat2(cos(a),-sin(a),sin(a),cos(a));} // FIXME make define
-                #define gl_z_Q(x) fract(54321.987 * sin(987.12345 * x + .1))
+                #define gl_z_Q(x) fract(1e5*sin(dot(mod(x,PI),vec2(9.,PI))+.1))
                 #define gl_z_R(a) mat2(cos(a),-sin(a),sin(a),cos(a))
                 #define EPS 1e-4
                 #define U uniform sampler2D
@@ -689,19 +661,18 @@ function calculateFeatures(tokenData) {
                     V val_from_sampler_rt = (T(gl_z_rt, vec2(.5,id/64.)).rgb);
                     V val_from_sampler_ss = (T(gl_z_ss, vec2(.5,id/64.)).rgb);
                     ivec3 val_from_sampler_cs = ivec3(T(gl_z_cs, vec2(.5,(id)/64.)).rgb);
-                    // ivec3 val_from_sampler_cs = ivec3(1,2,1);
 
                     p.x = abs(p.x);
                     V pb = p;
                     pb -= val_from_sampler_ps;
-                    pb.xz *= gl_z_R(val_from_sampler_rt.x * PI / 2.);
+                    pb.xz *= gl_z_R(val_from_sampler_rt.x * gl_z_PI / 2.);
                     
                     // box
                     // F cornerR = .01, gap = .008, block;
                     
                     V s = val_from_sampler_ss - 2. * (cornerR + gap);
                     block = L(pb - clamp(pb, -s/2., s/2.)) - cornerR * 1.4;
-                    // if(blockId==0) {colIds = ivec3(3, 2, 1); return length(fract(p)-.5)-.45;}
+                    // if(blockId==0) {colIds = ivec3(3, 2, 1); return L(fract(p)-.5)-.45;}
                         
                     if(val_from_sampler_rt.y == 5.) { // arc
                         F cyl = L(pb.zy) - .5;
@@ -747,7 +718,6 @@ function calculateFeatures(tokenData) {
             
                     // block = L(pb)-2.;
                     if(block < EPS) {
-                        // colIds = ivec3(1,2,1);
                         if(colIds.z == 9)// FIXME как-то эти ифы упростить, они нужны только чтобы глаза работали. Может поднять над предыдущим абзацем?
                             colIds = ivec3(val_from_sampler_cs.xy, 9);
                         else
@@ -771,15 +741,15 @@ function calculateFeatures(tokenData) {
                     p.x += 5.;
                     p.z += 5.;
                     p = floor(p+vec3(0,0,0));
-                    if(p.y < 0.) return; // ←←←←←←←←←←←←←←←←←←←←←←←←
-                    vec3 boundingBox = vec3(10,1000 / 10,10);
-                    if(fract(p/boundingBox) != p/boundingBox) return;  // ←←←←←←←←←←←←←←←←←←←←←←←←
+                    if(p.y < 0.) →; // ←←←←←←←←←←←←←←←←←←←←←←←←
+                    vec3 boundingBox = vec3(10,100,10);
+                    if(fract(p/boundingBox) != p/boundingBox) →;  // ←←←←←←←←←←←←←←←←←←←←←←←←
                     vec2 vox, texSize = vec2(boundingBox.x, boundingBox.y*boundingBox.z);
                     vox.x = p.x;
                     vox.y = p.z + p.y * 10.;
                     vec2 voxN = (vox+.5) / texSize;
                     blockId = ivec2(T(gl_z_mp, voxN).rg * 64.);
-                    return;  // ←←←←←←←←←←←←←←←←←←←←←←←←
+                    →;  // ←←←←←←←←←←←←←←←←←←←←←←←←
                 }
 
                 void main() {
@@ -824,7 +794,7 @@ function calculateFeatures(tokenData) {
             
                         bool breaker = false;
                         sdfVoxel(p);
-                        if(length(v(blockId)) > 0. && p.y >= 0.) {
+                        if(L(v(blockId)) > 0. && p.y >= 0.) {
                             F ddd = 0.;
                             for(F backupI = 0.; backupI < 200.; backupI++) { // FIXME get rid of backupI
                                 jj++;
@@ -887,10 +857,10 @@ function calculateFeatures(tokenData) {
                         //
                         // layers
                         if(colIds.z == 1)
-                            if(sin(p.y * PI * 3.) > 0.)
+                            if(sin(p.y * gl_z_PI * 3.) > 0.)
                                 col = col2;
                         if(colIds.z == 2)
-                            if(sin((p.x + fract(${gs}. / 2.)) * PI * 2. * 1.5) > 0.) //////////////////////
+                            if(sin((p.x + fract(${gs}. / 2.)) * gl_z_PI * 2. * 1.5) > 0.) //////////////////////
                                 col = col2;
                         
                         // pride
@@ -932,20 +902,19 @@ function calculateFeatures(tokenData) {
                         }
                     }
                     if(gl_z_tk > 1.){
-                        V norm = (T(gl_z_nr, C.xy/resolution).rgb);
-                        F dist = T(gl_z_nr, C.xy/resolution).a;
-                        dist = min(dist,camDist*2.);
-                        vec3 f = norm;
-                        vec3 r = normalize(cross(vec3(1,2,3), f));
+                        vec4 normDist = T(gl_z_nr, C.xy/resolution);
+                        normDist.a = min(normDist.a,camDist*2.);
+                        vec3 f = normDist.rgb;
+                        vec3 r = N(cross(vec3(1,2,3), f));
                         vec3 u = cross(f, r);
                         for(F i=0.; i<20.; i++){
                             V kernel = V(0,0,0);
-                            kernel += (gl_z_Q(i+gl_z_tk+dot(uv*99.,vec2(.319,.137)))*2.-1.) * r; // FIXME rnd values
-                            kernel += (gl_z_Q(i+gl_z_tk+dot(uv*99.,vec2(.319,.137))+.1)*2.-1.) * u;
-                            kernel += (gl_z_Q(i+gl_z_tk+dot(uv*99.,vec2(.319,.137))+.2)) * f;
-                            kernel = N(kernel) * pow(gl_z_Q(i+dot(mod(C.xy,10.1*PI),vec2(.319,.137))),2.);
-                            vec3 offset = V(dot(kernel,vec3(1,0,0)), dot(kernel,vec3(0,1,0)), dot(kernel,V(0,0,1)));
-                            if(dist - offset.z * 1.1 > T(gl_z_nr, C.xy/resolution + .15 * offset.xy).a){
+                            v uvi = i+gl_z_tk+uv;
+                            kernel += (gl_z_Q(uvi   )*2.-1.) * r; // FIXME rnd values
+                            kernel += (gl_z_Q(uvi+.1)*2.-1.) * u;
+                            kernel +=  gl_z_Q(uvi+.2) * f;
+                            kernel = N(kernel) * pow(gl_z_Q(uvi+.3),2.);
+                            if(normDist.a - kernel.z * 1.1 > T(gl_z_nr, C.xy/resolution + .15 * kernel.xy).a){
                                 c*=.97;
                             }
                         }

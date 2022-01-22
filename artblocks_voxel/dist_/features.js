@@ -28,7 +28,7 @@ function calculateFeatures(tokenData) {
         let typeBlock = 0, typeBeak2x2 = 3, typeBeak2x2Flipped = 4,
             typeArc = 5, typePillar = 6, typeEye = 7
         let maxMaxTry = 30
-        let u_camAngYZ = .95532, u_camAngXZ, numberOfBlockTypes
+        let u_camAngYZ = .95, u_camAngXZ, numberOfBlockTypes
         // let gs, blocksNumber, fitnessFunctionNumber, maxTry, extra
         let u_palette
         let gs, blocksNumber, fitnessFunctionNumber, maxTry, extra
@@ -476,27 +476,14 @@ function calculateFeatures(tokenData) {
         
 
             let samplerArrays = [0,0,0,0].map(_=>A(64).fill([[]]))
-            blocks.forEach((b,i) => {
+            blocks.map((b,i) => {
                 samplerArrays[0][i] = [b[10]           ]
                 samplerArrays[1][i] = [b[0]            ]
                 samplerArrays[2][i] = [[b[8],b[3],0   ]]
                 samplerArrays[3][i] = [[b[4],b[5],b[6]]]
             })
             console.log(samplerArrays)
-        
-            // let samplerArrays = []
-            // samplerArray[0]=blocks.map(b=>[b[10]])
-            // samplerArray[1]=blocks.map([b[0]            ])
-            // samplerArray[2]=blocks.map([[b[8],b[3],0   ]])
-            // samplerArray[3]=blocks.map([[b[4],b[5],b[6]]])
-            // // blocks.forEach((b,i) => {
-            //     // samplerArrays[0][i] = [b[10]           ]
-            //     // samplerArrays[1][i] = [b[0]            ]
-            //     // samplerArrays[2][i] = [[b[8],b[3],0   ]]
-            //     // samplerArrays[3][i] = [[b[4],b[5],b[6]]]
-            // // })
-            // console.log(samplerArrays)
-        
+                
         
         
         
