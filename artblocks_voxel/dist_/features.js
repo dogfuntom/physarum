@@ -1,4 +1,4 @@
-// tokenData.hash = '0x430d86fe994eea4da8ba3b4ba30b94b73430aacf5fa59e384392c1024eecbff0'
+// tokenData.hash = '0xb89fa30e26468a5c42a8533e4becf76486896abd3bb8c9b6985e5d6e4f049b84'
 
 if (window.location.hash) {
     tokenData.hash = window.location.hash.slice(1)
@@ -28,7 +28,7 @@ function calculateFeatures(tokenData) {
         let typeBlock = 0, typeBeak2x2 = 3, typeBeak2x2Flipped = 4,
             typeArc = 5, typePillar = 6, typeEye = 7
         let maxMaxTry = 30
-        let u_camAngYZ = .95, u_camAngXZ, numberOfBlockTypes
+        let u_camAngYZ = .95532, u_camAngXZ, numberOfBlockTypes
         // let gs, blocksNumber, fitnessFunctionNumber, maxTry, extra
         let u_palette
         let gs, blocksNumber, fitnessFunctionNumber, maxTry, extra
