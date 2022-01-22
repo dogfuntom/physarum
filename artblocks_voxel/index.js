@@ -869,7 +869,7 @@ function calculateFeatures(tokenData) {
                             if(sin(p.y * gl_z_PI * 3.) > 0.)
                                 col = col2;
                         if(colIds.z == 2)
-                            if(sin((p.x + fract(${gs}. / 2.)) * gl_z_PI * 2. * 1.5) > 0.) //////////////////////
+                            if(sin((p.x + fract(${gs}. / 2.)) * gl_z_PI * 2. * 1.499) > 0.) //////////////////////
                                 col = col2;
                         
                         // pride
