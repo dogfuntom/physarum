@@ -79,7 +79,7 @@ function calculateFeatures(tokenData) {
                 // R() ** 8 * 2 | 0,
                 RInt(2,8),
                 0,
-                (R()<.01)?3:(1-M.sqrt(1-(R()-1)**4)) * 3 | 0,
+                (R()<.01)?3:(1-M.sqrt(1-(R()-1)**2)) * 3 | 0,
                 0,
                 RL([2, 1], .5),
                 // (R() * 3 | 0) - 1,
@@ -121,7 +121,7 @@ function calculateFeatures(tokenData) {
                     30,
                     4, // cage
                     8,
-                    2+R(), // FIXME remove R()
+                    2, // FIXME remove R()
                 ],
                 // cutie big
                 [
