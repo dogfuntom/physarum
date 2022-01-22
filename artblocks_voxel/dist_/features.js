@@ -78,7 +78,7 @@ function calculateFeatures(tokenData) {
                 0,
                 // (1 - R() ** .3) * 5 | 0,
                 // (R()<.01)?3:(1-M.sqrt(1-(R()-1)**4)) * 3 | 0,
-                (1-M.sqrt(1-(R()-1)**4)) * 3 | 0, // FIXME use upper
+                (1-M.sqrt(1-(R()-1)**4)) * 4 | 0, // FIXME use upper
                 0,
                 RL([2, 1], .5),
                 (R() * 3 | 0) - 1,
@@ -533,7 +533,6 @@ function calculateFeatures(tokenData) {
                 f[names[i]] = features[i]
                 console.log(names[i], features[i])
             }
-
             return f
         }
         /*end features*/

@@ -90,7 +90,7 @@ let urls = [
     });
     console.log('launch…')
     const page = await browser.newPage();
-    for (let i = 0; i < 160 && urls.length>0; i++) {
+    for (let i = 0; i < 100 && urls.length>0; i++) {
         // const browser = await puppeteer.launch({});
         
         await page.setViewport({ width: 512, height: 512 });
