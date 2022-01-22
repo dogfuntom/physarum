@@ -1,4 +1,4 @@
-// tokenData.hash = '0xb89fa30e26468a5c42a8533e4becf76486896abd3bb8c9b6985e5d6e4f049b84'
+tokenData.hash = '0xb89fa30e26468a5c42a8533e4becf76486896abd3bb8c9b6985e5d6e4f049b84'
 
 if (window.location.hash) {
     tokenData.hash = window.location.hash.slice(1)
@@ -12,7 +12,6 @@ function calculateFeatures(tokenData) {
         
     
         console.log(tokenData.hash)
-        let S, ss, R, t, RL, SH
         let M = Math
         let A = Array
         let D = document
@@ -28,10 +27,10 @@ function calculateFeatures(tokenData) {
         // D.body.appendChild(div) //FIXME
         let params_size = location.href.split('#')[1];
         /*end render*/
-
+        
         let rotArray = m => m[0].map((x, i) => m.slice().reverse().map(y => y[i]))
         let typeBlock = 0, typeBeak2x2 = 3, typeBeak2x2Flipped = 4,
-            typeArc = 5, typePillar = 6, typeEye = 7
+        typeArc = 5, typePillar = 6, typeEye = 7
         let maxMaxTry = 30
         let u_camAngYZ = .95532, u_camAngXZ, numberOfBlockTypes
         // let gs, blocksNumber, fitnessFunctionNumber, maxTry, extra
@@ -47,6 +46,12 @@ function calculateFeatures(tokenData) {
         // let texMpArray = [...A(1000.)].map(()=>[...A(10)].map(()=>[...A(1)].map(()=>M.random()*255)))
         let texMpArray = [...A(1000.)].map(()=>[...A(10)].map(_=>[0,0,0]))
         // console.log(texMpArray)
+        let S, ss, R, t, RL, SH, RInt
+        S = new Uint32Array([4, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= t ^ t >>> 8 ^ ss >>> 19, S[0] / 2 ** 32);
+        RInt = (x,power) => R()**(power || 1) * x | 0
+        // RL = (ar, p) => ar[ar.length * R() ** (p || 1) | 0]
+        RL = (ar, p) => ar[RInt(ar.length, p)]
+        SH = (ar) => ar.map(a=>[a,R()]).sort((a,b)=>a[1]-b[1]).map(a=>a[0])
 
         // new
         let ts;
@@ -54,9 +59,6 @@ function calculateFeatures(tokenData) {
         let init = () => {
             // console.log(tokenData.hash)
             // S = new Uint32Array([0, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8 + 2, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= t ^ t >>> 8 ^ ss >>> 19, S[0] / 2 ** 32); 'tx piter'
-            S = new Uint32Array([4, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= t ^ t >>> 8 ^ ss >>> 19, S[0] / 2 ** 32); 'tx piter'
-            RL = (ar, p) => ar[ar.length * R() ** (p || 1) | 0]
-            SH = (ar) => ar.map(a=>[a,R()]).sort((a,b)=>a[1]-b[1]).map(a=>a[0])
             
             vertices = []
         
@@ -77,13 +79,16 @@ function calculateFeatures(tokenData) {
             //10    Aerials
             // }
             features = [
-                R() ** 4 * 2 | 0,
-                R() ** 8 * 2 | 0,
+                // R() ** 4 * 2 | 0,
+                RInt(2,4),
+                // R() ** 8 * 2 | 0,
+                RInt(2,8),
                 0,
                 (R()<.01)?3:(1-M.sqrt(1-(R()-1)**4)) * 3 | 0,
                 0,
                 RL([2, 1], .5),
-                (R() * 3 | 0) - 1,
+                // (R() * 3 | 0) - 1,
+                RInt(3)-1,
                 0,
                 0,
                 0,
@@ -101,46 +106,58 @@ function calculateFeatures(tokenData) {
             let presets = [
                 [
                     10,
-                    20+20*R(),
+                    20+RInt(21),
                     3, // shroom
                     8,
-                    R() ** 4 * 8,
+                    // R() ** 4 * 8,
+                    RInt(8,4),
                 ],
                 [ // small
                     4,
-                    4 + R() * 4 | 0,
+                    // 4 + R() * 4 | 0,
+                    4 + RInt(4),
                     1, // high
                     1,
                     1,
                 ],
                 [
-                    8 + R() * 2 | 0,
+                    // 8 + R() * 2 | 0,
+                    8 + RInt(2),
                     30,
                     4, // cage
                     8,
-                    R()+2,
+                    2+R(), // FIXME remove R()
                 ],
                 // cutie big
                 [
-                    4+2*R()|0,
-                    6 + R() * 4 | 0,
+                    // 4+2*R()|0,
+                    // 6 + R() * 4 | 0,
+                    4+RInt(2),
+                    6 + RInt(4),
                     0,
                     1,
-                    1+2*R(),
+                    // 1+2*R(),
+                    1+RInt(2),
                 ],
                 [
-                    6 + R() * 4 | 0,
-                    10 + R() * 20 | 0,
+                    // 6 + R() * 4 | 0,
+                    // 10 + R() * 20 | 0,
+                    6 + RInt(4),
+                    10 + RInt(20),
                     2, // low
                     6,
-                    R() * 2,
+                    // R() * 2,
+                    RInt(2),
                 ],
                 [
-                    6 + (R() * 2 | 0),
-                    10 + R() * 6 | 0,
+                    // 6 + (R() * 2 | 0),
+                    // 10 + R() * 6 | 0,
+                    6 + RInt(2),
+                    10 + RInt(6),
                     0, // random
                     4,
-                    R() * 3,
+                    // R() * 3,
+                    RInt(3),
                 ],
             ];
         
