@@ -82,8 +82,8 @@ function calculateFeatures(tokenData) {
                 R() ** 8 * 2 | 0,
                 0,
                 // (1 - R() ** .3) * 5 | 0,
-                // (R()<.01)?3:(1-M.sqrt(1-(R()-1)**4)) * 3 | 0,
-                (1-M.sqrt(1-(R()-1)**4)) * 4 | 0, // FIXME use upper
+                (R()<.01)?3:(1-M.sqrt(1-(R()-1)**4)) * 3 | 0,
+                // (1-M.sqrt(1-(R()-1)**4)) * 4 | 0, // FIXME use upper
                 0,
                 RL([2, 1], .5),
                 (R() * 3 | 0) - 1,
@@ -403,8 +403,6 @@ function calculateFeatures(tokenData) {
                             // console.log('extra on the floor!'); 
                             continue
                         } // eyes on the froor are prohibited
-                        // let xx = [...A(bv[9][0])].map((d, i) => bv[10][0] + i - (bv[9][0] - 1) / 2)
-                        // let zz = [...A(bv[9][2])].map((d, i) => bv[10][2] + i - (bv[9][2] - 1) / 2)
                         let [xx,zz] = [0,2].map(j=>[...A(bv[9][j])].map((_,i) => bv[10][j] + i - (bv[9][j] - 1) / 2))
                         let bi = 0
                         zz.map(z=>xx.map(x=>{
