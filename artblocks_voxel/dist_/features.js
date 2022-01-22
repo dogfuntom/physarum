@@ -59,26 +59,23 @@ function calculateFeatures(tokenData) {
         
             u_tick = 1e-6 // so not to turn into int
             // features = {
-            //0     Symmetry: R() ** 4. * 2 | 0,
-            //1     Studs: R() ** 8 * 2 | 0,
-            //2     Palette: 0,
-            //      // 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
-            //3     ColorScheme: (1 - R() ** .3) * 4 | 0,
-            //4     Layout: 0,
-            //5     BackgroundType: RL([2, 1], .5),
-            //6     BackgroundLight: (R() * 3 | 0) - 1,
-            //7     BlocksNumber: 0,
-            //8     Height: 0,
-            //9     Eyes: 0,
-            //10    Aerials: 0,
+            //0     Symmetry
+            //1     Studs
+            //2     Palette
+            //3     ColorScheme 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow
+            //4     Layout
+            //5     BackgroundType
+            //6     BackgroundLight
+            //7     BlocksNumber
+            //8     Height
+            //9     Eyes
+            //10    Aerials
             // }
             features = [
-                R() ** 4. * 2 | 0,
+                R() ** 4 * 2 | 0,
                 R() ** 8 * 2 | 0,
                 0,
-                // (1 - R() ** .3) * 5 | 0,
                 (R()<.01)?3:(1-M.sqrt(1-(R()-1)**4)) * 3 | 0,
-                // (1-M.sqrt(1-(R()-1)**4)) * 4 | 0, // FIXME use upper
                 0,
                 RL([2, 1], .5),
                 (R() * 3 | 0) - 1,

@@ -64,26 +64,23 @@ function calculateFeatures(tokenData) {
         
             u_tick = 1e-6 // so not to turn into int
             // features = {
-            //0     Symmetry: R() ** 4. * 2 | 0,
-            //1     Studs: R() ** 8 * 2 | 0,
-            //2     Palette: 0,
-            //      // 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow, 4 — gazya
-            //3     ColorScheme: (1 - R() ** .3) * 4 | 0,
-            //4     Layout: 0,
-            //5     BackgroundType: RL([2, 1], .5),
-            //6     BackgroundLight: (R() * 3 | 0) - 1,
-            //7     BlocksNumber: 0,
-            //8     Height: 0,
-            //9     Eyes: 0,
-            //10    Aerials: 0,
+            //0     Symmetry
+            //1     Studs
+            //2     Palette
+            //3     ColorScheme 0 — textured, 1 — not textured, 2 - all blocks of the same color, 3 — raibow
+            //4     Layout
+            //5     BackgroundType
+            //6     BackgroundLight
+            //7     BlocksNumber
+            //8     Height
+            //9     Eyes
+            //10    Aerials
             // }
             features = [
-                R() ** 4. * 2 | 0,
+                R() ** 4 * 2 | 0,
                 R() ** 8 * 2 | 0,
                 0,
-                // (1 - R() ** .3) * 5 | 0,
                 (R()<.01)?3:(1-M.sqrt(1-(R()-1)**4)) * 3 | 0,
-                // (1-M.sqrt(1-(R()-1)**4)) * 4 | 0, // FIXME use upper
                 0,
                 RL([2, 1], .5),
                 (R() * 3 | 0) - 1,
@@ -625,6 +622,7 @@ function calculateFeatures(tokenData) {
                 #define U uniform sampler2D
                 #define C gl_FragCoord
                 #define D gl_FragData
+                #define iV ivec3
                 F sabs(F p) {→sqrt(abs(p)*abs(p)+5e-5);}
                 F smax(F a, F b) {→(a+b+sabs(a-b))*.5;}
                 
@@ -640,12 +638,11 @@ function calculateFeatures(tokenData) {
                 uniform F gl_z_tk;
                 F resolution = F(${size_});
         
-                ivec3 colIds = ivec3(0);
+                iV colIds = iV(0);
                 F gl;
                 F camDist = 30.;
                 ivec2 blockId;
-                F cornerR = .01, gap = .015, block;
-                F outlineWidth = .015;//((cornerR+gap)*sqrt(2.) - cornerR);
+                F cornerR = .01, gap=.015, block, outlineWidth=.015;
                 
                 int id;
     
@@ -657,38 +654,39 @@ function calculateFeatures(tokenData) {
                 
 
                 F dist(V p, F id) {
-                    V val_from_sampler_ps = (T(gl_z_ps, vec2(.5,id/64.)).rgb);
-                    V val_from_sampler_rt = (T(gl_z_rt, vec2(.5,id/64.)).rgb);
-                    V val_from_sampler_ss = (T(gl_z_ss, vec2(.5,id/64.)).rgb);
-                    ivec3 val_from_sampler_cs = ivec3(T(gl_z_cs, vec2(.5,(id)/64.)).rgb);
+                    v samplerUV = v(.5,id/64.);
+                    V val_from_sampler_ps = (T(gl_z_ps, samplerUV).rgb);
+                    iV val_from_sampler_rt = iV(T(gl_z_rt, samplerUV).rgb);
+                    V val_from_sampler_ss = (T(gl_z_ss, samplerUV).rgb);
+                    iV val_from_sampler_cs = iV(T(gl_z_cs, samplerUV).rgb);
 
                     p.x = abs(p.x);
                     V pb = p;
                     pb -= val_from_sampler_ps;
-                    pb.xz *= gl_z_R(val_from_sampler_rt.x * gl_z_PI / 2.);
+                    pb.xz *= gl_z_R(F(val_from_sampler_rt.x) * gl_z_PI / 2.);
                     
                     // box
                     // F cornerR = .01, gap = .008, block;
                     
                     V s = val_from_sampler_ss - 2. * (cornerR + gap);
                     block = L(pb - clamp(pb, -s/2., s/2.)) - cornerR * 1.4;
-                    // if(blockId==0) {colIds = ivec3(3, 2, 1); return L(fract(p)-.5)-.45;}
+                    // if(blockId==0) {colIds = iV(3, 2, 1); return L(fract(p)-.5)-.45;}
                         
-                    if(val_from_sampler_rt.y == 5.) { // arc
+                    if(val_from_sampler_rt.y == 5) { // arc
                         F cyl = L(pb.zy) - .5;
                         F box = max(abs(pb.z) - .5, abs(pb.y + val_from_sampler_ss.y / 2.) - 1.);
                         F hole = min(cyl, box);
                         block = max(block, -hole);
                     }
 
-                    if(val_from_sampler_rt.y == 6.) { // pillar
+                    if(val_from_sampler_rt.y == 6) { // pillar
                         F narrow = tube(pb+V(0,1.6-cornerR*3.,0),V(3.55,.15,0));
                         F base = tube(pb+V(0,2.-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
                         block = min(narrow, base);
                     }
 
                     // studs
-                    if(val_from_sampler_rt.y != 6.) { // not pillar
+                    if(val_from_sampler_rt.y != 6) { // not pillar
                         V ps = pb;
                         // repetition
                         v l = val_from_sampler_ss.xz;
@@ -702,13 +700,13 @@ function calculateFeatures(tokenData) {
                         block = min(stud, block);
                     }
             
-                    if(pb.z<.01 && (val_from_sampler_rt.y == 3. || val_from_sampler_rt.y == 4.)) { // beak
-                        block = smax(block,dot(pb,V(0,.78*(7.-2.*val_from_sampler_rt.y),-.624))-.39);
+                    if(pb.z<.01 && (val_from_sampler_rt.y == 3 || val_from_sampler_rt.y == 4)) { // beak
+                        block = smax(block,dot(pb,V(0,.78*(7.-2.*F(val_from_sampler_rt.y)),-.624))-.39);
                     }
             
             
             
-                    if(val_from_sampler_rt.y == 7.) { // eye
+                    if(val_from_sampler_rt.y == 7) { // eye
                         F eye_ = tube(pb+V(0,.25-cornerR*2.,0),V(.4-cornerR*2.,.45,0));
                         block = eye_;
                         if(eye_ < EPS) {
@@ -719,7 +717,7 @@ function calculateFeatures(tokenData) {
                     // block = L(pb)-2.;
                     if(block < EPS) {
                         if(colIds.z == 9)// FIXME как-то эти ифы упростить, они нужны только чтобы глаза работали. Может поднять над предыдущим абзацем?
-                            colIds = ivec3(val_from_sampler_cs.xy, 9);
+                            colIds = iV(val_from_sampler_cs.xy, 9);
                         else
                             colIds = val_from_sampler_cs;
                     }
@@ -744,10 +742,10 @@ function calculateFeatures(tokenData) {
                     if(p.y < 0.) →; // ←←←←←←←←←←←←←←←←←←←←←←←←
                     vec3 boundingBox = vec3(10,100,10);
                     if(fract(p/boundingBox) != p/boundingBox) →;  // ←←←←←←←←←←←←←←←←←←←←←←←←
-                    vec2 vox, texSize = vec2(boundingBox.x, boundingBox.y*boundingBox.z);
+                    v vox, texSize = v(boundingBox.x, boundingBox.y*boundingBox.z);
                     vox.x = p.x;
                     vox.y = p.z + p.y * 10.;
-                    vec2 voxN = (vox+.5) / texSize;
+                    v voxN = (vox+.5) / texSize;
                     blockId = ivec2(T(gl_z_mp, voxN).rg * 64.);
                     →;  // ←←←←←←←←←←←←←←←←←←←←←←←←
                 }
@@ -765,9 +763,7 @@ function calculateFeatures(tokenData) {
                     F fr = mod(gl_z_tk,2.);
                     v pos = v(fr/2.,fl/4.)-.5;
                     if(mod(fl, 2.)==0.) pos.x += .25; //https://bit.ly/30g2DXs
-    
                     uv += pos * 2. / resolution;
-    
                     V p, ro = V(uv * F(${viewBox[6]}) +
                         v(${viewBox[7]},
                         ${viewBox[8]}), -camDist),
@@ -830,7 +826,7 @@ function calculateFeatures(tokenData) {
                             }
                         }
                         else{
-                            colIds = ivec3(0, 0, -1);
+                            colIds = iV(0, 0, -1);
                         }
                         d += dpmin;
                         if(breaker == true || jj > 200.)
