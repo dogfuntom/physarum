@@ -37,10 +37,6 @@ function calculateFeatures(tokenData) {
         let vertices
         let viewBox
         let paletteBg
-        // let texMpArray = [...A(300)].map(()=>[...A(10)].map(()=>[...A(1)].map(()=>M.random()*255)))
-        // let texMpArray = [...A(1000.)].map(()=>[...A(10)].map(()=>[...A(1)].map(()=>M.random()*255)))
-        let texMpArray = [...A(1000.)].map(()=>[...A(10)].map(_=>[0,0,0]))
-        // console.log(texMpArray)
         let S, ss, R, t, RL, SH, RInt, many
         S = new Uint32Array([4, 1, ss = t = 2, 3].map(i => parseInt(tokenData.hash.substr(i * 8, 8), 16))); R = _ => (t = S[3], S[3] = S[2], S[2] = S[1], S[1] = ss = S[0], t ^= t << 11, S[0] ^= t ^ t >>> 8 ^ ss >>> 19, S[0] / 2 ** 32);
         RInt = (x,power) => R()**(power || 1) * x | 0
@@ -48,6 +44,9 @@ function calculateFeatures(tokenData) {
         RL = (ar, p) => ar[RInt(ar.length, p)]
         SH = (ar) => ar.map(a=>[a,R()]).sort((a,b)=>a[1]-b[1]).map(a=>a[0])
         many = (n,fn) => [...A(n|0)].map((_,i) => fn(i))
+        // let texMpArray = [...A(1000.)].map(()=>[...A(10)].map(_=>[0,0,0]))
+        let texMpArray = many(1e3,_=>many(10,_=>[0,0,0]))
+        // console.log(texMpArray)
 
         // new
         let ts;
@@ -264,13 +263,12 @@ function calculateFeatures(tokenData) {
         
             // карта высот. В тех местах, где заплетная клетка, уходит в минус бесконечность. Чтобы точно было меньше, чем в запретной карте высот
             // обратим внимание, что икс снаружи, потом зет. Обычно наоборот, если что.
-            blocksHeightMap = [...A(gs)]
-                .map(() => A(gs).fill(0))
+            // blocksHeightMap = [...A(gs)].map(() => A(gs).fill(0))
+            blocksHeightMap = many(gs,_=>many(gs,_=>0))
                 // .map(() => [...A(gs)])
             // запретная карта высот. Ну, как запретная. Просто нельзя ставить деталь ножкой на
             // на клетку, если карта высот в этой клетке меньше карты запрета.
-            disallowedHeightMap = [...A(gs)]
-                .map(() => A(gs).fill(0))
+            disallowedHeightMap = many(gs,_=>many(gs,_=>0))
         
             for (let n = 0; n < blocksNumber; n++) {
                 let maxHeight = 0
@@ -358,7 +356,7 @@ function calculateFeatures(tokenData) {
                     let studR = 0
                     // let xx = [...A(bvt[9][0])].map((d, i) => bvt[10][0] + i - (bvt[9][0] - 1.) / 2)
                     // let zz = [...A(bvt[9][2])].map((d, i) => bvt[10][2] + i - (bvt[9][2] - 1.) / 2)
-                    let [xx,zz] = [0,0].map((_,j)=>[...A(bvt[9][j*2])].map((d, i) => bvt[10][j*2] + i - (bvt[9][j*2] - 1.) / 2))
+                    let [xx,zz] = many(2,j=>many(bvt[9][j*2],i=>bvt[10][j*2]+i-(bvt[9][j*2]-1)/2))
 
                     // for (let x of xx) {
                     //     for (let z of zz) {
@@ -416,7 +414,8 @@ function calculateFeatures(tokenData) {
                             // console.log('extra on the floor!'); 
                             continue
                         } // eyes on the froor are prohibited
-                        let [xx,zz] = [0,2].map(j=>[...A(bv[9][j])].map((_,i) => bv[10][j] + i - (bv[9][j] - 1) / 2))
+                        // let [xx,zz] = [0,2].map(j=>[...A(bv[9][j])].map((_,i) => bv[10][j] + i - (bv[9][j] - 1) / 2))
+                        let [xx,zz] = many(2,j=>many(bv[9][j*2],i => bv[10][j*2] + i - (bv[9][j*2] - 1) / 2))
                         let bi = 0
                         zz.map(z=>xx.map(x=>{
                             let bx = bi % bv[9][0]
@@ -444,8 +443,8 @@ function calculateFeatures(tokenData) {
         
                         // push vertices
                         many(8,i=>{
-                            let s = [0, 0, 0].map((_, j) => ((i >> j) & 1) - .5) // permutations, 3 items of {.5, -.5} set
-                            // let s = many(3, j => ((i >> j) & 1) - .5) // permutations, 3 items of {.5, -.5} set
+                            // let s = [0, 0, 0].map((_, j) => ((i >> j) & 1) - .5) // permutations, 3 items of {.5, -.5} set
+                            let s = many(3, j => ((i >> j) & 1) - .5) // permutations, 3 items of {.5, -.5} set
                             vertices.push([
                                 s[0] * (bv[9][0] + 2 * bv[10][0]), // pos shouldn't be divided by 2, compensating
                                 s[1] * bv[9][1] + bv[10][1],
@@ -487,7 +486,8 @@ function calculateFeatures(tokenData) {
         
         
 
-            let samplerArrays = [0,0,0,0].map(_=>A(64).fill([[]]))
+            // let samplerArrays = [0,0,0,0].map(_=>A(64).fill([[]]))
+            let samplerArrays = many(4,_=>A(64).fill([[]]))
             blocks.map((b,i) => {
                 samplerArrays[0][i] = [b[10]           ]
                 samplerArrays[1][i] = [b[0]            ]
