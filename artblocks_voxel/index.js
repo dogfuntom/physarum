@@ -166,15 +166,18 @@ function calculateFeatures(tokenData) {
           
             ([ gs, blocksNumber, fitnessFunctionNumber, maxTry, extra ] = presets[features[4]])
             // console.log('presets[features[4]',presets[features[4]])
-            numberOfBlockTypes = 1 + R()**.5 * 3 | 0
+            // numberOfBlockTypes = 1 + R()**.5 * 3 | 0
+            numberOfBlockTypes = 1 + RInt(3,.5)
         
             blocks = [];
-            features[2] = R() ** .5 * 8 | 0
+            // features[2] = R() ** .5 * 8 | 0
+            features[2] = RInt(8,.5)
             // palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900f5d4fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368f1e9da2e294effd4001f20414b3f72119da419647effc857540d6eee4266f3fcf01f271bffd23fe4572e29335ca8c686669bbcf3a712'
                 // .match(/(.{30})/g).map(d=>d.match(/(.{6})/g))[features[2]]
             u_palette = 'dddddd888888555555222222aaaaaaf26b21fbb04099ca3c208b3afcec529b5de5f15bb500bbf900C2A8fee440f1faeea8dadc457b9d1d3557e6394650514ff25f5c247ba070c1b3ffe066541388d90368E4E4E42e294effd4001f20414b3f72119da419647effc857540d6eee4266d9d9d91f271bffd23fe4572e29335ca8c686669bbcf3a712'
                 .substr(30*features[2], 30).match(/(.{2})/g).map(v=>Number("0x"+v))
-            paletteBg = R()*4|0
+            // paletteBg = R()*4|0
+            paletteBg = RInt(4)
             // console.log('features[2]',features[2])
         }
         
@@ -302,17 +305,17 @@ function calculateFeatures(tokenData) {
                     // bvt = JSON.parse(JSON.stringify(bvtInitial))
                     bvt = [...bvtInitial]
 
-                    bvt[4] = R() * 4 + 1 | 0
-                    bvt[5] = R() * 4 + 1 | 0
+                    bvt[4] = RInt(4) + 1
+                    bvt[5] = RInt(4) + 1
                     if (features[3] == 2) bvt[4] = bvt[5] = 1
-                    bvt[6] = R() * 4 | 0
+                    bvt[6] = RInt(4)
                     if (features[3] == 1) bvt[6] = 0
                     // попался! bvt у нас сохранялся между выполнениями и портился от запуска к запуску.
                     // надо или его копию делать, или ещё чего.
         
                     // есть ли смысл тут сделать глубокую копию? Есть. И всё в ней хранить.
                     bvt[7] = 1
-                    bvt[8] = R() * 4 | 0
+                    bvt[8] = RInt(4)
                     if (bvt[3] == typeEye) bvt[8] = 0
                     let makeMask = () => A(9).fill(A(9).fill(1))
                     bvt[2] = bvt[2] || makeMask()
@@ -341,9 +344,9 @@ function calculateFeatures(tokenData) {
                     ///////////////////////////////////////////////////////////////////////////////////////////
                     if (gs % 2) {
                         bvt[10] = [
-                            bvt[9][0] / 2 + (R() * ((gs - 1) / 2 + 1 - bvt[9][0]) | 0) + .5,
+                            bvt[9][0] / 2 + RInt((gs - 1) / 2 + 1 - bvt[9][0]) + .5,
                             0,
-                            - gs / 2 + bvt[9][2] / 2 + (R() * (gs + 1 - bvt[9][2]) | 0),
+                            - gs / 2 + bvt[9][2] / 2 + (RInt(gs + 1 - bvt[9][2])),
                         ]
                     }
                     else bvt[10] = [
