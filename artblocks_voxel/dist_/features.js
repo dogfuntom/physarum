@@ -402,7 +402,7 @@ function calculateFeatures(tokenData) {
                         // let zz = [...A(bv[9][2])].map((d, i) => bv[10][2] + i - (bv[9][2] - 1) / 2)
                         let [xx,zz] = [0,2].map(j=>[...A(bv[9][j])].map((_,i) => bv[10][j] + i - (bv[9][j] - 1) / 2))
                         let bi = 0
-                        xx.map(x=>zz.map(z=>{
+                        zz.map(z=>xx.map(x=>{
                             let bx = bi % bv[9][0]
                             let bz = floor(bi / bv[9][0])
                             let shift = gs / 2 - .5
