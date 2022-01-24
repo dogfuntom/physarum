@@ -1,8 +1,8 @@
 // tokenData.hash = '0xc61098a3c9703dc58508a1f7ada41e676acd9f2dee543ea45161620bf749d4a1'
 
-if (window.location.hash) {
-    tokenData.hash = window.location.hash.slice(1)
-} // FIXME
+// if (window.location.hash) {
+//     tokenData.hash = window.location.hash.slice(1)
+// } // FIXME
 
 
 
@@ -127,7 +127,7 @@ function calculateFeatures(tokenData) {
                     30,
                     4, // cage
                     8,
-                    2, // FIXME remove R()
+                    2,
                 ],
                 // cutie big
                 [
@@ -579,7 +579,7 @@ function calculateFeatures(tokenData) {
             let canvasStyle = canvas.style
             canvasStyle.width = canvasStyle.height = ws + 'px'
             let size_ = min(ws*devicePixelRatio, 2048)
-            // if(params_size) size_ = Number(params_size) // FIXME uncomment
+            if(params_size) size_ = Number(params_size) // FIXME uncomment
 
             let gl = canvas.getContext('webgl', {
                 preserveDrawingBuffer: true,
@@ -921,7 +921,7 @@ function calculateFeatures(tokenData) {
                         for(F i=0.; i<20.; i++){
                             V kernel = V(0,0,0);
                             v uvi = i+gl_z_tk+uv;
-                            kernel += (gl_z_Q(uvi   )*2.-1.) * r; // FIXME rnd values
+                            kernel += (gl_z_Q(uvi   )*2.-1.) * r;
                             kernel += (gl_z_Q(uvi+.1)*2.-1.) * u;
                             kernel +=  gl_z_Q(uvi+.2) * f;
                             kernel = N(kernel) * pow(gl_z_Q(uvi+.3),2.);

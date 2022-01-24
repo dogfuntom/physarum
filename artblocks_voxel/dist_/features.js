@@ -1,8 +1,8 @@
 // tokenData.hash = '0xc61098a3c9703dc58508a1f7ada41e676acd9f2dee543ea45161620bf749d4a1'
 
-if (window.location.hash) {
-    tokenData.hash = window.location.hash.slice(1)
-} // FIXME
+// if (window.location.hash) {
+//     tokenData.hash = window.location.hash.slice(1)
+// } // FIXME
 
 
 
@@ -122,7 +122,7 @@ function calculateFeatures(tokenData) {
                     30,
                     4, // cage
                     8,
-                    2, // FIXME remove R()
+                    2,
                 ],
                 // cutie big
                 [
