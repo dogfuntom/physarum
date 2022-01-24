@@ -14,7 +14,7 @@ function calculateFeatures(tokenData) {
         console.log(tokenData.hash)
         let M = Math
         let A = Array
-        let D = document
+        
         let min = M.min
         let max = M.max
         let floor = M.floor
