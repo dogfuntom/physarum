@@ -84,7 +84,7 @@ function calculateFeatures(tokenData) {
                 // R() ** 8 * 2 | 0,
                 RInt(2,8),
                 0,
-                (R()<.01)?3:(1-M.sqrt(1-(R()-1)**2)) * 3 | 0,
+                (R()<.002)?3:(1-M.sqrt(1-(R()-1)**2)) * 3 | 0,
                 0,
                 RL([2, 1], .5),
                 // (R() * 3 | 0) - 1,
@@ -104,14 +104,6 @@ function calculateFeatures(tokenData) {
             //4 extra: 0,
 
             let presets = [
-                [
-                    10,
-                    20+RInt(21),
-                    3, // shroom
-                    8,
-                    // R() ** 4 * 8,
-                    RInt(8,4),
-                ],
                 [ // small
                     4,
                     // 4 + R() * 4 | 0,
@@ -119,6 +111,14 @@ function calculateFeatures(tokenData) {
                     1, // high
                     1,
                     1,
+                ],
+                [
+                    10,
+                    20+RInt(21),
+                    3, // shroom
+                    8,
+                    // R() ** 4 * 8,
+                    RInt(8,4),
                 ],
                 [
                     // 8 + R() * 2 | 0,
@@ -316,7 +316,8 @@ function calculateFeatures(tokenData) {
                     bvt[7] = 1
                     bvt[8] = RInt(4)
                     if (bvt[3] == typeEye) bvt[8] = 0
-                    let makeMask = () => A(9).fill(A(9).fill(1))
+                    // let makeMask = () => A(9).fill(A(9).fill(1))
+                    let makeMask = () => many(9,_=>many(9,_=>1))
                     bvt[2] = bvt[2] || makeMask()
                     bvt[1] = bvt[1] || makeMask()
                     // Поворачиваем весь blockVariantTry на 90° несколько раз.
@@ -521,7 +522,7 @@ function calculateFeatures(tokenData) {
         
 
             // let samplerArrays = [0,0,0,0].map(_=>A(64).fill([[]]))
-            let samplerArrays = many(4,_=>A(64).fill([[]]))
+            let samplerArrays = many(4,_=>many(64,_=>[[]]))
             blocks.map((b,i) => {
                 samplerArrays[0][i] = [b[10]           ]
                 samplerArrays[1][i] = [b[0]            ]
@@ -552,10 +553,10 @@ function calculateFeatures(tokenData) {
             features[5] = { '1': 'Circle', '2': 'Squircle' }[features[5]]
             features[1] = { '0': 'Convex', '1': 'Concave' }[features[1]]
             // if (features[3] == 4/*gaz*/) features[5] = 'Empty'
-            features[2] = { '0': 'Black and white', '1': 'Summer', '2': 'Colorful', '3': 'Magenta blue', '4': 'Plastic', '5': 'Winter', '6': 'Spring', '7': 'Vivid', '8': 'Eighth' }[features[2]]
+            features[2] = { '0': 'Zeroth', '1': 'First', '2': 'Second', '3': 'Third', '4': 'Fourth', '5': 'Fifth', '6': 'Sixth', '7': 'Seventh', '8': 'Eighth' }[features[2]]
             // if (features[3] == 4/*gaz*/) features[2] = 'Gaz'
             if (features[3] == 3/*rainbow*/) features[2] = 'Rainbow'
-            features[4] = { '0': 'Pererozhdoib', '1': 'Tiny', '2': 'Cage', '3': 'Small', '4': 'Compact', '5': 'Random' }[features[4]]
+            features[4] = { '0': 'Tiny', '1': 'Mushroom', '2': 'Empty', '3': 'Small', '4': 'Compact', '5': 'Random' }[features[4]]
             features[0] = { '0': 'Z', '1': 'X' }[features[0]]
             features[3] = { '0': 'Textured', '1': 'Not textured', '2': 'Monochrome', '3': 'Rainbow'}[features[3]]
             let names = ['Symmetry','Studs','Palette','Color scheme','Layout','Background type','Background light','Blocks number','Height','Eyes','Aerials',]
@@ -686,8 +687,8 @@ function calculateFeatures(tokenData) {
                     // if(blockId==0) {colIds = iV(3, 2, 1); return L(fract(p)-.5)-.45;}
                         
                     if(val_from_sampler_rt.y == 5) { // arc
-                        F cyl = L(pb.zy) - .5;
-                        F box = max(abs(pb.z) - .5, abs(pb.y + val_from_sampler_ss.y / 2.) - 1.);
+                        F cyl = L(pb.zy) - .5 - cornerR - gap;
+                        F box = max(abs(pb.z) - .5 - cornerR - gap, abs(pb.y + val_from_sampler_ss.y / 2.) - 1.);
                         F hole = min(cyl, box);
                         block = max(block, -hole);
                     }
