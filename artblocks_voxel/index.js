@@ -1,4 +1,4 @@
-// tokenData.hash = '0x94f2da61fa63fbded3e9a9a41e26683ab3f7cc8bc008747c38b042397221e698'
+// tokenData.hash = '0xc61098a3c9703dc58508a1f7ada41e676acd9f2dee543ea45161620bf749d4a1'
 
 if (window.location.hash) {
     tokenData.hash = window.location.hash.slice(1)
@@ -84,7 +84,8 @@ function calculateFeatures(tokenData) {
                 // R() ** 8 * 2 | 0,
                 RInt(2,8),
                 0,
-                (R()<.002)?3:(1-M.sqrt(1-(R()-1)**2)) * 3 | 0,
+                // (R()<.002)?3:(1-M.sqrt(1-(R()-1)**3)) * 3 | 0,
+                (R()<.002)?3:RInt(3,2),
                 0,
                 RL([2, 1], .5),
                 // (R() * 3 | 0) - 1,
