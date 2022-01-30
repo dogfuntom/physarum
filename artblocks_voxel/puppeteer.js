@@ -83,22 +83,22 @@ urls = urls.map(_ => random_hash());
         headless: false,
         args: [
             // '--headless',
-            // '--disable-gpu',
+            '--disable-gpu',
             '--hide-scrollbars',
             '--mute-audio'
         ]
     });
     console.log('launch…')
     const page = await browser.newPage();
-    for (let i = 0; i < 100 && urls.length > 0; i++) {
+    for (let i = 0; i < 1 && urls.length > 0; i++) {
         // const browser = await puppeteer.launch({});
 
         await page.setViewport({ width: 512, height: 512 });
         console.log('goto…')
         let hash = urls.pop()
         console.log(hash)
-        await page.goto('http://localhost:8080/#' + hash)
-        await page.goto('http://localhost:8080/#' + hash)
+        // await page.goto('http://localhost:8080/#' + hash)
+        await page.goto('http://localhost:8080')
         // await page.goto('https://shaders.dianov.org/artblocks_regl/dist_/#'+hash)
         // await page.goto('https://shaders.dianov.org/artblocks_regl/dist_/#'+hash)
 
@@ -106,5 +106,5 @@ urls = urls.map(_ => random_hash());
         await page.waitForTimeout(1000);
         await page.screenshot({ path: `/Users/ivandianov/Downloads/ab/rnd/${i}_${hash}.png` })
     }
-    await browser.close();
+    // await browser.close();
 })()
