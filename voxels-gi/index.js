@@ -130,6 +130,7 @@ passes = {
 let params = [...Array(10)].map(() => Math.random())
 
 let timeI = new Date() / 1000
+
 function draw() {
   let time = new Date() / 1000
   twgl.resizeCanvasToDisplaySize(gl.canvas);
@@ -177,16 +178,3 @@ function resize() {
   passes.gi.resolution = [w, h]
 }
 resize()
-
-
-
-
-
-
-
-
-
-
-
-
-

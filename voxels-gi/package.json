@@ -4,7 +4,7 @@
     "parcel": "^2.0.0",
     "twgl.js": "^4.19.1",
     "webmidi": "^2.5.3",
-    "z-shader-wrapper": "github:illus0r/z-shader-wrapper"
+    "z-shader-wrapper": "github:illus0r/z-shader-wrapper#71b0f1f4c24d28db24f27105e2209fe6ce2fedf4"
   },
   "devDependencies": {
     "@parcel/transformer-glsl": "^2.0.0",
