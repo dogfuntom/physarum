@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "visualstudioexptteam.vscodeintellicode",
+        "vscodevim.vim",
+        "christian-kohler.path-intellisense",
+        "standard.vscode-standard",
+        "tintinweb.vscode-inline-bookmarks"
+    ]
+}

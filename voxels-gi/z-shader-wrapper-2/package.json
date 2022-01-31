@@ -1,0 +1,18 @@
+{
+  "name": "z-shader-wrapper",
+  "version": "1.0.0",
+  "description": "Wrapper for making a pipeline of several glsl files",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "glsl"
+  ],
+  "author": "Ivan Dianov",
+  "license": "ISC",
+  "private": true,
+  "devDependencies": {
+    "twgl.js": "^4.19.1"
+  }
+}
